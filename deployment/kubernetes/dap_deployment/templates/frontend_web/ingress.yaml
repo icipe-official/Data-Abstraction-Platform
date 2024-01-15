@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.frontend_web.app }}
+  namespace: {{ .Release.namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: {{ .Values.frontend_web.ingress.rewriteTarget }}
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "360"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "360"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "360"
+  labels:
+    app: {{ .Values.frontend_web.app }}
+    project: {{ .Values.project }}
+spec:
+  {{- with .Values.ingressClassName }}
+  ingressClassName: {{ . }}
+  {{- end}}
+  {{- if eq .Values.frontend_web.ingress.useTls "true" }}
+  tls:
+  {{- if eq .Values.frontend_web.ingress.useHost "true"  }}
+  - hosts: 
+    - {{ .Values.frontend_web.ingress.host }}
+    secretName: {{ .Values.frontend_web.ingress.tls }}
+  {{- else}}
+  - secretName: {{ .Values.frontend_web.ingress.tls }}
+  {{- end}}
+  {{- end}}
+  rules:
+  {{- if eq .Values.frontend_web.ingress.useHost "true" }}
+  - host: {{ .Values.frontend_web.ingress.host }}
+    http:
+      paths:
+      - pathType: Prefix
+        path: {{ .Values.frontend_web.ingress.path }}
+        backend:
+          service:
+            name: {{ .Values.frontend_web.app }}
+            port: 
+              number: {{ .Values.frontend_web.service.port }}
+  {{- else }}
+  - http:
+        paths:
+          - path: {{ .Values.frontend_web.ingress.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.frontend_web.app }}
+                port:
+                  number: {{ .Values.frontend_web.service.port }}
+  {{- end}}

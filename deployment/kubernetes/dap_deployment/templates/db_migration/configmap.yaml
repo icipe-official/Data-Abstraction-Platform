@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.db_migration.app }}
+  namespace: {{ .Release.namespace }}
+  labels:
+    app: {{ .Values.db_migration.app }}
+    project: {{ .Values.project }}
+data:
+    DATABASE_URL: {{ .Values.db_migration.config.databaseUrl }}

@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.backend_service.app }}
+  namespace: {{ .Release.namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "100m"
+    nginx.ingress.kubernetes.io/rewrite-target: {{ .Values.backend_service.ingress.rewriteTarget }}
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "360"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "360"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "360"
+  labels:
+    app: {{ .Values.backend_service.app }}
+    project: {{ .Values.project }}
+spec:
+  {{- with .Values.ingressClassName }}
+  ingressClassName: {{ . }}
+  {{- end}}
+  {{- if eq .Values.backend_service.ingress.useTls "true" }}
+  tls:
+  {{- if eq .Values.backend_service.ingress.useHost "true"  }}
+  - hosts: 
+    - {{ .Values.backend_service.ingress.host }}
+    secretName: {{ .Values.backend_service.ingress.tls }}
+  {{- else}}
+  - secretName: {{ .Values.backend_service.ingress.tls }}
+  {{- end}}
+  {{- end}}
+  rules:
+  {{- if eq .Values.backend_service.ingress.useHost "true" }}
+  - host: {{ .Values.backend_service.ingress.host }}
+    http:
+      paths:
+      - pathType: Prefix
+        path: {{ .Values.backend_service.ingress.path }}
+        backend:
+          service:
+            name: {{ .Values.backend_service.app }}
+            port: 
+              number: {{ .Values.backend_service.service.port }}
+  {{- else }}
+  - http:
+        paths:
+          - path: {{ .Values.backend_service.ingress.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.backend_service.app }}
+                port:
+                  number: {{ .Values.backend_service.service.port }}
+  {{- end}}

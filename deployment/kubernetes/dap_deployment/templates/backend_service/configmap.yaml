@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.backend_service.app }}
+  namespace: {{ .Release.namespace }}
+  labels:
+    app: {{ .Values.backend_service.app }}
+    project: {{ .Values.project }}
+data:
+  DOMAIN_URL: {{ .Values.backend_service.config.domainUrl }}
+  PORT: "{{ .Values.backend_service.config.port }}"
+  PSQL_DBNAME: {{ .Values.backend_service.config.psqlDbname }}
+  PSQL_HOST: {{ .Values.backend_service.config.psqlHost }}
+  PSQL_PORT: "{{ .Values.backend_service.config.psqlPort }}"
+  PSQL_USER: {{ .Values.backend_service.config.psqlUser }}
+  PSQL_SSLMODE: {{ .Values.backend_service.config.psqlSslMode }}
+  PSQL_SCHEMA: {{ .Values.backend_service.config.psqlSchema }}
+  PSQL_DATABASE_DRIVE_NAME: postgres
+  REDIS_HOST: {{ .Values.backend_service.config.redisHost }}
+  REDIS_PORT: "{{ .Values.backend_service.config.redisPort }}"
+  REDIS_USER: {{ .Values.backend_service.config.redisUser }}
+  MAIL_HOST: {{ .Values.backend_service.config.mailHost }}
+  MAIL_PORT: "{{ .Values.backend_service.config.mailPort }}"
+  MAIL_USERNAME: {{ .Values.backend_service.config.mailUserName }}
+  GO_DEV: "false"
+  TMP_DIR: {{ .Values.backend_service.config.tmpDirectory }}
+  LOG_LEVEL: "{{ .Values.backend_service.config.logLevel }}"
+  BASE_PATH: {{ .Values.backend_service.config.basePath }}
