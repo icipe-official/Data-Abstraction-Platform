@@ -1,0 +1,8 @@
+[submodule "Data-Abstraction-Platform-Front-End"]
+	path = Data-Abstraction-Platform-Front-End
+	url = https://github.com/icipe-official/Data-Abstraction-Platform-Front-End.git
+	branch = main
+[submodule "Data-Abstraction-Platform-Back-End"]
+	path = Data-Abstraction-Platform-Back-End
+	url = https://github.com/icipe-official/Data-Abstraction-Platform-Back-End.git
+	branch = main
