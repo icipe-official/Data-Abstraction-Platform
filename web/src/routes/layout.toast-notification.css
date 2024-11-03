@@ -1,0 +1,3 @@
+:host {
+    @apply toast max-sm:toast-center max-sm:w-full sm:toast-end absolute bottom-0;
+}

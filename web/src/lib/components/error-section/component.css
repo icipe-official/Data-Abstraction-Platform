@@ -1,0 +1,3 @@
+:host {
+	@apply flex w-fit h-fit space-x-2;
+}

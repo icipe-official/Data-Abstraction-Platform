@@ -1,0 +1,72 @@
+-- will be used to generate uuid version 4
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- postigs extension
+CREATE EXTENSION postgis;
+
+-- will be used to generate password hashes
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- function to update last_updated_on column
+CREATE FUNCTION public.update_last_updated_on()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    NOT LEAKPROOF
+AS $BODY$
+BEGIN
+    NEW.last_updated_on=NOW();
+    RETURN NEW;
+END
+$BODY$;
+
+ALTER FUNCTION public.update_last_updated_on()
+    OWNER TO pg_database_owner;
+
+COMMENT ON FUNCTION public.update_last_updated_on()
+    IS 'update last_updated_on column when relevant columns in a particular row are updated';
+
+-- function to generate random alphanumeric string
+CREATE FUNCTION public.gen_random_string()
+    RETURNS character varying
+    LANGUAGE 'sql'
+RETURN encode(sha256(md5(random()::text)::bytea),'hex');
+
+ALTER FUNCTION public.gen_random_string()
+    OWNER TO pg_database_owner;
+
+COMMENT ON FUNCTION public.gen_random_string()
+    IS 'generate alphanumeric lowercase string that is 64 characters in length using sha256 and md5';
+
+-- metadata_models_defaults table
+CREATE TABLE public.metadata_models_defaults
+(
+    id text NOT NULL,
+    description text NOT NULL,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE IF EXISTS public.metadata_models_defaults
+    OWNER to pg_database_owner;
+
+COMMENT ON TABLE public.metadata_models_defaults
+    IS 'default metadata_models used in specific tables such as directory and groups';
+
+-- function to generate uuidv7
+CREATE FUNCTION public.uuid_generate_v7()
+    RETURNS uuid
+AS $$
+SELECT encode(
+    set_bit(
+      set_bit(
+        overlay(uuid_send(gen_random_uuid())
+                placing substring(int8send(floor(extract(epoch from clock_timestamp()) * 1000)::bigint) from 3)
+                from 1 for 6
+        ),
+        52, 1
+      ),
+      53, 1
+    ),
+    'hex')::uuid;
+$$
+LANGUAGE SQL
+VOLATILE;

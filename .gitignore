@@ -1,0 +1,5 @@
+bin/*
+tmp/*
+temp/*
+scratch/*
+venv/*

@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.background-pattern {
+	background-color: #FAFAFA;
+	opacity: 1;
+	background-image: radial-gradient(#3c7847 0.6000000000000001px, transparent 0.6000000000000001px), radial-gradient(#3c7847 0.6000000000000001px, #FAFAFA 0.6000000000000001px);
+	background-size: 24px 24px;
+	background-position: 0 0, 12px 12px;
+}
+
+.join-error {
+	@apply border-2 border-error rounded-xl font-bold;
+}
+.join-label-primary {
+	@apply bg-primary text-primary-content font-bold;
+}
+.join-label-secondary {
+	@apply bg-secondary text-secondary-content font-bold;
+}
+.join-label-accent {
+	@apply bg-accent text-accent-content font-bold;
+}
+
+.alert {
+	@apply pt-0 pb-0 pl-1 pr-1 rounded-md;
+}
+
+.label {
+	@apply py-1;
+}
+
+.divider {
+	@apply my-0;
+}
+
+/* 
+::-webkit-scrollbar {
+	@apply w-[10px] h-[10px];
+}
+
+::-webkit-scrollbar-thumb {
+	@apply bg-gray-700 rounded-md;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-gray-700 rounded-md;
+}
+
+::-webkit-scrollbar-thumb:active {
+	@apply bg-gray-600 rounded-md;
+} */
