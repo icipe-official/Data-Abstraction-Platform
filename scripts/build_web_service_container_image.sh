@@ -26,11 +26,22 @@ echo "Building cmd/web_service..."
     bash $WORKING_DIR/scripts/build_web_service.sh
 echo "...building complete"
 
-CONTAINER_TAG="latest"
-if [ ! -z "$1" ]; then
-    CONTAINER_TAG=$1
+while getopts t:c: flag
+do
+    case "${flag}" in
+        t) CONTAINER_TAG=${OPTARG};;
+        c) CONTAINER_CLI=${OPTARG};;
+    esac
+done
+if [ -z "$CONTAINER_TAG" ]; then
+    CONTAINER_TAG="latest"
+fi
+if [ -z "$CONTAINER_CLI" ]; then
+    alias ccli='docker'
+else
+    alias ccli=$CONTAINER_CLI
 fi
 
-echo "Building container image..."
-docker build --no-cache -t rahab_platform/web_service:$CONTAINER_TAG -f $WORKING_DIR/build/Dockerfile.web_service $WORKING_DIR
+echo "Using ${BASH_ALIASES[ccli]} to build container image..."
+${BASH_ALIASES[ccli]} build --no-cache -t data_abstraction_platform/web_service:$CONTAINER_TAG -f $WORKING_DIR/build/Dockerfile.web_service $WORKING_DIR
 echo "... container complete"

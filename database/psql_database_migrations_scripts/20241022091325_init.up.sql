@@ -25,18 +25,6 @@ ALTER FUNCTION public.update_last_updated_on()
 COMMENT ON FUNCTION public.update_last_updated_on()
     IS 'update last_updated_on column when relevant columns in a particular row are updated';
 
--- function to generate random alphanumeric string
-CREATE FUNCTION public.gen_random_string()
-    RETURNS character varying
-    LANGUAGE 'sql'
-RETURN encode(sha256(md5(random()::text)::bytea),'hex');
-
-ALTER FUNCTION public.gen_random_string()
-    OWNER TO pg_database_owner;
-
-COMMENT ON FUNCTION public.gen_random_string()
-    IS 'generate alphanumeric lowercase string that is 64 characters in length using sha256 and md5';
-
 -- metadata_models_defaults table
 CREATE TABLE public.metadata_models_defaults
 (

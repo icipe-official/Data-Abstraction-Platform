@@ -1,13 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./src/**/*.{html,js,ts}"],
-  theme: {
-    extend: {},
-  },
-  daisyui: {
-    themes: [
-      {
-        mytheme: {
+	content: ['./src/**/*.{html,js,ts}'],
+	theme: {
+		extend: {}
+	},
+	daisyui: {
+		themes: [
+			{
+				mytheme: {
 					primary: '#3c7847',
 					secondary: '#d4c16d',
 					accent: '#000000',
@@ -16,9 +16,9 @@ export default {
 					success: '#008000',
 					error: '#ff0000',
 					info: '#0000cd'
-        },
-      },
-    ],
-  },
-  plugins: [require("daisyui")],
-};
+				}
+			}
+		]
+	},
+	plugins: [require('daisyui')]
+}

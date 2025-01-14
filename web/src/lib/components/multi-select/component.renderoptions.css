@@ -1,0 +1,3 @@
+:host {
+	@apply h-fit max-h-[30vh] overflow-x-hidden overflow-y-auto flex flex-col;
+}

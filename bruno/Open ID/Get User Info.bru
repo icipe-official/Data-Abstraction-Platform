@@ -1,0 +1,19 @@
+meta {
+  name: Get User Info
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{open_id_issuer_url}}/protocol/openid-connect/userinfo
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  In the OpenID Configuration, endpoint can be found at `userinfo_endpoint` or `mtls_endpoint_aliases.userinfo_endpoint`.
+}

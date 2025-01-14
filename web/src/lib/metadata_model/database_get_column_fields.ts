@@ -1,0 +1,106 @@
+import MetadataModel from '.'
+
+/**
+ * Extracts database fields from {@linkcode metadatamodel} if {@linkcode tableCollectionName} matches.
+ *
+ * Throws an error if {@linkcode metadatamodel} or {@linkcode tableCollectionName} is not valid.
+ *
+ * Will not add field if {@linkcode FgProperties.DATABASE_FIELD_COLUMN_NAME} is not found or duplicate is detected.
+ *
+ * @param metadatamodel Expected to be presented as if converted from JSON.
+ * @param tableCollectionName Extract only fields whose {@linkcode FgProperties.DATABASE_TABLE_COLLECTION_NAME} match this value.
+ * @param skipIfFGDisabled Do not include field if property {@linkcode FgProperties.FIELD_GROUP_VIEW_DISABLE}($FG_VIEW_DISABLE) is true. Default false.
+ * @param skipIfDataExtraction Do not include field if property {@linkcode FgProperties.FIELD_GROUP_SKIP_DATA_EXTRACTION}($FG_SKIP_DATA_EXTRACTION) is true. Default false.
+ * @returns Database column fields with their properties as well as their read order.DatabaseSetFieldValue
+ */
+export function DatabaseGetColumnFields(metadatamodel: MetadataModel.IMetadataModel | any, tableCollectionName: string, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false): MetadataModel.IDatabaseColumnFields {
+	if (typeof tableCollectionName !== 'string') {
+		throw 'argument tableCollectionName is not a string.'
+	}
+
+	try {
+		let x = new _(tableCollectionName, skipIfFGDisabled, skipIfDataExtraction)
+		x.getDatabaseColumnFields(metadatamodel)
+		return x.DatabaseColumnFields
+	} catch (e) {
+		throw e
+	}
+}
+
+class _ {
+	private _databaseColumnFields: MetadataModel.IDatabaseColumnFields = {
+		column_fields_read_order: [],
+		fields: {}
+	}
+	private _tableCollectionName: string
+	private _skipIfFGDisabled: boolean = true
+	private _skipIfDataExtraction: boolean = true
+
+	constructor(tableCollectionName: string, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
+		this._tableCollectionName = tableCollectionName
+		this._skipIfFGDisabled = skipIfFGDisabled
+		this._skipIfDataExtraction = skipIfDataExtraction
+	}
+
+	get DatabaseColumnFields() {
+		return this._databaseColumnFields
+	}
+
+	/**
+	 *
+	 * @param mmGroup Current Metadata Model Group
+	 *
+	 * mm - Alias for metadata model
+	 *
+	 * fg - Alias for field group
+	 */
+	getDatabaseColumnFields(mmGroup: MetadataModel.IMetadataModel | any) {
+		if (!MetadataModel.isGroupFieldsValid(mmGroup)) {
+			throw `${this.getDatabaseColumnFields.name}: argument mmGroup is not an object.`
+		}
+
+		const mmGroupFields = mmGroup[MetadataModel.FgProperties.GROUP_FIELDS][0]
+		if (!MetadataModel.isGroupFieldsValid(mmGroupFields)) {
+			throw `${this.getDatabaseColumnFields.name}: argument mmGroup ${MetadataModel.FgProperties.GROUP_FIELDS}[0] is not an object.`
+		}
+
+		const mmGroupReadOrderOfFields = mmGroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]
+		if (!MetadataModel.isGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
+			throw `${this.getDatabaseColumnFields.name}: argument mmGroup ${MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS} is not an array.`
+		}
+
+		for (const fgKey of mmGroupReadOrderOfFields) {
+			if (!MetadataModel.isGroupFieldsValid(mmGroupFields[fgKey])) {
+				continue
+			}
+
+			if ((this._skipIfDataExtraction && mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION]) || (this._skipIfFGDisabled && mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE])) {
+				continue
+			}
+
+			if (typeof mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_KEY] !== 'string') {
+				continue
+			}
+
+			if (typeof mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME] === 'string' && mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME] === this._tableCollectionName) {
+				if (Array.isArray(mmGroupFields[fgKey][MetadataModel.FgProperties.GROUP_FIELDS]) && typeof mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME] === 'undefined') {
+					this.getDatabaseColumnFields(mmGroupFields[fgKey])
+				} else {
+					const fieldColumnName = mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME]
+					if (typeof fieldColumnName !== 'string' || fieldColumnName.length === 0) {
+						console.warn(`field column name for key ${fgKey} not found or empty!`, structuredClone(mmGroupFields[fgKey]))
+						continue
+					}
+
+					if (typeof this._databaseColumnFields.fields[fieldColumnName] === 'object') {
+						console.warn(`duplicate field column name ${fieldColumnName} detected!`, structuredClone(this._databaseColumnFields), structuredClone(mmGroup))
+						continue
+					}
+
+					this._databaseColumnFields.column_fields_read_order.push(fieldColumnName)
+					this._databaseColumnFields.fields[fieldColumnName] = structuredClone(mmGroupFields[fgKey])
+				}
+			}
+		}
+	}
+}

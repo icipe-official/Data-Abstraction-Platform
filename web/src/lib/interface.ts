@@ -1,5 +1,6 @@
-export namespace Interface {
+import Database from './database'
 
+namespace Interface {
 	export interface ItemID {
 		id: string
 		created_on: string
@@ -16,7 +17,7 @@ export namespace Interface {
 		targetElementID: string
 		url: string
 	}
-	
+
 	export interface VerboseResponseStatus {
 		status_code: number[]
 		status_message: string[]
@@ -26,4 +27,16 @@ export namespace Interface {
 		status: VerboseResponseStatus[]
 		Data: any[]
 	}
+
+	export interface OpenidEndpoints {
+		login_endpoint: string
+		registration_endpoint?: string
+	}
+
+	export interface SessionData {
+		openid_endpoints: OpenidEndpoints
+		iam_credential?: Database.IamCredentials.Interface
+	}
 }
+
+export default Interface

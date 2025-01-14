@@ -12,43 +12,38 @@ Template shell script to set env variables in current shell session can be found
 
 Applications ran will highlight the different environment variables required if they are not set.
 
-- WEB_SERVICE_CORS_URLS: Used for cors. Use space to separate multiple urls. Example: `https://localhost:5173 www.data-abstraction-platform.com`.
-- WEB_SERVICE_APP_PREFIX: Used for redis keys. Will enable sharing of redis instances.
-- WEB_SERVICE_PORT: Port that [web_service](cmd/web_service/main.go) will run on.
-- WEB_SERVICE_BASE_PATH: Set if web_services are to be hosted on its own base/sub path whilst using a shared domain. [Website](web/README.md) will require re-build if this value changes.
+- `WEB_SERVICE_CORS_URLS`: Used for cors. Use space to separate multiple urls. Example: `https://localhost:5173 www.data-abstraction-platform.com`.
+- `WEB_SERVICE_APP_PREFIX`: Used for redis keys. Will enable sharing of redis instances.
+- `WEB_SERVICE_PORT`: Port that [web_service](cmd/web_service/main.go) will run on.
+- `WEB_SERVICE_BASE_PATH`: Set if web_services are to be hosted on its own base/sub path whilst using a shared domain. [Website](web/README.md) will require re-build if this value changes.
 
-- VITE_WEBSITE_LOG_LEVEL: [website](web/README.md) log levels. 0 - Debug, 1 - Warning, 2 - Error.
-- VITE_WEBSITE_TITLE: Title of the [website](web/README.md).
-- VITE_WEB_SERVICE_API_CORE_URL: Full URL to the api portion of the backend. E.g. `http://localhost:5173/api`.
+- `VITE_WEBSITE_LOG_LEVEL`: [website](web/README.md) log levels. 0 - Debug, 1 - Warning, 2 - Error.
+- `VITE_WEBSITE_TITLE`: Title of the [website](web/README.md).
+- `VITE_WEB_SERVICE_API_CORE_URL`: Full URL to the api portion of the backend. E.g. `http://localhost:5173/api`.
 
-- PSQL_DATABASE_URI: Postgres connection string. E.g. `postgres://postgres:password@localhost:5432/example_database?sslmode=disable`. Refer to the article [here](https://www.prisma.io/dataguide/postgresql/
+- `PSQL_DATABASE_URI`: Postgres connection string. E.g. `postgres://postgres:password@localhost:5432/example_database?sslmode=disable`. Refer to the article [here](https://www.prisma.io/dataguide/postgresql/
 short-guides/connection-uris) on how to create a postgres connection string.
-- PSQL_DATABASE_MIGRATION_SCRIPTS_DIRECTORY: Defaults to [`database/psql_database_migrations_scripts`](database/psql_database_migrations_scripts). Directory where postgresql migration scripts are stored.
+- `PSQL_DATABASE_MIGRATION_SCRIPTS_DIRECTORY`: Defaults to [`database/psql_database_migrations_scripts`](database/psql_database_migrations_scripts). Directory where postgresql migration scripts are stored.
 
-- REDIS_HOST_PORT: Redis database host then port.
-- REDIS_USER: Redis database user (optional if database has no auth configured).
-- REDIS_PASSWORD: Redis database password (optional if database has no auth configured).
-- REDIS_DB: Default is `15`. Stores session id for logged in users.
+- `MAIL_HOST`
+- `MAIL_PORT`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
 
-- MAIL_HOST
-- MAIL_PORT
-- MAIL_USERNAME
-- MAIL_PASSWORD
+- `IAM_ENCRYPTION_KEY`: Secret key used to encrypt the access and refresh tokens. Key MUST be 16, 24, or 32 characters in length ONLY. You can use [openssl](#miscellaneous).
+- `IAM_ENCRYPT_TOKENS`: Defaults to `true`. Set to `false` if openid provider already encrypts the token.
+- `IAM_COOKIE_HTTP_ONLY`: Defaults to `true`.
+- `IAM_COOKIE_SAME_SITE`: Defaults to `3`. 1 for `SameSiteDefaultMode`, 2 for `SameSiteLaxMode`, 3 for `SameSiteStrictMode` (preferred), 4 for `SameSiteNoneMode`.
+- `IAM_COOKIE_SECURE`: Defaults to `true`. Set to `false` for development.
+- `IAM_COOKIE_DOMAIN`: Value should be similar to WEB_APP_URL in production. Example: `localhost:5173`.
 
-- IAM_ACCESS_REFRESH_TOKEN: Secret key used to sign authentication jwt access-refresh token. Maximum length is 36 characters. You can use [openssl](#miscellaneous).
-- IAM_ENCRYPTION_KEY: Secret key used to encrypt the access-refresh token. Key MUST be 16, 24, or 32 characters in length ONLY. You can use [openssl](#miscellaneous).
-- IAM_COOKIE_HTTP_ONLY: Defaults to `true`.
-- IAM_COOKIE_SAME_SITE: Defaults to `3`. 1 for `SameSiteDefaultMode`, 2 for `SameSiteLaxMode`, 3 for `SameSiteStrictMode` (preferred), 4 for `SameSiteNoneMode`.
-- IAM_COOKIE_SECURE: Defaults to `true`. Set to `false` for development.
-- IAM_COOKIE_DOMAIN: Value should be similar to WEB_APP_URL in production. Example: `localhost:5173`.
+- `LOG_LEVEL`: Default is `1`. On a scale/range: debug(-4 to -1), info(0 to 3), warning(4 to 7), error(8).
+- `LOG_USE_JSON`: Default is `false`. Emit logs in json format.
+- `LOG_COINCISE`: Default is `true`. Emit non-detailed logs which excludes info like some http request details.
+- `LOG_REQUEST_HEADERS`: Default is `true`. Logs should include http request details.
+- `LOG_APP_VERSION`: Version of the deployed applications.
 
-- LOG_LEVEL: Default is `1`. On a scale/range: debug(-4 to -1), info(0 to 3), warning(4 to 7), error(8).
-- LOG_USE_JSON: Default is `false`. Emit logs in json format.
-- LOG_COINCISE: Default is `true`. Emit non-detailed logs which excludes info like some http request details.
-- LOG_REQUEST_HEADERS: Default is `true`. Logs should include http request details.
-- LOG_APP_VERSION: Version of the deployed applications.
-
-- WEBSITE_DIRECTORY: Defaults to `dist/` folder under [`web`](web/). Folder `dist/` is generated after building the website or running it in dev mode. More information [here](web/README.md).
+- `WEBSITE_DIRECTORY`: Defaults to `dist/` folder under [`web`](web/). Folder `dist/` is generated after building the website or running it in dev mode. More information [here](web/README.md).
 ## Development
 
 Setup the [website](web/README.md) in [development mode](web/README.md#development) to access the website via a browser.
@@ -103,14 +98,18 @@ migrate -path $PSQL_DATABASE_MIGRATION_SCRIPTS_DIRECTORY -database $PSQL_DATABAS
 
 ## Production
 
-### Using docker container image
+### Using container images
 
-Requires [docker](https://www.docker.com/get-started/) to be installed.
+Install [docker](https://www.docker.com/get-started/) or [podman](https://podman.io/docs/installation).
 
 ```sh
-# Build all the containers
+# Build all container images
 
-bash scripts/build_container_images.sh latest
+# Replace with appropriate values
+$CONTAINER_IMAGE_TAG=latest # Defaults to latest
+$CONTAINER_CLI=podman # Defaults to docker
+
+bash scripts/build_container_images.sh -t $CONTAINER_IMAGE_TAG -c $CONTAINER_CLI
 ```
 
 ### Using executables
@@ -146,6 +145,22 @@ go run cmd/cmd_app_create_super_user/main.go
 
 #In production after buildling the executable
 bin/cmd_app_create_super_user
+```
+
+## Build keycloak image
+Setup keycloak as an OpenID provider if no external provider is available.
+
+NB. Ensure postgres instance exists and is set up.
+
+Create your own `Dockerfile.keycloak` based on the [`Dockerfile.keycloak.template`](build/Dockerfile.keycloak.template) and edit the `ENV` values appropriately.
+
+Build the container image
+```sh
+# Replace with appropriate values
+$CONTAINER_IMAGE_TAG=latest # Defaults to latest
+$CONTAINER_CLI=podman # Defaults to docker
+
+bash scripts/build_keycloak_image.sh -t $CONTAINER_IMAGE_TAG -c $CONTAINER_CLI
 ```
 
 ## Run the web_service

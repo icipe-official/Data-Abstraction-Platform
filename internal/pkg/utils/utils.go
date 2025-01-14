@@ -124,16 +124,27 @@ func CheckRequiredEnvVariables(envVars []string) []string {
 	return envVariablesMissing
 }
 
-func VerifyIamKeys() error {
+func ValidateIamEncryptionKey() error {
 	iekLength := len(os.Getenv("IAM_ENCRYPTION_KEY"))
 	if iekLength != 16 && iekLength != 24 && iekLength != 32 {
 		return fmt.Errorf("env variable IAM_ENCRYPTION_KEY can only be 16, 24, or 32 characters in length ONLY")
 	}
-	iarkLength := len(os.Getenv("IAM_ACCESS_REFRESH_TOKEN"))
-	if iarkLength > 36 {
-		return fmt.Errorf("env variable IAM_ACCESS_REFRESH_TOKEN can have a maximum character length of 36 ONLY")
-	}
+
 	return nil
+}
+
+func WebServiceBasePath() string {
+	basePath := os.Getenv(os.Getenv("WEB_SERVICE_BASE_PATH"))
+
+	if !strings.HasPrefix(basePath, "/") {
+		basePath = "/" + basePath
+	}
+
+	if !strings.HasSuffix(basePath, "/") {
+		basePath += "/"
+	}
+
+	return basePath
 }
 
 func WebServiceAppPrefix() string {
@@ -142,14 +153,6 @@ func WebServiceAppPrefix() string {
 		return "rahab_platform"
 	}
 	return appPrefix
-}
-
-func WebServiceBasePath() string {
-	basePath := os.Getenv("WEB_SERVICE_BASE_PATH")
-	if !strings.HasSuffix(basePath, "/") {
-		basePath += "/"
-	}
-	return basePath
 }
 
 func PsqlGetFullTextSearchQuery(fullTextSearchColumn string, searchQuery string) string {

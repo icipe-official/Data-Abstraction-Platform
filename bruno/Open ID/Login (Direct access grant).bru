@@ -1,0 +1,32 @@
+meta {
+  name: Login (Direct access grant)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{open_id_issuer_url}}/protocol/openid-connect/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  username: {{username}}
+  password: {{password}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+  grant_type: {{grant_type}}
+  scope: {{scope}}
+}
+
+script:post-response {
+  let data = res.getBody()
+  bru.setEnvVar('access_token',data.access_token)
+  bru.setEnvVar('refresh_token',data.refresh_token)
+}
+
+docs {
+  In the OpenID Configuration, endpoint can be found at `token_endpoint` or `mtls_endpoint_aliases.token_endpoint`.
+  
+  Requires `Resource Owner Password Credentials Grant`/`Direct access grants` to be enabled for the client's configuration.
+}

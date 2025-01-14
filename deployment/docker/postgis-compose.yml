@@ -1,0 +1,29 @@
+name: postgis
+
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-latest}
+    container_name: postgres
+    ports:
+    - "${POSTGRES_PORT:-5432}:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres2024
+    networks:
+      - default
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: "${POSTGRES_CPU_LIMIT:-2}"
+          memory: ${POSTGRES_MEMORY_LIMIT:-4gb}
+
+volumes:
+  postgres-data:
+
+networks:
+  default:
+    external:
+      name: ${EXTERNAL_NETWORK_NAME}

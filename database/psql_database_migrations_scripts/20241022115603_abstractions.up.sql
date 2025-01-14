@@ -199,6 +199,7 @@ CREATE TABLE public.abstractions_reviews
     pass boolean NOT NULL DEFAULT FALSE,
     created_on timestamp without time zone NOT NULL DEFAULT NOW(),
     last_updated_on timestamp without time zone NOT NULL DEFAULT NOW(),
+    creation_iam_group_authorizations_id uuid,
     PRIMARY KEY (abstractions_id, directory_id),
     CONSTRAINT abstractions_id FOREIGN KEY (abstractions_id)
         REFERENCES public.abstractions (id) MATCH SIMPLE
@@ -217,36 +218,6 @@ ALTER TABLE IF EXISTS public.abstractions_reviews
 
 COMMENT ON TABLE public.abstractions_reviews
     IS 'reviews on abstractions.';
-
-CREATE TABLE public.abstractions_reviews_authorization_ids
-(
-    abstractions_id uuid NOT NULL,
-    directory_id uuid NOT NULL,
-    creation_iam_group_authorizations_id uuid,
-    deactivation_iam_group_authorizations_id uuid,
-    PRIMARY KEY (abstractions_id, directory_id),
-    CONSTRAINT abstractions_reviews_id FOREIGN KEY (abstractions_id, directory_id)
-        REFERENCES public.abstractions_reviews (abstractions_id, directory_id) MATCH SIMPLE
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT
-        NOT VALID, 
-    CONSTRAINT creation_iam_group_authorizations_id FOREIGN KEY (creation_iam_group_authorizations_id)
-        REFERENCES public.iam_group_authorizations (id) MATCH SIMPLE
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT
-        NOT VALID,
-    CONSTRAINT deactivation_iam_group_authorizations_id FOREIGN KEY (deactivation_iam_group_authorizations_id)
-        REFERENCES public.iam_group_authorizations (id) MATCH SIMPLE
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT
-        NOT VALID
-);
-
-ALTER TABLE IF EXISTS public.abstractions_reviews_authorization_ids
-    OWNER to pg_database_owner;
-
-COMMENT ON TABLE public.abstractions_reviews_authorization_ids
-    IS 'authorization ids that were used to create and/or deactivate the resources';
 
 -- abstractions_reviews_comments table
 CREATE TABLE public.abstractions_reviews_comments

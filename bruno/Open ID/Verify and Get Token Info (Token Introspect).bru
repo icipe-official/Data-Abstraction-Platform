@@ -1,0 +1,21 @@
+meta {
+  name: Verify and Get Token Info (Token Introspect)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{open_id_issuer_url}}/protocol/openid-connect/token/introspect
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  token: {{access_token}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+}
+
+docs {
+  In the OpenID Configuration, endpoint can be found at `introspection_endpoint` or `mtls_endpoint_aliases.introspection_endpoint`.
+}

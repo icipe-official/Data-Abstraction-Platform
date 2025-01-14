@@ -83,7 +83,7 @@ export default defineConfig(({ mode }) => {
 					ep.generateEntryPoints('src')
 					console.log('<---Generated html entry points--->')
 					console.log(ep.rollupOptionsInputs)
-					console.log('<---------------------------->\n')
+					console.log('<------------------------------->\n')
 					options.input = ep.rollupOptionsInputs
 					return options
 				}
@@ -93,6 +93,9 @@ export default defineConfig(({ mode }) => {
 				closeBundle: () => {
 					console.log("Writing paths to html pages in 'html_pages.json'...")
 					ep.writeHtmlPages()
+					if (!fs.existsSync(path.resolve(__dirname, 'dist'))) {
+						fs.mkdirSync(path.resolve(__dirname, 'dist'), { recursive: true })
+					}
 					fs.writeFileSync(path.resolve(__dirname, 'dist/', 'html_pages.json'), JSON.stringify(ep.htmlPages, null, '  '))
 					console.log('Write complete.')
 				}

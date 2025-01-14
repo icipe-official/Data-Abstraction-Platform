@@ -1,4 +1,4 @@
-import { Interface } from './interface'
+import Interface from './interface'
 import Log from './log'
 import MetadataModel from './metadata_model'
 
@@ -27,34 +27,35 @@ namespace Misc {
 	 * Custom Events triggered within the application.
 	 */
 	export const enum CustomEvents {
-		TOAST_NOTIFY = 'rahab-platform:toastnotify',
-		SHOW_LOADING_SCREEN = 'rahab-platform:showloadingscreen'
+		TOAST_NOTIFY = 'data-abstraction-platform:toastnotify',
+		SHOW_LOADING_SCREEN = 'data-abstraction-platform:showloadingscreen'
 	}
 
 	export const EMAIL_VALIDATION_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
 	/**
 	 * Use to seet icon size for iconify-icon, comes with handy default
-	 * @param size
+	 * @param size. default 24.
 	 * @returns
 	 */
 	export const IconifySize = (size?: string) => (size ? size : '24')
 
-	export const WINDOW_APP_OBJECT_KEY = 'rahab-platform'
+	export const WINDOW_APP_OBJECT_KEY = 'data-abstraction-platform'
 
 	export const DEFAULT_FETCH_ERROR = 'Unknown error occured possibly due to server being unreachable.'
 
 	export const enum SharedStorageKey {
-		USER_ID = 'user-id',
-		SPA_MODE = 'spa-mode',
-		AUTH_CONTEXT_NOT_CURRENT_DIRECTORY_GROUP_ID = 'auth-context-not-current-directory-group-id',
-		START_SEARCH_NOT_CURRENT_DIRECTORY_GROUP_ID = 'start-search-not-current-directory-group-id',
-		NOT_SKIP_IF_DATA_EXTRACTION = 'not_skip_if_data_extraction',
-		NOT_SKIP_IF_FG_DISABLED = 'not_skip_if_fg_disabled',
-		VERBOSE_RESPONSE = 'verbose-response'
+		SESSION_DATA = 'dap-session-data',
+		SPA_MODE = 'dap-spa-mode',
+		AUTH_CONTEXT_NOT_CURRENT_DIRECTORY_GROUP_ID = 'dap-auth-context-not-current-directory-group-id',
+		START_SEARCH_NOT_CURRENT_DIRECTORY_GROUP_ID = 'dap-start-search-not-current-directory-group-id',
+		NOT_SKIP_IF_DATA_EXTRACTION = 'dap-not-skip-if-data-extraction',
+		NOT_SKIP_IF_FG_DISABLED = 'dap-not-skip-if-fg-disabled',
+		VERBOSE_RESPONSE = 'dap-verbose-response'
 	}
 
 	export const enum SearchParams {
+		CURRENT_DIRECTORY_GROUP_ID = 'current_directory_group_id',
 		TARGET_JOIN_DEPTH = 'target_join_depth',
 		SUB_QUERY = 'sub_query',
 		VERBOSE_RESPONSE = 'verbose',
@@ -72,7 +73,7 @@ namespace Misc {
 	 * Throws error if request fails.
 	 */
 	export async function PageNavigation(targetElementID: string, path: string) {
-		Log.Log(Log.Level.DEBUG, 'Misc', targetElementID)
+		// Log.Log(Log.Level.DEBUG, 'Misc', targetElementID)
 		const urlPath = import.meta.env.BASE_URL + (!import.meta.env.BASE_URL.endsWith('/') ? '/' : '') + path
 		const url = new URL(urlPath, window.location.origin)
 		url.searchParams.append('partial', 'true')
@@ -116,15 +117,7 @@ namespace Misc {
 		}
 	}
 
-	export function GetCurrentDirectoryGroupID(path: string) {
-		const basePath = import.meta.env.BASE_URL + (!import.meta.env.BASE_URL.endsWith('/') ? '/' : '')
-		path = path.replace(basePath, '')
-
-		return {
-			id: path.split('/')[0].split('@')[0],
-			created_on: path.split('/')[0].split('@')[1]
-		} as Interface.DirectoryGroupID
-	}
+	export const CurrentDirectoryGroupID = (currentUrl: string) => new URL(currentUrl).searchParams.get(SearchParams.CURRENT_DIRECTORY_GROUP_ID)
 
 	export function GetRelativePath(path: string) {
 		const basePath = import.meta.env.BASE_URL + (!import.meta.env.BASE_URL.endsWith('/') ? '/' : '')
@@ -148,7 +141,7 @@ namespace Misc {
 			toastdata.toastMetadataModelSearchResults = {
 				metadata_model: data.metadata_model,
 				data: data.data
-			} as MetadataModel.Index.ISearchResults
+			} as MetadataModel.ISearchResults
 		}
 
 		return toastdata

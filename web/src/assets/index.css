@@ -3,11 +3,13 @@
 @tailwind utilities;
 
 .background-pattern {
-	background-color: #FAFAFA;
+	background-color: #e5e5f7;
 	opacity: 1;
-	background-image: radial-gradient(#3c7847 0.6000000000000001px, transparent 0.6000000000000001px), radial-gradient(#3c7847 0.6000000000000001px, #FAFAFA 0.6000000000000001px);
-	background-size: 24px 24px;
-	background-position: 0 0, 12px 12px;
+	background-image: radial-gradient(#3c7847 0.8500000000000001px, transparent 0.8500000000000001px), radial-gradient(#3c7847 0.8500000000000001px, #e5e5f7 0.8500000000000001px);
+	background-size: 34px 34px;
+	background-position:
+		0 0,
+		17px 17px;
 }
 
 .join-error {

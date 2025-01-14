@@ -84,7 +84,6 @@ type FilterCondition struct {
 }
 
 type MetadataModel struct {
-	MetadataModelVersion                         float64 `json:"$METADATA_MODEL_VERSION,omitempty"`
 	FieldGroupKey                                *string `json:"$FG_KEY,omitempty"`
 	FieldGroupName                               *string `json:"$FG_NAME,omitempty"`
 	FieldGroupDescription                        *string `json:"$FG_DESCRIPTION,omitempty"`

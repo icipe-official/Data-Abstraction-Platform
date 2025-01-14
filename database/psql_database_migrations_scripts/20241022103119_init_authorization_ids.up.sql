@@ -118,33 +118,3 @@ ALTER TABLE IF EXISTS public.directory_authorization_ids
 
 COMMENT ON TABLE public.directory_authorization_ids
     IS 'authorization ids that were used to create and/or deactivate the resources';
-
--- iam_credentials_authorization_ids table
-CREATE TABLE public.iam_credentials_authorization_ids
-(
-    id uuid NOT NULL,
-    creation_iam_group_authorizations_id uuid,
-    deactivation_iam_group_authorizations_id uuid,
-    PRIMARY KEY (id),
-    CONSTRAINT iam_credentials_id FOREIGN KEY (id)
-        REFERENCES public.iam_credentials (id) MATCH SIMPLE
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT
-        NOT VALID, 
-    CONSTRAINT creation_iam_group_authorizations_id FOREIGN KEY (creation_iam_group_authorizations_id)
-        REFERENCES public.iam_group_authorizations (id) MATCH SIMPLE
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT
-        NOT VALID,
-    CONSTRAINT deactivation_iam_group_authorizations_id FOREIGN KEY (deactivation_iam_group_authorizations_id)
-        REFERENCES public.iam_group_authorizations (id) MATCH SIMPLE
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT
-        NOT VALID
-);
-
-ALTER TABLE IF EXISTS public.iam_credentials_authorization_ids
-    OWNER to pg_database_owner;
-
-COMMENT ON TABLE public.iam_credentials_authorization_ids
-    IS 'authorization ids that were used to create and/or deactivate the resources';

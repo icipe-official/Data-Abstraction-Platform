@@ -2,7 +2,7 @@ import { LitElement, TemplateResult, html, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import '$src/lib/components/error-section/component'
 import 'iconify-icon'
-import tailwindCss from '$src/assets/index.css?inline'
+import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
 import Log from '$src/lib/log'
@@ -27,12 +27,12 @@ enum CalendarTimeTab {
  * * color - Theme for the component. Based on defined enum `Theme.Color`.
  * * headersbottom - True if to place field headers at the bottom.
  * * disabled - True to disable input.
- * 
+ *
  * If format is not equal to `yyyy-mm-dd hh:mm` then default date time is set to `0001-01-01 00:00:00 +0000 UTC` otherwise it is set to current date time.
  */
 @customElement('calendar-time')
 class Component extends LitElement {
-	static styles = [unsafeCSS(tailwindCss), unsafeCSS(componentCss)]
+	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
 
 	/** Preferably set as unix epox (new Date()) or ISOstring or UTC. Returns as ISOstring */
 	@property() value: string | number | null = null
@@ -43,7 +43,7 @@ class Component extends LitElement {
 	@property({ type: Boolean }) disabled: boolean = false
 
 	@state() private _showCalendarTimeOptions: boolean = false
-	@state() private _currentTab: CalendarTimeTab | undefined = undefined
+	@state() private _currentTab?: CalendarTimeTab
 
 	@state() private _year: DateTime = null
 	@state() private _yearsToDisplay: number[] = []
@@ -56,7 +56,7 @@ class Component extends LitElement {
 		for (let i = this._maxYearToDisplay - 24; i < this._maxYearToDisplay; i++) {
 			this._yearsToDisplay = [...this._yearsToDisplay, i < 1000 ? 0 : i]
 		}
-		Log.Log(Log.Level.DEBUG, this.localName, 'Generate years to display', { maxYearToDisplay: this._maxYearToDisplay, yearsToDisplay: this._yearsToDisplay })
+		// Log.Log(Log.Level.DEBUG, this.localName, 'Generate years to display', { maxYearToDisplay: this._maxYearToDisplay, yearsToDisplay: this._yearsToDisplay })
 	}
 	@state() private _month: DateTime = null
 	@state() private _showMonthInputBox: boolean = true
@@ -85,7 +85,7 @@ class Component extends LitElement {
 					: 0
 			]
 		}
-		Log.Log(Log.Level.DEBUG, this.localName, 'Generate days to display', { maxDays: this._maxDays, daysToDisplay: this._daysToDisplay })
+		// Log.Log(Log.Level.DEBUG, this.localName, this._generateDaysToDisplay.name, 'Generate days to display', { maxDays: this._maxDays, daysToDisplay: this._daysToDisplay })
 	}
 	@state() private _hour: DateTime = null
 	@state() private _showHourInputBox: boolean = true
@@ -93,102 +93,6 @@ class Component extends LitElement {
 	@state() private _showMinuteInputBox: boolean = true
 
 	private _getDateTimeUnitsString = (value: DateTime) => (typeof value !== 'undefined' && value !== null && value < 10 ? `0${value}` : `${value}`)
-
-	private _onDateFormatChange() {
-		let dateToday: Date
-		if (this.datetimeinputformat === 'yyyy-mm-dd hh:mm') {
-			dateToday = new Date()
-		} else {
-			dateToday = new Date('0001-01-01 00:00:00 +0000 UTC')
-		}
-
-		let currentCalendarTab: CalendarTimeTab | undefined = undefined
-
-		if (this.datetimeinputformat.match('yyyy')) {
-			this._maxYearToDisplay =
-				this._year !== null
-					? this._year
-					: (() => {
-							this._year = dateToday.getFullYear()
-							return this._year
-						})()
-			this._generateYearsToDisplay(true)
-			currentCalendarTab = CalendarTimeTab.YEAR
-		}
-		if (this.datetimeinputformat.match('mm')) {
-			if (this._month === null) {
-				this._month = dateToday.getMonth() + 1
-			}
-			currentCalendarTab = CalendarTimeTab.MONTH
-		}
-		if (this.datetimeinputformat.match('dd')) {
-			if (this._day === null) {
-				this._day = dateToday.getDay()
-			}
-			this._generateDaysToDisplay()
-			currentCalendarTab = CalendarTimeTab.DAY
-		}
-		if (this.datetimeinputformat.match('hh:mm')) {
-			if (this._hour === null || this._minute === null) {
-				this._hour = dateToday.getHours() + 1
-				this._minute = dateToday.getMinutes() + 1
-			}
-			currentCalendarTab = CalendarTimeTab.TIME
-		}
-		this._currentTab = currentCalendarTab
-	}
-
-	private _onValueChange() {
-		let newDateValue: Date
-
-		if (this.value !== null) {
-			newDateValue = new Date(this.value)
-			if (isNaN(newDateValue.getFullYear())) {
-				if (this.datetimeinputformat === 'yyyy-mm-dd hh:mm') {
-					newDateValue = new Date()
-				} else {
-					newDateValue = new Date('0001-01-01 00:00:00 +0000 UTC')
-				}
-			}
-		} else {
-			if (this.datetimeinputformat === 'yyyy-mm-dd hh:mm') {
-				newDateValue = new Date()
-			} else {
-				newDateValue = new Date('0001-01-01 00:00:00 +0000 UTC')
-			}
-		}
-
-		switch (this.datetimeinputformat.toLowerCase()) {
-			case 'yyyy-mm-dd hh:mm':
-				this._year = newDateValue.getFullYear()
-				this._month = newDateValue.getMonth() + 1
-				this._day = newDateValue.getDate()
-				this._hour = newDateValue.getHours()
-				this._minute = newDateValue.getMinutes()
-				break
-			case 'yyyy-mm-dd':
-				this._year = newDateValue.getFullYear()
-				this._month = newDateValue.getMonth() + 1
-				this._day = newDateValue.getDate()
-				break
-			case 'yyyy-mm':
-				this._year = newDateValue.getFullYear()
-				this._month = newDateValue.getMonth() + 1
-				break
-			case 'yyyy':
-				this._year = newDateValue.getFullYear()
-				break
-			case 'mm':
-				this._month = newDateValue.getMonth() + 1
-				break
-			case 'hh:mm':
-				this._hour = newDateValue.getHours()
-				this._minute = newDateValue.getMinutes()
-				break
-			default:
-				break
-		}
-	}
 
 	private _reloadDateTimeInputBox(inputBoxesToReload: string[]) {
 		if (inputBoxesToReload.includes('year')) {
@@ -265,111 +169,189 @@ class Component extends LitElement {
 				this._minute = parseInt(nminute)
 			}
 		}
-		let newValue = new Date()
-		switch (this.datetimeinputformat) {
-			case 'yyyy-mm-dd hh:mm':
-				if (this._year !== null) newValue.setFullYear(this._year)
-				if (this._month !== null) newValue.setMonth(this._month - 1)
-				if (this._day !== null) newValue.setDate(this._day)
-				if (this._hour !== null) newValue.setHours(this._hour)
-				if (this._minute !== null) newValue.setMinutes(this._minute)
-				break
-			case 'yyyy-mm-dd':
-				if (this._year !== null) newValue.setFullYear(this._year)
-				if (this._month !== null) newValue.setMonth(this._month - 1)
-				if (this._day !== null) newValue.setDate(this._day)
-				break
-			case 'yyyy-mm':
-				if (this._year !== null) newValue.setFullYear(this._year)
-				if (this._month !== null) newValue.setMonth(this._month - 1)
-				break
-			case 'hh:mm':
-				if (this._hour !== null) newValue.setHours(this._hour)
-				if (this._minute !== null) newValue.setMinutes(this._minute)
-				break
-			case 'yyyy':
-				if (this._year !== null) newValue.setFullYear(this._year)
-				break
-			case 'mm':
-				if (this._month !== null) newValue.setMonth(this._month - 1)
-				break
-			default:
-				Log.Log(Log.Level.ERROR, this.localName, `Invalid input date format ${this.datetimeinputformat}`)
-				break
+		
+		try {
+			let newValue = new Date()
+			switch (this.datetimeinputformat) {
+				case 'yyyy-mm-dd hh:mm':
+					if (this._year !== null) newValue.setFullYear(this._year)
+					if (this._month !== null) newValue.setMonth(this._month - 1)
+					if (this._day !== null) newValue.setDate(this._day)
+					if (this._hour !== null) newValue.setHours(this._hour)
+					if (this._minute !== null) newValue.setMinutes(this._minute)
+					break
+				case 'yyyy-mm-dd':
+					if (this._year !== null) newValue.setFullYear(this._year)
+					if (this._month !== null) newValue.setMonth(this._month - 1)
+					if (this._day !== null) newValue.setDate(this._day)
+					break
+				case 'yyyy-mm':
+					if (this._year !== null) newValue.setFullYear(this._year)
+					if (this._month !== null) newValue.setMonth(this._month - 1)
+					break
+				case 'hh:mm':
+					if (this._hour !== null) newValue.setHours(this._hour)
+					if (this._minute !== null) newValue.setMinutes(this._minute)
+					break
+				case 'yyyy':
+					if (this._year !== null) newValue.setFullYear(this._year)
+					break
+				case 'mm':
+					if (this._month !== null) newValue.setMonth(this._month - 1)
+					break
+				default:
+					throw `Invalid input date format ${this.datetimeinputformat}`
+			}
+			this.value = newValue.toISOString()
+			// Log.Log(Log.Level.DEBUG, this.localName, this._handleDateTimeInput.name, 'update calendar time', newValue)
+			this.dispatchEvent(
+				new CustomEvent('calendar-time:datetimeupdate', {
+					detail: {
+						value: this.value,
+						year: this._year,
+						month: this._month,
+						day: this._day,
+						hour: this._hour,
+						minute: this._minute,
+						epoch: newValue.valueOf()
+					}
+				})
+			)
+		} catch (e) {
+			Log.Log(Log.Level.ERROR, this.localName, this._handleDateTimeInput.name, e)
 		}
-		this.value = newValue.toISOString()
-		Log.Log(Log.Level.DEBUG, this.localName, 'update calendar time', newValue)
-		this.dispatchEvent(
-			new CustomEvent('calendar-time:datetimeupdate', {
-				detail: {
-					value: this.value,
-					year: this._year,
-					month: this._month,
-					day: this._day,
-					hour: this._hour,
-					minute: this._minute,
-					epoch: newValue.valueOf()
-				}
-			})
-		)
-	}
-
-	private _handleresetdatetime() {
-		this.value = null
-		this._year = null
-		this._month = null
-		this._day = null
-		this._hour = null
-		this._minute = null
-		this._daysToDisplay = []
-		this.dispatchEvent(
-			new CustomEvent('calendar-time:datetimeupdate', {
-				detail: {
-					value: this.value,
-					year: this._year,
-					month: this._month,
-					day: this._day,
-					hour: this._hour,
-					minute: this._minute
-				}
-			})
-		)
 	}
 
 	connectedCallback(): void {
 		super.connectedCallback()
-		this._onValueChange()
-		this._onDateFormatChange()
+
+		// Hanlde Value Change
+		let newDateValue: Date
+
+		if (this.value !== null) {
+			newDateValue = new Date(this.value)
+			if (isNaN(newDateValue.getFullYear())) {
+				if (this.datetimeinputformat === 'yyyy-mm-dd hh:mm') {
+					newDateValue = new Date()
+				} else {
+					newDateValue = new Date('0001-01-01 00:00:00 +0000 UTC')
+				}
+			}
+		} else {
+			if (this.datetimeinputformat === 'yyyy-mm-dd hh:mm') {
+				newDateValue = new Date()
+			} else {
+				newDateValue = new Date('0001-01-01 00:00:00 +0000 UTC')
+			}
+		}
+
+		switch (this.datetimeinputformat.toLowerCase()) {
+			case 'yyyy-mm-dd hh:mm':
+				this._year = newDateValue.getFullYear()
+				this._month = newDateValue.getMonth() + 1
+				this._day = newDateValue.getDate()
+				this._hour = newDateValue.getHours()
+				this._minute = newDateValue.getMinutes()
+				break
+			case 'yyyy-mm-dd':
+				this._year = newDateValue.getFullYear()
+				this._month = newDateValue.getMonth() + 1
+				this._day = newDateValue.getDate()
+				break
+			case 'yyyy-mm':
+				this._year = newDateValue.getFullYear()
+				this._month = newDateValue.getMonth() + 1
+				break
+			case 'yyyy':
+				this._year = newDateValue.getFullYear()
+				break
+			case 'mm':
+				this._month = newDateValue.getMonth() + 1
+				break
+			case 'hh:mm':
+				this._hour = newDateValue.getHours()
+				this._minute = newDateValue.getMinutes()
+				break
+			default:
+				break
+		}
+
+		// Handle Date Format Change
+		let dateToday: Date
+		if (this.datetimeinputformat === 'yyyy-mm-dd hh:mm') {
+			dateToday = new Date()
+		} else {
+			dateToday = new Date('0001-01-01 00:00:00 +0000 UTC')
+		}
+
+		let currentCalendarTab: CalendarTimeTab | undefined = undefined
+
+		if (this.datetimeinputformat.match('yyyy')) {
+			this._maxYearToDisplay =
+				this._year !== null
+					? this._year
+					: (() => {
+							this._year = dateToday.getFullYear()
+							return this._year
+						})()
+			this._generateYearsToDisplay(true)
+			currentCalendarTab = CalendarTimeTab.YEAR
+		}
+		if (this.datetimeinputformat.match('mm')) {
+			if (this._month === null) {
+				this._month = dateToday.getMonth() + 1
+			}
+			currentCalendarTab = CalendarTimeTab.MONTH
+		}
+		if (this.datetimeinputformat.match('dd')) {
+			if (this._day === null) {
+				this._day = dateToday.getDay()
+			}
+			this._generateDaysToDisplay()
+			currentCalendarTab = CalendarTimeTab.DAY
+		}
+		if (this.datetimeinputformat.match('hh:mm')) {
+			if (this._hour === null || this._minute === null) {
+				this._hour = dateToday.getHours() + 1
+				this._minute = dateToday.getMinutes() + 1
+			}
+			currentCalendarTab = CalendarTimeTab.TIME
+		}
+		this._currentTab = currentCalendarTab
 	}
 
 	protected render(): unknown {
 		return html`
-			<header class="flex min-h-[60px] h-full w-full">
+			<header class="flex max-h-fit w-full p-1">
 				${(() => {
 					let tabs: TemplateResult<1>[] = []
 					if (this.datetimeinputformat.match('yyyy')) {
 						tabs.push(html`
 							<div class="flex-1 flex ${this.headersbottom ? 'flex-col-reverse' : 'flex-col'}">
 								<span class="text-xs w-full p-1 text-center ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'} font-bold">year</span>
-								${this._showYearInputBox
-									? html`
+								${(() => {
+									if (this._showYearInputBox) {
+										return html`
 											<input
 												class="flex-1 input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full rounded-none border-none"
 												type="number"
 												min="1000"
 												max="9999"
-												.value=${this._year ? this._year.toString() : ''}
+												.value=${typeof this._year === 'number' ? this._year.toString() : ''}
 												placeholder="yyyy"
 												@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => this._handleDateTimeInput(e.currentTarget.value, null, null, null, null)}
 												@focusout=${() => this._reloadDateTimeInputBox(['year', 'day'])}
 												.disabled=${this.disabled}
 											/>
 										`
-									: html`
+									} else {
+										return html`
 											<div class="flex-1 w-full h-full flex justify-center">
-												<span class="loading loading-dots loading-lg ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'} self-center"></span>
+												<span class="loading loading-spinner loading-md self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary-content' : this.color === Theme.Color.SECONDARY ? 'text-secondary-content' : 'text-accent-content'}"></span>
 											</div>
-										`}
+										`
+									}
+								})()}
 							</div>
 						`)
 					}
@@ -384,25 +366,29 @@ class Component extends LitElement {
 						tabs.push(html`
 							<div class="flex-[0.5] flex ${this.headersbottom ? 'flex-col-reverse' : 'flex-col'}">
 								<span class="text-xs w-full p-1 text-center ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'} font-bold">month</span>
-								${this._showMonthInputBox
-									? html`
+								${(() => {
+									if (this._showMonthInputBox) {
+										return html`
 											<input
 												class="flex-1 input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full rounded-none border-none"
 												type="number"
 												min="1"
 												max="12"
-												value=${this._month ? this._getDateTimeUnitsString(this._month) : ''}
+												value=${typeof this._month === 'number' ? this._getDateTimeUnitsString(this._month) : ''}
 												placeholder="mm"
 												@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => this._handleDateTimeInput(null, e.currentTarget.value, null, null, null)}
 												@focusout=${() => this._reloadDateTimeInputBox(['month', 'day'])}
 												.disabled=${this.disabled}
 											/>
 										`
-									: html`
+									} else {
+										return html`
 											<div class="flex-1 w-full h-full flex justify-center">
-												<span class="loading loading-spinner loading-md self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}"></span>
+												<span class="loading loading-spinner loading-md self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary-content' : this.color === Theme.Color.SECONDARY ? 'text-secondary-content' : 'text-accent-content'}"></span>
 											</div>
-										`}
+										`
+									}
+								})()}
 							</div>
 						`)
 					}
@@ -417,25 +403,29 @@ class Component extends LitElement {
 						tabs.push(html`
 							<div class="flex-[0.5] flex ${this.headersbottom ? 'flex-col-reverse' : 'flex-col'}">
 								<span class="text-xs w-full p-1 text-center ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'} font-bold">day</span>
-								${this._showDayInputBox
-									? html`
+								${(() => {
+									if (this._showDayInputBox) {
+										return html`
 											<input
 												class="flex-1 input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full rounded-none border-none"
 												type="number"
 												min="1"
 												.max=${this._maxDays.toString()}
-												.value=${this._day ? this._getDateTimeUnitsString(this._day) : ''}
+												.value=${typeof this._day === 'number' ? this._getDateTimeUnitsString(this._day) : ''}
 												placeholder="dd"
 												@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => this._handleDateTimeInput(null, null, e.currentTarget.value, null, null)}
 												@focusout=${() => this._reloadDateTimeInputBox(['day'])}
 												.disabled=${this.disabled}
 											/>
 										`
-									: html`
+									} else {
+										return html`
 											<div class="flex-1 w-full h-full flex justify-center">
-												<span class="loading loading-spinner loading-md self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}"></span>
+												<span class="loading loading-spinner loading-md self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary-content' : this.color === Theme.Color.SECONDARY ? 'text-secondary-content' : 'text-accent-content'}"></span>
 											</div>
-										`}
+										`
+									}
+								})()}
 							</div>
 						`)
 					}
@@ -450,50 +440,58 @@ class Component extends LitElement {
 						tabs.push(html`
 							<div class="flex-[0.5] flex ${this.headersbottom ? 'flex-col-reverse' : 'flex-col'}">
 								<span class="text-xs w-full p-1 text-center ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'} font-bold">hour</span>
-								${this._showHourInputBox
-									? html`
+								${(() => {
+									if (this._showHourInputBox) {
+										return html`
 											<input
 												class="flex-1 input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full rounded-none border-none"
 												type="number"
 												min="0"
 												max="23"
-												value=${this._hour ? this._getDateTimeUnitsString(this._hour) : ''}
+												value=${typeof this._hour === 'number' ? this._getDateTimeUnitsString(this._hour) : ''}
 												placeholder="hh"
 												@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => this._handleDateTimeInput(null, null, null, e.currentTarget.value, null)}
 												@focusout=${() => this._reloadDateTimeInputBox(['hour'])}
 												.disabled=${this.disabled}
 											/>
 										`
-									: html`
+									} else {
+										return html`
 											<div class="flex-1 w-full h-full flex justify-center">
-												<span class="loading loading-spinner loading-md self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}"></span>
+												<span class="loading loading-spinner loading-md self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary-content' : this.color === Theme.Color.SECONDARY ? 'text-secondary-content' : 'text-accent-content'}"></span>
 											</div>
-										`}
+										`
+									}
+								})()}
 							</div>
 							<div class="${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'} font-bold min-h-full flex">
 								<div class="pr-1 pl-1 ${this.headersbottom ? 'self-end' : 'self-start'}">:</div>
 							</div>
 							<div class="flex-[0.5] flex ${this.headersbottom ? 'flex-col-reverse' : 'flex-col'}">
 								<span class="text-xs w-full p-1 text-center ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'} font-bold">minute</span>
-								${this._showMinuteInputBox
-									? html`
+								${(() => {
+									if (this._showMinuteInputBox) {
+										return html`
 											<input
 												class="flex-1 input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full rounded-none border-none"
 												type="number"
 												min="0"
 												max="59"
-												value=${this._minute ? this._getDateTimeUnitsString(this._minute) : ''}
+												value=${typeof this._minute === 'number' ? this._getDateTimeUnitsString(this._minute) : ''}
 												placeholder="mm"
 												@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => this._handleDateTimeInput(null, null, null, null, e.currentTarget.value)}
 												@focusout=${() => this._reloadDateTimeInputBox(['minute'])}
 												.disabled=${this.disabled}
 											/>
 										`
-									: html`
+									} else {
+										return html`
 											<div class="flex-1 w-full h-full flex justify-center">
-												<span class="loading loading-spinner loading-md self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}"></span>
+												<span class="loading loading-spinner loading-md self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary-content' : this.color === Theme.Color.SECONDARY ? 'text-secondary-content' : 'text-accent-content'}"></span>
 											</div>
-										`}
+										`
+									}
+								})()}
 							</div>
 						`)
 					}
@@ -501,20 +499,47 @@ class Component extends LitElement {
 						<div class="flex-[0.5] flex ${this.headersbottom ? 'flex-col-reverse' : 'flex-col'} border-l-[1px] ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}">
 							<span class="text-xs w-full p-1 text-center ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'} font-bold">...</span>
 							<div class="h-full flex">
-								${!this.disabled
-									? html`
-											<button class="flex-1 btn btn-ghost w-full h-full rounded-none" @click=${this._handleresetdatetime}>
-												<iconify-icon icon="mdi:delete" style="color:${this.color};" width=${Misc.IconifySize('23')} height=${Misc.IconifySize('23')}></iconify-icon>
+								${(() => {
+									if (!this.disabled) {
+										return html`
+											<button
+												class="flex-1 btn btn-ghost w-full h-full rounded-none"
+												@click=${() => {
+													this.value = null
+													this._year = null
+													this._month = null
+													this._day = null
+													this._hour = null
+													this._minute = null
+													this._daysToDisplay = []
+													this.dispatchEvent(
+														new CustomEvent('calendar-time:datetimeupdate', {
+															detail: {
+																value: this.value,
+																year: this._year,
+																month: this._month,
+																day: this._day,
+																hour: this._hour,
+																minute: this._minute
+															}
+														})
+													)
+												}}
+											>
+												<iconify-icon icon="mdi:delete" style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT};" width=${Misc.IconifySize('23')} height=${Misc.IconifySize('23')}></iconify-icon>
 											</button>
 										`
-									: nothing}
+									} else {
+										return nothing
+									}
+								})()}
 								<button
 									class="flex-1 btn btn-ghost w-full h-full rounded-none"
 									@click=${() => {
 										this._showCalendarTimeOptions = !this._showCalendarTimeOptions
 									}}
 								>
-									<iconify-icon icon="mdi:calendar-plus" style="color:${this.color};" width=${Misc.IconifySize('23')} height=${Misc.IconifySize('23')}></iconify-icon>
+									<iconify-icon icon="mdi:calendar-plus" style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT};" width=${Misc.IconifySize('23')} height=${Misc.IconifySize('23')}></iconify-icon>
 								</button>
 							</div>
 						</div>
@@ -523,8 +548,9 @@ class Component extends LitElement {
 				})()}
 			</header>
 			<main class="relative h-0">
-				${this._showCalendarTimeOptions
-					? html`
+				${(() => {
+					if (this._showCalendarTimeOptions) {
+						return html`
 							<div class="mt-1 absolute rounded-lg bg-white shadow-md shadow-gray-800 p-1 w-full top-0 overflow-auto flex flex-col space-y-1">
 								<header role="tablist" class="tabs tabs-bordered">
 									${(() => {
@@ -628,31 +654,35 @@ class Component extends LitElement {
 															</button>
 														</div>
 														<div class="grid grid-cols-6 rounded-lg">
-															${this._yearsToDisplay.map((ytd) =>
-																ytd > 0
-																	? this.disabled
-																		? html`
-																				<div
-																					class="p-1 text-center ${this._year === ytd
-																						? `${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}`
-																						: `${this.color === Theme.Color.PRIMARY ? 'bg-secondary text-secondary-content' : this.color === Theme.Color.SECONDARY ? 'bg-accent text-accent-content' : 'bg-primary text-primary-content'}`}"
-																				>
-																					${ytd}
-																				</div>
-																			`
-																		: html`
-																				<button
-																					class="btn rounded-none h-fit w-full ${this._year === ytd
-																						? `${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}`
-																						: `${this.color === Theme.Color.PRIMARY ? 'btn-secondary' : this.color === Theme.Color.SECONDARY ? 'btn-accent' : 'btn-primary'}`}"
-																					@click=${() => this._handleDateTimeInput(`${ytd}`, null, null, null, null)}
-																					.disabled=${this.disabled}
-																				>
-																					${ytd}
-																				</button>
-																			`
-																	: html`<div class="bg-accent min-h-full min-w-full"></div>`
-															)}
+															${this._yearsToDisplay.map((ytd) => {
+																if (ytd > 0) {
+																	if (this.disabled) {
+																		return html`
+																			<div
+																				class="p-1 text-center ${this._year === ytd
+																					? `${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}`
+																					: `${this.color === Theme.Color.PRIMARY ? 'bg-secondary text-secondary-content' : this.color === Theme.Color.SECONDARY ? 'bg-accent text-accent-content' : 'bg-primary text-primary-content'}`}"
+																			>
+																				${ytd}
+																			</div>
+																		`
+																	} else {
+																		return html`
+																			<button
+																				class="btn rounded-none h-fit w-full ${this._year === ytd
+																					? `${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}`
+																					: `${this.color === Theme.Color.PRIMARY ? 'btn-secondary' : this.color === Theme.Color.SECONDARY ? 'btn-accent' : 'btn-primary'}`}"
+																				@click=${() => this._handleDateTimeInput(`${ytd}`, null, null, null, null)}
+																				.disabled=${this.disabled}
+																			>
+																				${ytd}
+																			</button>
+																		`
+																	}
+																} else {
+																	return html`<div class="bg-accent min-h-full min-w-full"></div>`
+																}
+															})}
 															<div></div>
 														</div>
 													</div>
@@ -857,31 +887,35 @@ class Component extends LitElement {
 														<div class="btn rounded-none btn-disabled h-fit ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Th</div>
 														<div class="btn rounded-none btn-disabled h-fit ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Fr</div>
 														<div class="btn rounded-none btn-disabled h-fit ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Sa</div>
-														${this._daysToDisplay.map((dtd) =>
-															dtd > 0
-																? this.disabled
-																	? html`
-																			<div
-																				class="p-1 text-center ${dtd === this._day
-																					? `${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}`
-																					: `${this.color === Theme.Color.PRIMARY ? 'bg-secondary text-secondary-content' : this.color === Theme.Color.SECONDARY ? 'bg-accent text-accent-content' : 'bg-primary text-primary-content'}`}"
-																			>
-																				${dtd}
-																			</div>
-																		`
-																	: html`
-																			<button
-																				class="btn rounded-none h-fit w-full ${dtd === this._day
-																					? `${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}`
-																					: `${this.color === Theme.Color.PRIMARY ? 'btn-secondary' : this.color === Theme.Color.SECONDARY ? 'btn-accent' : 'btn-primary'}`}"
-																				@click=${() => this._handleDateTimeInput(null, null, `${dtd}`, null, null)}
-																				.disabled=${this.disabled}
-																			>
-																				${dtd}
-																			</button>
-																		`
-																: html`<div class="bg-accent min-h-full min-w-full"></div>`
-														)}
+														${this._daysToDisplay.map((dtd) => {
+															if (dtd > 0) {
+																if (this.disabled) {
+																	return html`
+																		<div
+																			class="p-1 text-center ${dtd === this._day
+																				? `${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}`
+																				: `${this.color === Theme.Color.PRIMARY ? 'bg-secondary text-secondary-content' : this.color === Theme.Color.SECONDARY ? 'bg-accent text-accent-content' : 'bg-primary text-primary-content'}`}"
+																		>
+																			${dtd}
+																		</div>
+																	`
+																} else {
+																	return html`
+																		<button
+																			class="btn rounded-none h-fit w-full ${dtd === this._day
+																				? `${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}`
+																				: `${this.color === Theme.Color.PRIMARY ? 'btn-secondary' : this.color === Theme.Color.SECONDARY ? 'btn-accent' : 'btn-primary'}`}"
+																			@click=${() => this._handleDateTimeInput(null, null, `${dtd}`, null, null)}
+																			.disabled=${this.disabled}
+																		>
+																			${dtd}
+																		</button>
+																	`
+																}
+															} else {
+																return html`<div class="bg-accent min-h-full min-w-full"></div>`
+															}
+														})}
 													</div>
 												`
 											case CalendarTimeTab.TIME:
@@ -950,7 +984,10 @@ class Component extends LitElement {
 								</main>
 							</div>
 						`
-					: nothing}
+					} else {
+						return nothing
+					}
+				})()}
 			</main>
 		`
 	}

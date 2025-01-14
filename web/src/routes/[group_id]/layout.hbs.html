@@ -1,0 +1,9 @@
+<div class="w-full h-full overflow-hidden flex flex-col">
+	<head>
+		<script type="module" src="./layout.ts"></script>
+	</head>
+	<div class="flex-1 flex justify-center overflow-hidden space-x-1">
+		<group-id-navigation-bar></group-id-navigation-bar>
+		<main id="%VITE_LAYOUT_ROUTES_GROUPID%" class="flex-[9.5] flex justify-center overflow-hidden w-full h-full">{{#if Context.Error.Message }} {{> error Context.Error }} {{else}} {{> routesGroupid . }} {{/if}}</main>
+	</div>
+</div>

@@ -2,18 +2,12 @@
 CREATE TABLE public.directory_groups
 (
     id uuid NOT NULL DEFAULT uuid_generate_v7(),
-    metadata_model_default_id text NOT NULL DEFAULT 'directory_group'::text,
     data jsonb,
     created_on timestamp without time zone NOT NULL DEFAULT NOW(),
     last_updated_on timestamp without time zone NOT NULL DEFAULT NOW(),
     deactivated_on timestamp without time zone,
     full_text_search tsvector,
-    PRIMARY KEY (id),
-    CONSTRAINT metadata_model_default_id FOREIGN KEY (metadata_model_default_id)
-        REFERENCES public.metadata_models_defaults (id) MATCH SIMPLE
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-        NOT VALID
+    PRIMARY KEY (id)
 );
 
 COMMENT ON TABLE public.directory_groups

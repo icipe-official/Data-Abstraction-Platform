@@ -36,16 +36,16 @@ namespace Log {
 		}
 		switch (logLevel) {
 			case 0:
-				console.debug('DEBUG', section, message)
+				console.debug('DEBUG', section, ...message)
 				break
 			case 1:
-				console.info('INFO', section, message)
+				console.info('INFO', section, ...message)
 				break
 			case 2:
-				console.warn('WARNING', section, message)
+				console.warn('WARNING', section, ...message)
 				break
 			case 3:
-				console.error('ERROR', section, message)
+				console.error('ERROR', section, ...message)
 				break
 		}
 	}

@@ -1,0 +1,4 @@
+:host {
+	@apply w-full h-fit grid;
+	grid-template-columns: auto 9fr;
+}

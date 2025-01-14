@@ -9,8 +9,9 @@
 		<script type="module" src="./layout.ts"></script>
 	</head>
 	<body class="background-pattern h-[100vh] w-[100vw] overflow-hidden relative flex flex-col">
+		<noscript class="w-full text-center"><strong>Error</strong>: Web Application requires <strong>JavaScript</strong> to be enabled.</noscript>
 		<div id="%VITE_LAYOUT_ROUTES%" class="h-full w-full overflow-hidden flex justify-center relative">{{#if Error.Message }} {{> error Error }} {{else}} {{> routes . }} {{/if}}</div>
 		<toast-notification></toast-notification>
-		<loading-screen></loading-screen>
+		<loading-screen data="{{ Data }}"></loading-screen>
 	</body>
 </html>
