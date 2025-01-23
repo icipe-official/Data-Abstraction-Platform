@@ -7,7 +7,7 @@ import MetadataModel from '$src/lib/metadata_model'
 import '$src/lib/components/calendar-time/component'
 import '$src/lib/components/multi-select/component'
 
-@customElement('metadata-model-datum-input-form-field-select')
+@customElement('metadata-model-datum-input-column-field-select')
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
 
@@ -24,7 +24,7 @@ class Component extends LitElement {
 			if (Array.isArray(this.field[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS])) {
 				return html`
 					<multi-select
-						class="flex-1 w-full min-w-[200px] border-2 rounded-md ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}"
+						class="flex-1 w-full min-w-[300px]"
 						.placeholder=${this.field[MetadataModel.FgProperties.FIELD_PLACEHOLDER] || `Select ${fieldGroupName}...`}
 						.selectoptions=${(this.field[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS] as MetadataModel.ISelectOption[]).map((fss) => {
 							return {
@@ -80,6 +80,6 @@ class Component extends LitElement {
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'metadata-model-datum-input-form-field-select': Component
+		'metadata-model-datum-input-column-field-select': Component
 	}
 }

@@ -46,7 +46,7 @@ class Page extends LitElement {
 
 	@state() private _currentViewTab: ViewTab = ViewTab.DATUM_INPUT
 
-	@state() private _datuminputsamplemetadatamodel: any = JSON.parse(JSON.stringify(this._data))
+	@state() private _datuminputsamplemetadatamodel: any = structuredClone(this._data)
 	@state() private _datuminputsampledata: any = {}
 
 	private _viewHtmlTemplate() {
@@ -66,10 +66,10 @@ class Page extends LitElement {
 									.metadatamodel=${this._datuminputsamplemetadatamodel}
 									.data=${this._datuminputsampledata}
 									@metadata-model-datum-input:updatedata=${(e: CustomEvent) => {
-										this._datuminputsampledata = JSON.parse(JSON.stringify(e.detail.value))
+										this._datuminputsampledata = structuredClone(e.detail.value)
 									}}
 									@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
-										this._datuminputsamplemetadatamodel = JSON.parse(JSON.stringify(e.detail.value))
+										this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
 									}}
 								></metadata-model-datum-input>
 							`
@@ -168,8 +168,8 @@ class Page extends LitElement {
 													class="flex-[9] flex flex-col rounded-md bg-gray-100 shadow-inner shadow-gray-800 p-1"
 													.metadatamodel=${this._data}
 													@metadata-model-build:updatemetadatamodel=${(e: CustomEvent) => {
-														this._data = JSON.parse(JSON.stringify(e.detail.value))
-														this._datuminputsamplemetadatamodel = JSON.parse(JSON.stringify(e.detail.value))
+														this._data = structuredClone(e.detail.value)
+														this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
 													}}
 												></metadata-model-build>
 											`

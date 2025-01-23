@@ -1,4 +1,4 @@
-import { html, LitElement, unsafeCSS } from 'lit'
+import { html, LitElement, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
@@ -96,6 +96,10 @@ class Component extends LitElement {
 	}
 
 	protected render(): unknown {
+		if (!MetadataModel.isGroupFieldsValid(this.metadatamodel)) {
+			return html`<div class="h-fit w-full text-error">metadatamodel is not valid</div>`
+		}
+
 		if (typeof this._scrollelement === 'undefined') {
 			;(async () => {
 				await new Promise((resolve: (e: Element) => void) => {
@@ -122,19 +126,25 @@ class Component extends LitElement {
 		}
 
 		return html`
-			<metadata-model-datum-input-header
-				class="rounded-t-md ${this.startcolor === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.startcolor === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
-				.group=${this.metadatamodel}
-				.viewjsonoutput=${this._viewjsonoutput}
-				.updateviewjsonoutput=${(newviewjsonoutput: boolean) => (this._viewjsonoutput = newviewjsonoutput)}
-				.updatemetadatamodel=${this._updatemetadatamodel}
-				.deletedata=${this._deletedata}
-			></metadata-model-datum-input-header>
+			${(() => {
+				if (this.metadatamodel[MetadataModel.FgProperties.DATUM_INPUT_VIEW] !== MetadataModel.DView.TABLE) {
+					return html`
+						<metadata-model-datum-input-header
+							class="rounded-t-md ${this.startcolor === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.startcolor === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
+							.group=${this.metadatamodel}
+							.viewjsonoutput=${this._viewjsonoutput}
+							.updateviewjsonoutput=${(newviewjsonoutput: boolean) => (this._viewjsonoutput = newviewjsonoutput)}
+							.updatemetadatamodel=${this._updatemetadatamodel}
+							.deletedata=${this._deletedata}
+						></metadata-model-datum-input-header>
+					`
+				}
+
+				return nothing
+			})()}
 			<main
 				id="metadata-model-datum-input-view-scroll"
-				class="overflow-auto${(!this._viewjsonoutput && !this.metadatamodel[MetadataModel.FgProperties.DATUM_INPUT_VIEW]) || this.metadatamodel[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.FORM
-					? ' shadow-inner shadow-gray-800 rounded-b-md pl-2 pr-2 pb-2'
-					: ''}"
+				class="overflow-auto h-fit ${(!this._viewjsonoutput && !this.metadatamodel[MetadataModel.FgProperties.DATUM_INPUT_VIEW]) || this.metadatamodel[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.FORM ? ' shadow-inner shadow-gray-800 rounded-b-md pl-2 pr-2 pb-2' : ''}"
 			>
 				${(() => {
 					if (typeof this._scrollelement === 'undefined') {
@@ -151,7 +161,16 @@ class Component extends LitElement {
 
 					if (this.metadatamodel[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE) {
 						return html`
-							<metadata-model-datum-input-view-table .scrollelement=${this._scrollelement} .group=${this.metadatamodel} .color=${this.startcolor} .updatemetadatamodel=${this._updatemetadatamodel} .getdata=${this._getdata} .updatedata=${this._updatedata}></metadata-model-datum-input-view-table>
+							<metadata-model-datum-input-view-table
+								class="h-full w-full"
+								.scrollelement=${this._scrollelement}
+								.group=${this.metadatamodel}
+								.color=${this.startcolor}
+								.updatemetadatamodel=${this._updatemetadatamodel}
+								.getdata=${this._getdata}
+								.deletedata=${this._deletedata}
+								.updatedata=${this._updatedata}
+							></metadata-model-datum-input-view-table>
 						`
 					}
 

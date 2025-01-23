@@ -879,7 +879,7 @@ class Component extends LitElement {
 																>
 																	<iconify-icon
 																		icon="mdi:plus-circle"
-																		style="color: ${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+																		style="color: ${Theme.GetColorContent(this.color)};"
 																		width=${Misc.IconifySize()}
 																		height=${Misc.IconifySize()}
 																	></iconify-icon>

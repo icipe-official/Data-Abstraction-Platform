@@ -111,7 +111,7 @@ export class Convert2DArrayToObjects {
 		// Set 2D Fields Indexes that are primary keys
 		mmGroupConversion.fields_2d_primary_key_indexes = this._getPrimaryKey2DFieldsIndexes(mmGroup)
 		if (mmGroupConversion.fields_2d_primary_key_indexes.length === 0) {
-			mmGroupConversion.fields_2d_primary_key_indexes = mmGroupConversion.fields_2d_indexes
+			mmGroupConversion.fields_2d_primary_key_indexes = structuredClone(mmGroupConversion.fields_2d_indexes)
 		}
 
 		const mmGroupFields = mmGroup[MetadataModel.FgProperties.GROUP_FIELDS][0]
@@ -330,7 +330,15 @@ export class Convert2DArrayToObjects {
 			}
 		}
 
-		return duplicateRowValues[0]
+		let duplicatedRowIsEmpty = true
+		for (const value of duplicateRowValues[0]) {
+			if (value !== null && typeof value !== 'undefined') {
+				duplicatedRowIsEmpty = false
+				break
+			}
+		}
+
+		return !duplicatedRowIsEmpty ? duplicateRowValues[0] : []
 	}
 
 	/**
@@ -389,7 +397,7 @@ export class Convert2DArrayToObjects {
 		for (const fcpkIndex of fieldPrimaryKeysIndexes) {
 			const current2DArrayRow = this._current2DArray[dataRowIndex]
 			if (Array.isArray(current2DArrayRow) && fcpkIndex < current2DArrayRow.length) {
-				primaryKeysValues.push(structuredClone(current2DArrayRow))
+				primaryKeysValues.push(structuredClone(current2DArrayRow[fcpkIndex]))
 				continue
 			}
 			throw [this._getPrimaryKeysValuesFromDataRow.name, 'current2DArrayRow is not valid', structuredClone(current2DArrayRow)]

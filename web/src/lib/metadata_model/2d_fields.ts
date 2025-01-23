@@ -10,7 +10,7 @@ import MetadataModel from '.'
  * * {@linkcode Extract2DFields.Fields} to get currrent state of fields.
  */
 export class Extract2DFields {
-	private _fields: any[] = []
+	private _fields: (MetadataModel.IMetadataModel | any)[] = []
 	private _skipIfFGDisabled: boolean = true
 	private _skipIfDataExtraction: boolean = true
 	private _removePrimaryKey: boolean = true
@@ -235,10 +235,15 @@ export class Extract2DFields {
  * Reorder columns of each row in data to match order in targetFields.
  */
 export class Reorder2DFields {
-	private _newReadOrderOfFields: number[]
+	private _sourceToTargetReadOrderOfFields: number[]
+	private _targetToSourceReadOrderOfFields: number[]
 
-	get NewReadOrderOfFields() {
-		return this._newReadOrderOfFields
+	get SourceToTargetReadOrderOfFields() {
+		return this._sourceToTargetReadOrderOfFields
+	}
+
+	get TargetToSourceReadOrderOfFields() {
+		return this._targetToSourceReadOrderOfFields
 	}
 
 	/**
@@ -257,51 +262,53 @@ export class Reorder2DFields {
 			throw [Reorder2DFields.name, `length of sourceFields(${sourceFields.length}) and targetFields(${targetFields.length}) are not equal`, structuredClone(sourceFields), structuredClone(targetFields)]
 		}
 
-		this._newReadOrderOfFields = []
+		this._sourceToTargetReadOrderOfFields = []
+		this._targetToSourceReadOrderOfFields = new Array(sourceFields.length)
 
 		for (let tfIndex = 0; tfIndex < targetFields.length; tfIndex++) {
-			let targetFieldFoundInDataField = false
+			let sourceIndex = -1
 
-			for (let dfIndex = 0; dfIndex < sourceFields.length; dfIndex++) {
-				if (typeof sourceFields[dfIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string' && sourceFields[dfIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY] === targetFields[tfIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY]) {
+			for (let sfIndex = 0; sfIndex < sourceFields.length; sfIndex++) {
+				if (typeof sourceFields[sfIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string' && sourceFields[sfIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY] === targetFields[tfIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY]) {
 					if (
-						typeof sourceFields[dfIndex][MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] === 'number' &&
-						sourceFields[dfIndex][MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] !== targetFields[tfIndex][MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX]
+						typeof sourceFields[sfIndex][MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] === 'number' &&
+						sourceFields[sfIndex][MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] !== targetFields[tfIndex][MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX]
 					) {
 						continue
 					}
 
-					targetFieldFoundInDataField = true
-
-					this._newReadOrderOfFields.push(dfIndex)
+					this._sourceToTargetReadOrderOfFields.push(sfIndex)
+					sourceIndex = sfIndex
 
 					break
 				}
 			}
 
-			if (!targetFieldFoundInDataField) {
+			if (sourceIndex < 0) {
 				throw [Reorder2DFields.name, 'targetField not found in sourceField', tfIndex, structuredClone(targetFields[tfIndex])]
 			}
+
+			this._targetToSourceReadOrderOfFields[sourceIndex] = tfIndex
 		}
 	}
 
 	/**
 	 * Reorder columns in each row in {@linkcode data}. Will modify order of columns in rows of original {@linkcode data} so deep copy may needed if original order is required.
 	 *
-	 * @throws {MetadataModel.Error} if length of each row of {@linkcode data} does not match {@linkcode Reorder2DFields._newReadOrderOfFields}
+	 * @throws {MetadataModel.Error} if length of each row of {@linkcode data} does not match {@linkcode Reorder2DFields._sourceToTargetReadOrderOfFields}
 	 *
 	 * @param data Rows of data to reorder.
 	 */
 	Reorder(data: any[][]) {
 		for (let dIndex = 0; dIndex < data.length; dIndex++) {
-			if (data[dIndex].length !== this._newReadOrderOfFields.length) {
+			if (data[dIndex].length !== this._sourceToTargetReadOrderOfFields.length) {
 				throw [this.Reorder.name, `length of datum at index ${dIndex} and targetFields are not equal`, structuredClone(data[dIndex])]
 			}
 
-			let targetDatum = new Array(this._newReadOrderOfFields.length)
+			let targetDatum = new Array(this._sourceToTargetReadOrderOfFields.length)
 
-			for (let fIndex = 0; fIndex < this._newReadOrderOfFields.length; fIndex++) {
-				targetDatum[fIndex] = structuredClone(data[dIndex][this._newReadOrderOfFields[fIndex]])
+			for (let fIndex = 0; fIndex < this._sourceToTargetReadOrderOfFields.length; fIndex++) {
+				targetDatum[fIndex] = structuredClone(data[dIndex][this._sourceToTargetReadOrderOfFields[fIndex]])
 			}
 
 			data[dIndex] = targetDatum

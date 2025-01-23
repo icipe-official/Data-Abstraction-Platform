@@ -19,22 +19,51 @@ class Component extends LitElement {
 	@property({ attribute: false }) updatemetadatamodel!: (fieldGroup: any) => void
 	@property({ attribute: false }) deletedata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
 
-	@state() private _showMoreDescription: boolean = false
-
 	@state() private _showMenu: boolean = false
+
+	@state() private _showDescription: boolean = false
 
 	protected render(): unknown {
 		return html`
-			<section class="flex flex-col">
-				<button class="btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showMenu = !this._showMenu)}>
-					<iconify-icon
-						icon="mdi:dots-vertical"
-						style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
-						width=${Misc.IconifySize()}
-						height=${Misc.IconifySize()}
-					></iconify-icon>
-				</button>
-				<section class="relative w-full">
+			<section class="w-full">
+				<div class="flex sticky left-0 w-fit">
+					<button class="btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showMenu = !this._showMenu)}>
+						<iconify-icon
+							icon="mdi:dots-vertical"
+							style="color:${Theme.GetColorContent(this.color)};"
+							width=${Misc.IconifySize()}
+							height=${Misc.IconifySize()}
+						></iconify-icon>
+					</button>
+					<span class="self-center sticky">
+						${(() => {
+							if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
+								return this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
+							}
+
+							return 'Data Entry'
+						})()}
+					</span>
+					${(() => {
+						if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
+							return html`
+								<button class="ml-2 btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showDescription = !this._showDescription)}>
+									<iconify-icon
+										icon="mdi:question-mark-circle"
+										style="color:${Theme.GetColorContent(this.color)};"
+										width=${Misc.IconifySize()}
+										height=${Misc.IconifySize()}
+									></iconify-icon>
+								</button>
+							`
+						}
+
+						return nothing
+					})()}
+				</div>
+			</section>
+			<div class="sticky top-[48px] z-[1000]">
+				<section class="relative w-fit">
 					${(() => {
 						if (this._showMenu) {
 							return html`
@@ -88,54 +117,17 @@ class Component extends LitElement {
 						return nothing
 					})()}
 				</section>
-			</section>
-			<div class="flex-[9] flex break-words text-md font-bold h-full">
-				<span class="self-center">
-					${(() => {
-						if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
-							return this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
-						}
-
-						return 'Data Entry'
-					})()}
-				</span>
 			</div>
-			<div class="w-full h-full"></div>
-			${(() => {
-				if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
-					return html`
-						<div class="w-full overflow-auto max-h-[100px] flex flex-wrap text-sm">
-							<span>
-								${(() => {
-									if (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION].length > 100) {
-										return (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).slice(0, this._showMoreDescription ? this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION].length - 1 : 100)
-									}
+			<section class="flex">
+				<div class="w-[30px] h-full"></div>
+				${(() => {
+					if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0 && this._showDescription) {
+						return html` <div class="w-full overflow-auto max-h-[100px] flex flex-wrap text-sm">${this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION]}</div> `
+					}
 
-									return this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION]
-								})()}
-							</span>
-							${(() => {
-								if (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION].length > 100) {
-									return html`
-										<button
-											class="link link-hover font-bold italic w-fit"
-											@click=${() => {
-												this._showMoreDescription = !this._showMoreDescription
-											}}
-										>
-											${this._showMoreDescription ? ' less' : ' more'}...
-										</button>
-									`
-								}
-
-								return nothing
-							})()}
-						</div>
-					`
-				}
-
-				return html`<div class="w-full h-full"></div>`
-			})()}
+					return html`<div class="w-full h-full"></div>`
+				})()}
+			</section>
 		`
 	}
 }

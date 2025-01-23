@@ -5,7 +5,7 @@ import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
 import MetadataModel from '$src/lib/metadata_model'
 
-@customElement('metadata-model-datum-input-form-field-text')
+@customElement('metadata-model-datum-input-column-field-text')
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
 
@@ -41,7 +41,7 @@ class Component extends LitElement {
 				case MetadataModel.FieldUi.TEXTAREA:
 					return html`
 						<textarea
-							class="flex-1 w-full min-w-[200px] textarea ${this.color === Theme.Color.PRIMARY ? 'textarea-primary' : this.color === Theme.Color.SECONDARY ? 'textarea-secondary' : 'textarea-accent'}"
+							class="flex-1 w-full min-w-[250px] textarea ${this.color === Theme.Color.PRIMARY ? 'textarea-primary' : this.color === Theme.Color.SECONDARY ? 'textarea-secondary' : 'textarea-accent'}"
 							.placeholder=${this.field[MetadataModel.FgProperties.FIELD_PLACEHOLDER] || `Enter ${fieldGroupName}...`}
 							.value=${this.getdata(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, this.arrayindexplaceholders) || ''}
 							@input=${this._handleInputValue}
@@ -58,6 +58,6 @@ class Component extends LitElement {
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'metadata-model-datum-input-form-field-text': Component
+		'metadata-model-datum-input-column-field-text': Component
 	}
 }

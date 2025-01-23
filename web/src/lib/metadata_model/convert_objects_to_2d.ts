@@ -137,6 +137,10 @@ export class ConvertObjectsTo2DArray {
 	 * @param data Array of objects to convert.
 	 */
 	Convert(data: any[]) {
+		if (!Array.isArray(data)) {
+			throw [this.Convert.name, 'datum is not an array']
+		}
+
 		for (let datum of data) {
 			if (typeof datum !== 'object' || datum == null || Array.isArray(datum)) {
 				throw [this.Convert.name, 'datum is not an object']

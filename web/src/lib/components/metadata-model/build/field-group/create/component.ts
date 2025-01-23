@@ -70,7 +70,7 @@ class Component extends LitElement {
 					<span class="md:hidden">Create Field/Group</span>
 					<iconify-icon
 						icon="mdi:plus"
-						style="color: ${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+						style="color: ${Theme.GetColorContent(this.color)};"
 						width=${Misc.IconifySize('38')}
 						height=${Misc.IconifySize('38')}
 					></iconify-icon>

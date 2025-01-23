@@ -67,7 +67,7 @@ export function ForEachFieldGroup(metadatamodel: any, callback: (property: any) 
 		return
 	}
 
-	forEachFieldGroup(JSON.parse(JSON.stringify(metadatamodel)), callback)
+	forEachFieldGroup(metadatamodel, callback)
 }
 /**
  *

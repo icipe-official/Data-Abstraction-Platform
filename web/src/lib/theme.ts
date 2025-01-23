@@ -39,6 +39,21 @@ namespace Theme {
 		}
 	}
 
+	export function GetColorContent(currentColor: Color) {
+		switch (currentColor) {
+			case Color.PRIMARY:
+				return Color.PRIMARY_CONTENT
+			case Color.SECONDARY:
+				return Color.SECONDARY_CONTENT
+			case Color.ACCENT:
+				return Color.ACCENT_CONTENT
+			case Color.NEUTRAL:
+				return Color.NEUTRAL_CONTENT
+			default:
+				return Color.PRIMARY_CONTENT
+		}
+	}
+
 	/**
 	 * Returns next color in the color pallete using PRIMARY->SECONDARY->NEUTRAL sequence.
 	 * @param currentColor

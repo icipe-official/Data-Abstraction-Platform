@@ -5,7 +5,7 @@ import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
 import MetadataModel from '$src/lib/metadata_model'
 
-@customElement('metadata-model-datum-input-form-field-number')
+@customElement('metadata-model-datum-input-column-field-number')
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
 
@@ -52,6 +52,6 @@ class Component extends LitElement {
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'metadata-model-datum-input-form-field-number': Component
+		'metadata-model-datum-input-column-field-number': Component
 	}
 }

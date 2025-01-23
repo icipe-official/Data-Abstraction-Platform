@@ -52,7 +52,7 @@ function deleteValueInObject(value: any, pathObjectKeyArrayIndexes: string[]): a
 				return value.filter((_, index) => index !== pathKeyArrayIndex)
 			}
 		} else {
-			if (typeof value[pathKeyArrayIndex] === 'undefined') {
+			if (typeof value[pathKeyArrayIndex] !== 'undefined') {
 				delete value[pathKeyArrayIndex]
 			}
 		}

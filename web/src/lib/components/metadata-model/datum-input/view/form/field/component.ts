@@ -5,13 +5,13 @@ import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
 import MetadataModel from '$src/lib/metadata_model'
 import Misc from '$src/lib/miscellaneous'
-import './text/component'
-import './number/component'
-import './checkbox/component'
-import './date-time/component'
-import './select/component'
+import '../../column-field/text/component'
+import '../../column-field/number/component'
+import '../../column-field/checkbox/component'
+import '../../column-field/date-time/component'
+import '../../column-field/select/component'
 
-@customElement('metadata-model-datum-input-form-field')
+@customElement('metadata-model-datum-input-column-field')
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
 
@@ -35,13 +35,6 @@ class Component extends LitElement {
 
 	@state() private _showMenu: boolean = false
 
-	protected firstUpdated(_changedProperties: PropertyValues): void {
-		const fieldData = this.getdata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
-		if (Array.isArray(fieldData) && (fieldData as any[]).length > 1) {
-			this._totalNoOfRows = (fieldData as any[]).length
-		}
-	}
-
 	@state() private _showRowMenuIndex: string = ''
 
 	private _inputFieldHtmlTemplate(rowIndex: number) {
@@ -49,43 +42,58 @@ class Component extends LitElement {
 			case MetadataModel.FieldUi.TEXT:
 			case MetadataModel.FieldUi.TEXTAREA:
 				return html`
-					<metadata-model-datum-input-form-field-text .color=${this.color} .field=${this.field} .arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]} .getdata=${this.getdata} .deletedata=${this.deletedata} .updatedata=${this.updatedata}></metadata-model-datum-input-form-field-text>
+					<metadata-model-datum-input-column-field-text
+						.color=${this.color}
+						.field=${this.field}
+						.arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]}
+						.getdata=${this.getdata}
+						.deletedata=${this.deletedata}
+						.updatedata=${this.updatedata}
+					></metadata-model-datum-input-column-field-text>
 				`
 			case MetadataModel.FieldUi.NUMBER:
 				return html`
-					<metadata-model-datum-input-form-field-number
+					<metadata-model-datum-input-column-field-number
 						.color=${this.color}
 						.field=${this.field}
 						.arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]}
 						.getdata=${this.getdata}
 						.deletedata=${this.deletedata}
 						.updatedata=${this.updatedata}
-					></metadata-model-datum-input-form-field-number>
+					></metadata-model-datum-input-column-field-number>
 				`
 			case MetadataModel.FieldUi.CHECKBOX:
 				return html`
-					<metadata-model-datum-input-form-field-checkbox
+					<metadata-model-datum-input-column-field-checkbox
 						.color=${this.color}
 						.field=${this.field}
 						.arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]}
 						.getdata=${this.getdata}
 						.deletedata=${this.deletedata}
 						.updatedata=${this.updatedata}
-					></metadata-model-datum-input-form-field-checkbox>
+					></metadata-model-datum-input-column-field-checkbox>
 				`
 			case MetadataModel.FieldUi.DATETIME:
 				return html`
-					<metadata-model-datum-input-form-field-date-time
+					<metadata-model-datum-input-column-field-date-time
 						.color=${this.color}
 						.field=${this.field}
 						.arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]}
 						.getdata=${this.getdata}
 						.deletedata=${this.deletedata}
 						.updatedata=${this.updatedata}
-					></metadata-model-datum-input-form-field-date-time>
+					></metadata-model-datum-input-column-field-date-time>
 				`
 			default:
 				return html`<div class="text-error">...field ui is not valid/supported...</div>`
+		}
+	}
+
+	connectedCallback(): void {
+		super.connectedCallback()
+		const fieldData = this.getdata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
+		if (Array.isArray(fieldData) && (fieldData as any[]).length > 1) {
+			this._totalNoOfRows = (fieldData as any[]).length
 		}
 	}
 
@@ -99,7 +107,7 @@ class Component extends LitElement {
 					${(() => {
 						if (this._showMenu) {
 							return html`
-								<div class="absolute top-0 flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
+								<div class="absolute top-0 flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px] z-[500]">
 									<button
 										class="btn btn-ghost p-1 w-full justify-start"
 										@click=${() => {
@@ -263,7 +271,7 @@ class Component extends LitElement {
 				if (this.field[MetadataModel.FgProperties.FIELD_UI] === MetadataModel.FieldUi.SELECT) {
 					return html`
 						<div class="w-full h-full"></div>
-						<metadata-model-datum-input-form-field-select .color=${this.color} .field=${this.field} .arrayindexplaceholders=${this.arrayindexplaceholders} .getdata=${this.getdata} .deletedata=${this.deletedata} .updatedata=${this.updatedata}></metadata-model-datum-input-form-field-select>
+						<metadata-model-datum-input-column-field-select .color=${this.color} .field=${this.field} .arrayindexplaceholders=${this.arrayindexplaceholders} .getdata=${this.getdata} .deletedata=${this.deletedata} .updatedata=${this.updatedata}></metadata-model-datum-input-column-field-select>
 					`
 				}
 
@@ -321,7 +329,7 @@ class Component extends LitElement {
 										${(() => {
 											if (this._showRowMenuIndex === `${rowIndex}`) {
 												return html`
-													<div class="absolute top-0 right-0 flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
+													<div class="absolute top-0 right-0 flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px] z-[500]">
 														<button
 															class="btn btn-ghost p-1 w-full justify-end"
 															@click=${() => {
@@ -383,9 +391,11 @@ class Component extends LitElement {
 								</div>
 							</div>
 						`)
-					} else {
-						templates.push(html`<div class="text-error">...field ui is not valid...</div>`)
+
+						continue
 					}
+
+					templates.push(html`<div class="text-error">...field ui is not valid...</div>`)
 				}
 
 				return templates
@@ -396,6 +406,6 @@ class Component extends LitElement {
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'metadata-model-datum-input-form-field': Component
+		'metadata-model-datum-input-column-field': Component
 	}
 }

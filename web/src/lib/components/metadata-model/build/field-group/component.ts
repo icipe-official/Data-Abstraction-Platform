@@ -23,7 +23,7 @@ class Component extends LitElement {
 	@property({ type: Number }) indexingroupreadorderoffields: number = -1
 	@property({ type: Number }) lengthofgroupreadorderoffields?: number
 	@property({ type: String }) groupkey?: string
-	@property({ type: Boolean }) showgroupfields: boolean = false
+	@property({ type: Boolean }) showgroupfields: boolean = true
 	@property({ attribute: false }) deletefieldgroup?: (fieldgroupkey: string, groupKey: string, indexingroupreadorderoffields: number) => void
 	@property({ attribute: false }) setcutfieldgroup?: (fieldgroupkey: string, groupKey: string, indexingroupreadorderoffields: number) => void
 	@property({ attribute: false }) setcopiedfieldgroupkey?: (fieldgroupkey: string) => void
@@ -92,7 +92,7 @@ class Component extends LitElement {
 										this._fieldsGroupsKeysSearchResults = []
 										this._searchFieldGroupsQuery = e.currentTarget.value
 										if (this._searchFieldGroupsQuery.length > 0) {
-											MetadataModel.ForEachFieldPropertiesInMetadataModel(this.fieldgroup, (property: any) => {
+											MetadataModel.ForEachFieldGroup(this.fieldgroup, (property: any) => {
 												if (typeof property[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
 													if (typeof property[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string') {
 														if ((property[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).toLocaleLowerCase().includes(this._searchFieldGroupsQuery.toLocaleLowerCase())) {
@@ -117,7 +117,7 @@ class Component extends LitElement {
 										<div class="flex self-center">
 											<iconify-icon
 												icon="mdi:search"
-												style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+												style="color:${Theme.GetColorContent(this.color)};"
 												width=${Misc.IconifySize('20')}
 												height=${Misc.IconifySize('20')}
 											></iconify-icon>
@@ -151,7 +151,7 @@ class Component extends LitElement {
 										<div class="flex self-center">
 											<iconify-icon
 												icon="mdi:code-json"
-												style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+												style="color:${Theme.GetColorContent(this.color)};"
 												width=${Misc.IconifySize('20')}
 												height=${Misc.IconifySize('20')}
 											></iconify-icon>
@@ -171,7 +171,7 @@ class Component extends LitElement {
 											<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${this.showhidegroupfields}>
 												<iconify-icon
 													icon="mdi:arrow-collapse-vertical"
-													style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+													style="color:${Theme.GetColorContent(this.color)};"
 													width=${Misc.IconifySize('20')}
 													height=${Misc.IconifySize('20')}
 												></iconify-icon>
@@ -190,7 +190,7 @@ class Component extends LitElement {
 											>
 												<iconify-icon
 													icon="mdi:content-copy"
-													style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+													style="color:${Theme.GetColorContent(this.color)};"
 													width=${Misc.IconifySize('20')}
 													height=${Misc.IconifySize('20')}
 												></iconify-icon>
@@ -209,7 +209,7 @@ class Component extends LitElement {
 											>
 												<iconify-icon
 													icon="mdi:content-cut"
-													style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+													style="color:${Theme.GetColorContent(this.color)};"
 													width=${Misc.IconifySize('20')}
 													height=${Misc.IconifySize('20')}
 												></iconify-icon>
@@ -228,7 +228,7 @@ class Component extends LitElement {
 											>
 												<iconify-icon
 													icon="mdi:delete"
-													style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+													style="color:${Theme.GetColorContent(this.color)};"
 													width=${Misc.IconifySize('20')}
 													height=${Misc.IconifySize('20')}
 												></iconify-icon>
@@ -245,7 +245,7 @@ class Component extends LitElement {
 																	>
 																		<iconify-icon
 																			icon="mdi:chevron-up"
-																			style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+																			style="color:${Theme.GetColorContent(this.color)};"
 																			width=${Misc.IconifySize('20')}
 																			height=${Misc.IconifySize('20')}
 																		></iconify-icon>
@@ -264,7 +264,7 @@ class Component extends LitElement {
 																	>
 																		<iconify-icon
 																			icon="mdi:chevron-down"
-																			style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+																			style="color:${Theme.GetColorContent(this.color)};"
 																			width=${Misc.IconifySize('20')}
 																			height=${Misc.IconifySize('20')}
 																		></iconify-icon>
@@ -282,7 +282,7 @@ class Component extends LitElement {
 											<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${() => (this._showCreateFieldGroup = !this._showCreateFieldGroup)}>
 												<iconify-icon
 													icon=${this._showCreateFieldGroup ? 'mdi:close-circle' : 'mdi:plus'}
-													style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
+													style="color:${Theme.GetColorContent(this.color)};"
 													width=${Misc.IconifySize('20')}
 													height=${Misc.IconifySize('20')}
 												></iconify-icon>
