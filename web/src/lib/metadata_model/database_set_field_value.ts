@@ -16,7 +16,7 @@ import MetadataModel from '.'
  * @returns Updated {@linkcode valueToSetIn}
  */
 export function DatabaseSetColumnFieldValue(metadatamodel: any, columnFieldName: string, tableCollectionName: string, valueToSetIn: any, value: any, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
-	if (!MetadataModel.isGroupFieldsValid(metadatamodel)) {
+	if (!MetadataModel.IsGroupFieldsValid(metadatamodel)) {
 		throw [DatabaseSetColumnFieldValue.name, 'argument metadatamodel is not an object']
 	}
 

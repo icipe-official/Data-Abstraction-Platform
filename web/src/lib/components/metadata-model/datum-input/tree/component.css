@@ -1,4 +1,4 @@
 :host {
-	@apply grid;
+	@apply grid min-h-fit min-w-fit;
 	grid-template-columns: max-content 9fr;
 }

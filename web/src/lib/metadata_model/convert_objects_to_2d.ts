@@ -74,18 +74,18 @@ export class ConvertObjectsTo2DArray {
 		let mmGroupsConversion: IFieldGroupConversion = {}
 
 		const mmGroupFields = mmGroup[MetadataModel.FgProperties.GROUP_FIELDS][0]
-		if (!MetadataModel.isGroupFieldsValid(mmGroupFields)) {
+		if (!MetadataModel.IsGroupFieldsValid(mmGroupFields)) {
 			throw [this._initFgConversion.name, 'mmGroupFields is not an object', structuredClone(mmGroupFields)]
 		}
 
 		const mmGroupReadOrderOfFields = mmGroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]
-		if (!MetadataModel.isGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
+		if (!MetadataModel.IsGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
 			throw [this._initFgConversion.name, 'mmGroupReadOrderOfFields is not an array', structuredClone(mmGroupReadOrderOfFields)]
 		}
 
 		mmGroupsConversion.field_groups = []
 		for (const fgKey of mmGroupReadOrderOfFields) {
-			if (!MetadataModel.isGroupFieldsValid(mmGroupFields[fgKey])) {
+			if (!MetadataModel.IsGroupFieldsValid(mmGroupFields[fgKey])) {
 				throw [this._initFgConversion.name, `mmGroupFields[${fgKey}] is not an object`, structuredClone(mmGroupFields[fgKey])]
 			}
 

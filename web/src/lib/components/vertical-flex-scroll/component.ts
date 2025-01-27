@@ -18,9 +18,9 @@ interface RenderTracker {
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
 
-	@property({ type: Number }) totalnoofrows!: number
+	@property({ type: Array }) data!: any[]
 	@property({ type: Boolean }) flexcolumn: boolean = true
-	@property({ attribute: false }) foreachrowrender!: (rowColumnIndex: number) => TemplateResult<1>
+	@property({ attribute: false }) foreachrowrender!: (datum: any, index: number) => TemplateResult<1>
 	@property({ type: Object }) scrollelement!: Element
 	@property({ type: Boolean }) enablescrollintoview: boolean = true
 	@property({ type: Boolean }) disableremoveitemsoutofview: boolean = true
@@ -69,7 +69,7 @@ class Component extends LitElement {
 
 	@state() private _rowIncrementEndIndexTimeout?: number
 	private _rowIncrementEndIndex(endIndex: number) {
-		this._rowEndIndex = endIndex + this.NO_OF_ROWS_TO_ADD < this.totalnoofrows ? endIndex + this.NO_OF_ROWS_TO_ADD : this.totalnoofrows - 1
+		this._rowEndIndex = endIndex + this.NO_OF_ROWS_TO_ADD < this.data.length ? endIndex + this.NO_OF_ROWS_TO_ADD : this.data.length - 1
 		if (this.enablescrollintoview) {
 			;(async () => {
 				await new Promise((resolve: (e: Element) => void) => {
@@ -191,7 +191,7 @@ class Component extends LitElement {
 									break
 								}
 
-								if (this._rowEndIndex < this.totalnoofrows - 1) {
+								if (this._rowEndIndex < this.data.length - 1) {
 									incrementEndIndex = true
 									if (typeof this._rowDecrementStartIndexTimeout === 'number') {
 										window.clearTimeout(this._rowDecrementStartIndexTimeout)
@@ -258,8 +258,8 @@ class Component extends LitElement {
 
 	connectedCallback(): void {
 		super.connectedCallback()
-		if (this.totalnoofrows > this.NO_OF_ROWS_TO_ADD) {
-			this._rowEndIndex = this.totalnoofrows > this.NO_OF_ROWS_TO_ADD ? this.NO_OF_ROWS_TO_ADD : this.totalnoofrows
+		if (this.data.length > this.NO_OF_ROWS_TO_ADD) {
+			this._rowEndIndex = this.data.length > this.NO_OF_ROWS_TO_ADD ? this.NO_OF_ROWS_TO_ADD : this.data.length
 		}
 
 		let currStyle = this.getAttribute('style')
@@ -318,8 +318,8 @@ class Component extends LitElement {
 	}
 
 	protected render(): unknown {
-		if (this._rowEndIndex > this.totalnoofrows) {
-			this._rowEndIndex = this.totalnoofrows
+		if (this._rowEndIndex > this.data.length) {
+			this._rowEndIndex = this.data.length - 1
 		}
 
 		;(async () => {
@@ -418,7 +418,7 @@ class Component extends LitElement {
 					if (typeof this._rowRenderTrackers[rowIndex] === 'undefined') {
 						this._rowRenderTrackers[rowIndex] = {
 							ContentIntersectionObserved: false,
-							ContentIntersectionRatio: 0,
+							ContentIntersectionRatio: 1,
 							ContentHasBeenInView: false,
 							ContentHeight: 20,
 							ContentWidth: 20
@@ -473,7 +473,7 @@ class Component extends LitElement {
 									return html`<div style="height: ${this._rowRenderTrackers[rowIndex].ContentHeight}px; width: ${this._rowRenderTrackers[rowIndex].ContentWidth}px;"></div>`
 								}
 
-								return this.foreachrowrender(rowIndex)
+								return this.foreachrowrender(this.data[rowIndex], rowIndex)
 							})()}
 						</div>
 					`)
@@ -503,11 +503,11 @@ class Component extends LitElement {
 						`
 					}
 
-					if (this._rowEndIndex < this.totalnoofrows - 1) {
+					if (this._rowEndIndex < this.data.length - 1) {
 						if (this.flexcolumn) {
 							return html`
 								<div class="divider h-fit">
-									<button class="justify-self-end link link-hover font-bold" @click=${this._handleClickIncrementEndIndex}>...load next...</button>
+									<button class="justify-self-end link link-hover font-bold" @click=${this._handleClickIncrementEndIndex}>...load more...</button>
 								</div>
 							`
 						}

@@ -2,13 +2,13 @@ import Json from '$src/lib/json'
 import MetadataModel from '$src/lib/metadata_model'
 import Misc from '$src/lib/miscellaneous'
 import Theme from '$src/lib/theme'
-import { LitElement, unsafeCSS, html, nothing, PropertyValues, TemplateResult } from 'lit'
+import { LitElement, unsafeCSS, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
-import componentSelectOptionsCss from './component.selectoptions.css?inline'
 import Log from '$src/lib/log'
 import Papa from 'papaparse'
+import '$src/lib/components/vertical-flex-scroll/component'
 
 @customElement('metadata-model-build-edit-field-group')
 class Component extends LitElement {
@@ -601,12 +601,12 @@ class Component extends LitElement {
 														class="flex-1 join-item input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
 														type="text"
 														placeholder="Enter table/collection name..."
-														.value=${this.fieldgroup[MetadataModel.FgProperties.DATABASE_GROUP_TABLE_COLLECTION_NAME] || ''}
+														.value=${this.fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME] || ''}
 														@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 															if (e.currentTarget.value.length > 0) {
-																this.fieldgroup[MetadataModel.FgProperties.DATABASE_GROUP_TABLE_COLLECTION_NAME] = e.currentTarget.value
+																this.fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME] = e.currentTarget.value
 															} else {
-																delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_GROUP_TABLE_COLLECTION_NAME]
+																delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME]
 															}
 														}}
 													/>
@@ -877,12 +877,7 @@ class Component extends LitElement {
 																		}
 																	}}
 																>
-																	<iconify-icon
-																		icon="mdi:plus-circle"
-																		style="color: ${Theme.GetColorContent(this.color)};"
-																		width=${Misc.IconifySize()}
-																		height=${Misc.IconifySize()}
-																	></iconify-icon>
+																	<iconify-icon icon="mdi:plus-circle" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 																</button>
 															</div>
 															${(() => {
@@ -945,6 +940,174 @@ class Component extends LitElement {
 																	return nothing
 																}
 															})()}
+															${(() => {
+																if (!Array.isArray(this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS])) {
+																	return html`
+																		<div class="flex self-center w-fit">
+																			<span class="self-center">Click the</span>
+																			<iconify-icon icon="mdi:plus-circle" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon><span class="self-center">to add a new select option</span>
+																		</div>
+																	`
+																}
+
+																return html`
+																	<virtual-flex-scroll
+																		class="join-item border-2 ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}"
+																		.data=${this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS]}
+																		.foreachrowrender=${(datum: any, index: number) => {
+																			try {
+																				if (this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] !== MetadataModel.FieldType.ANY) {
+																					switch (this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] as MetadataModel.FieldType) {
+																						case MetadataModel.FieldType.TEXT:
+																							if (datum[MetadataModel.FSelectProperties.TYPE] !== MetadataModel.FSelectType.TEXT) {
+																								this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`, MetadataModel.FSelectType.TEXT)
+																								datum[MetadataModel.FSelectProperties.TYPE] = MetadataModel.FSelectType.TEXT
+																							}
+																							if (typeof datum[MetadataModel.FSelectProperties.VALUE] !== 'string') {
+																								this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
+																								delete datum[MetadataModel.FSelectProperties.VALUE]
+																							}
+																							break
+																						case MetadataModel.FieldType.NUMBER:
+																							if (datum[MetadataModel.FSelectProperties.TYPE] !== MetadataModel.FSelectType.NUMBER) {
+																								this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`, MetadataModel.FSelectType.NUMBER)
+																								datum[MetadataModel.FSelectProperties.TYPE] = MetadataModel.FSelectType.NUMBER
+																							}
+																							if (typeof datum[MetadataModel.FSelectProperties.VALUE] !== 'number') {
+																								this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
+																								delete datum[MetadataModel.FSelectProperties.VALUE]
+																							}
+																							break
+																						case MetadataModel.FieldType.BOOLEAN:
+																							if (datum[MetadataModel.FSelectProperties.TYPE] !== MetadataModel.FSelectType.BOOLEAN) {
+																								this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`, MetadataModel.FSelectType.BOOLEAN)
+																								datum[MetadataModel.FSelectProperties.TYPE] = MetadataModel.FSelectType.BOOLEAN
+																							}
+																							if (typeof datum[MetadataModel.FSelectProperties.VALUE] !== 'boolean') {
+																								this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
+																								delete datum[MetadataModel.FSelectProperties.VALUE]
+																							}
+																							break
+																					}
+																				}
+
+																				return html`
+																					<div class="join-item flex">
+																						<input
+																							class="input h-[48px] rounded-none ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
+																							type="text"
+																							placeholder="label..."
+																							.value=${datum[MetadataModel.FSelectProperties.LABEL] || ''}
+																							@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+																								if (e.currentTarget.value.length > 0) {
+																									this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.LABEL}`, e.currentTarget.value)
+																								} else {
+																									this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.LABEL}`)
+																								}
+																								this.updatefieldgroup(this.fieldgroup)
+																							}}
+																						/>
+																						<select
+																							class="select h-[48px] rounded-none ${this.color === Theme.Color.PRIMARY ? 'select-primary' : this.color === Theme.Color.SECONDARY ? 'select-secondary' : 'select-accent'} w-full"
+																							@change=${(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) => {
+																								if (e.currentTarget.value.length > 0) {
+																									this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`, e.currentTarget.value)
+																								} else {
+																									this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`)
+																								}
+																								this.updatefieldgroup(this.fieldgroup)
+																							}}
+																							.disabled=${this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] !== MetadataModel.FieldType.ANY}
+																						>
+																							<option
+																								disabled
+																								value=""
+																								.selected=${typeof datum[MetadataModel.FSelectProperties.TYPE] !== 'string' ||
+																								(datum[MetadataModel.FSelectProperties.TYPE] as string).length === 0}
+																							>
+																								Choose value data type...
+																							</option>
+																							<option value="${MetadataModel.FSelectType.NUMBER}" .selected=${datum[MetadataModel.FSelectProperties.TYPE] === MetadataModel.FSelectType.NUMBER}>Number</option>
+																							<option value="${MetadataModel.FSelectType.TEXT}" .selected=${datum[MetadataModel.FSelectProperties.TYPE] === MetadataModel.FSelectType.TEXT}>Text</option>
+																							<option value="${MetadataModel.FSelectType.BOOLEAN}" .selected=${datum[MetadataModel.FSelectProperties.TYPE] === MetadataModel.FSelectType.BOOLEAN}>Boolean</option>
+																						</select>
+																						${(() => {
+																							switch (datum[MetadataModel.FSelectProperties.TYPE] as MetadataModel.FSelectType) {
+																								case MetadataModel.FSelectType.NUMBER:
+																									return html`
+																										<input
+																											class="input h-[48px] rounded-none ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
+																											type="number"
+																											placeholder="value..."
+																											.value=${typeof datum[MetadataModel.FSelectProperties.VALUE] === 'number'
+																												? datum[MetadataModel.FSelectProperties.VALUE].toString()
+																												: ''}
+																											@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+																												if (e.currentTarget.value.length > 0) {
+																													if (!Number.isNaN(e.currentTarget.value)) {
+																														this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`, Number(e.currentTarget.value))
+																													} else {
+																														this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
+																													}
+																												} else {
+																													this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
+																												}
+																												this.updatefieldgroup(this.fieldgroup)
+																											}}
+																										/>
+																									`
+																								case MetadataModel.FSelectType.TEXT:
+																									return html`
+																										<input
+																											class="input h-[48px] rounded-none  ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
+																											type="text"
+																											placeholder="value..."
+																											.value=${datum[MetadataModel.FSelectProperties.VALUE] || ''}
+																											@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+																												if (e.currentTarget.value.length > 0) {
+																													this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`, e.currentTarget.value)
+																												} else {
+																													this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
+																												}
+																												this.updatefieldgroup(this.fieldgroup)
+																											}}
+																										/>
+																									`
+																								case MetadataModel.FSelectType.BOOLEAN:
+																									return html`
+																										<input
+																											class="checkbox h-[48px] w-[48px] rounded-none ${this.color === Theme.Color.PRIMARY ? 'checkbox-primary' : this.color === Theme.Color.SECONDARY ? 'checkbox-secondary' : 'checkbox-accent'}"
+																											type="checkbox"
+																											.checked=${datum[MetadataModel.FSelectProperties.VALUE] || false}
+																											@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+																												this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`, e.currentTarget.checked)
+																												this.updatefieldgroup(this.fieldgroup)
+																											}}
+																										/>
+																									`
+																								default:
+																									return nothing
+																							}
+																						})()}
+																						<button
+																							class="btn h-[48px] min-h-[48px] btn-ghost rounded-none"
+																							@click=${() => {
+																								this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}]`)
+																								this.updatefieldgroup(this.fieldgroup)
+																							}}
+																						>
+																							<iconify-icon icon="mdi:delete" style="color: ${Theme.Color.ERROR};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																						</button>
+																					</div>
+																				`
+																			} catch (err) {
+																				Log.Log(Log.Level.ERROR, this.localName, err)
+																				return html`<code>${err}</code>`
+																			}
+																		}}
+																	></virtual-flex-scroll>
+																`
+															})()}
 															<metadata-model-build-edit-field-group-select-options
 																class="join-item border-2 ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}"
 																.color=${this.color}
@@ -997,8 +1160,7 @@ class Component extends LitElement {
 																	<option
 																		disabled
 																		value=""
-																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE] !== 'object' ||
-																		(this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] as string).length === 0}
+																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE] !== 'object' || (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] as string).length === 0}
 																	>
 																		Choose value data type...
 																	</option>
@@ -1085,8 +1247,7 @@ class Component extends LitElement {
 																	<option
 																		disabled
 																		value=""
-																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE] !== 'object' ||
-																		(this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] as string).length === 0}
+																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE] !== 'object' || (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] as string).length === 0}
 																	>
 																		Choose value data type...
 																	</option>
@@ -1106,10 +1267,7 @@ class Component extends LitElement {
 																	</option>
 																</select>
 																${(() => {
-																	if (
-																		typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE] === 'object' &&
-																		(this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] as string).length > 0
-																	) {
+																	if (typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE] === 'object' && (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] as string).length > 0) {
 																		return html`
 																			<input
 																				class="flex-[2] join-item input min-h-[48px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
@@ -1210,12 +1368,12 @@ class Component extends LitElement {
 																<input
 																	class="self-center checkbox ${this.color === Theme.Color.PRIMARY ? 'checkbox-primary' : this.color === Theme.Color.SECONDARY ? 'checkbox-secondary' : 'checkbox-accent'}"
 																	type="checkbox"
-																	.checked=${this.fieldgroup[MetadataModel.FgProperties.DATABSE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX] || false}
+																	.checked=${this.fieldgroup[MetadataModel.FgProperties.DATABASE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX] || false}
 																	@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																		if (e.currentTarget.checked) {
-																			this.fieldgroup[MetadataModel.FgProperties.DATABSE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX] = true
+																			this.fieldgroup[MetadataModel.FgProperties.DATABASE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX] = true
 																		} else {
-																			delete this.fieldgroup[MetadataModel.FgProperties.DATABSE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX]
+																			delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX]
 																		}
 																	}}
 																/>
@@ -1245,575 +1403,8 @@ class Component extends LitElement {
 	}
 }
 
-interface RenderTracker {
-	ContentIntersectionObserved: boolean
-	ContentHasBeenInView: boolean
-	ContentIntersectionRatio: number
-}
-
-@customElement('metadata-model-build-edit-field-group-select-options')
-class ComponentSelectOptions extends LitElement {
-	static styles = [unsafeCSS(indexCss), unsafeCSS(componentSelectOptionsCss)]
-
-	@property({ type: Object }) fieldgroup: any
-	@property({ type: String }) color: Theme.Color = Theme.Color.PRIMARY
-	@property({ attribute: false }) updatefieldgroup!: (fieldgroup: any) => void
-
-	private readonly NO_OF_RENDER_CONTENT_TO_ADD: number = 30
-
-	private _renderTrackers: { [type: string]: RenderTracker } = {}
-	@state() private _startIndex: number = 0
-	@state() private _endIndex: number = 0
-	private _itemsOutOfView: number[] = []
-
-	@state() private _startAddContentTimeout?: number
-	private _addContentAtStartPosition(startIndex: number) {
-		this._startIndex = startIndex - this.NO_OF_RENDER_CONTENT_TO_ADD > 0 ? startIndex - this.NO_OF_RENDER_CONTENT_TO_ADD : 0
-		
-		;(async (psi: number) => {
-			await new Promise((resolve: (e: Element) => void) => {
-				if ((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${psi - 2}`)) {
-					resolve((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${psi - 2}`) as Element)
-					return
-				}
-
-				const observer = new MutationObserver(() => {
-					if ((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${psi - 2}`)) {
-						resolve((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${psi - 2}`) as Element)
-						observer.disconnect()
-					}
-				})
-
-				observer.observe(this.shadowRoot as ShadowRoot, {
-					childList: true,
-					subtree: true
-				})
-			})
-				.then((e) => {
-					e.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' })
-				})
-				.catch((err) => {
-					Log.Log(Log.Level.ERROR, this.localName, 'Cannot scroll to item at index', psi - 2, 'failed', err)
-				})
-		})(startIndex)
-
-		this._startAddContentTimeout = undefined
-	}
-
-	private _addContentAtEndPosition(endIndex: number) {
-		this._endIndex = endIndex + this.NO_OF_RENDER_CONTENT_TO_ADD < this._currentNumberOfRenderContent ? endIndex + this.NO_OF_RENDER_CONTENT_TO_ADD : this._currentNumberOfRenderContent - 1
-
-		;(async (pei: number) => {
-			await new Promise((resolve: (e: Element) => void) => {
-				if ((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${pei - 2}`)) {
-					resolve((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${pei - 2}`) as Element)
-					return
-				}
-
-				const observer = new MutationObserver(() => {
-					if ((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${pei - 2}`)) {
-						resolve((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${pei - 2}`) as Element)
-						observer.disconnect()
-					}
-				})
-
-				observer.observe(this.shadowRoot as ShadowRoot, {
-					childList: true,
-					subtree: true
-				})
-			})
-				.then((e) => {
-					e.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' })
-				})
-				.catch((err) => {
-					Log.Log(Log.Level.ERROR, this.localName, 'Cannot scroll to item at index', pei - 2, 'failed', err)
-				})
-		})(endIndex)
-
-		this._endAddContentTimeout = undefined
-	}
-
-	@state() private _endAddContentTimeout?: number
-
-	private _startEndIntersectionobserver!: IntersectionObserver
-	private _contentItemIntersectionObserver!: IntersectionObserver
-
-	private readonly RENDER_ITEM_CONTENT_ELEMENT_ID_REGEX = /render-tracker-content-item-([0-9]+)/
-
-	protected firstUpdated(_changedProperties: PropertyValues): void {
-		this._startEndIntersectionobserver = new IntersectionObserver(
-			(entries) => {
-				let decrementStartIndex = false
-				let incrementEndIndex = false
-
-				for (const entry of entries) {
-					const renderStartEnd = /render-tracker-(start|end)/.exec(entry.target.id)
-					if (renderStartEnd === null) {
-						continue
-					}
-					// // Log.Log(Log.Level.DEBUG, this.localName, 'before', entry.target.id, entry.intersectionRatio, this._startIndex, this._endIndex)
-					// // Log.Log(Log.Level.DEBUG, this.localName, 'before', entry.target.id, entry.intersectionRatio, JSON.parse(JSON.stringify(this._renderTrackers)), JSON.parse(JSON.stringify(this._itemsOutOfView)))
-					if (entry.intersectionRatio > 0) {
-						switch (renderStartEnd[1]) {
-							case 'start':
-								if (typeof this._startAddContentTimeout === 'number') {
-									break
-								}
-
-								if (this._startIndex > 0 && this._currentNumberOfRenderContent > this.NO_OF_RENDER_CONTENT_TO_ADD) {
-									decrementStartIndex = true
-									if (typeof this._endAddContentTimeout === 'number') {
-										window.clearTimeout(this._endAddContentTimeout)
-										this._endAddContentTimeout = undefined
-									}
-								}
-								break
-							case 'end':
-								if (typeof this._endAddContentTimeout === 'number') {
-									break
-								}
-
-								if (this._endIndex < this._currentNumberOfRenderContent - 1 && this._currentNumberOfRenderContent > this.NO_OF_RENDER_CONTENT_TO_ADD) {
-									incrementEndIndex = true
-									if (typeof this._startAddContentTimeout === 'number') {
-										window.clearTimeout(this._startAddContentTimeout)
-										this._startAddContentTimeout = undefined
-									}
-								}
-								break
-						}
-					}
-				}
-
-				if (decrementStartIndex) {
-					if (typeof this._startAddContentTimeout !== 'number') {
-						this._startAddContentTimeout = window.setTimeout(() => this._addContentAtStartPosition(this._startIndex), 500)
-					}
-				}
-
-				if (incrementEndIndex) {
-					if (typeof this._endAddContentTimeout !== 'number') {
-						this._endAddContentTimeout = window.setTimeout(() => this._addContentAtEndPosition(this._endIndex), 500)
-					}
-				}
-
-				if (this._itemsOutOfView.length > 0 && this._currentNumberOfRenderContent > this.NO_OF_RENDER_CONTENT_TO_ADD) {
-					let minStartIndex = this._startIndex
-					let maxEndIndex = this._endIndex
-					for (const itemID of this._itemsOutOfView) {
-						if (incrementEndIndex && itemID > minStartIndex && maxEndIndex - itemID >= this.NO_OF_RENDER_CONTENT_TO_ADD) {
-							minStartIndex = itemID
-							continue
-						}
-
-						if (decrementStartIndex && itemID < maxEndIndex && itemID - minStartIndex >= this.NO_OF_RENDER_CONTENT_TO_ADD) {
-							maxEndIndex = itemID
-							continue
-						}
-					}
-
-					for (const itemID of JSON.parse(JSON.stringify(this._itemsOutOfView)) as number[]) {
-						if (itemID <= minStartIndex || itemID >= maxEndIndex) {
-							this._itemsOutOfView = this._itemsOutOfView.filter((ioovid) => itemID !== ioovid)
-							delete this._renderTrackers[itemID]
-						}
-					}
-
-					for (const key of Object.keys(this._renderTrackers)) {
-						const keyNumber = Number(key)
-						if (keyNumber < minStartIndex || keyNumber > maxEndIndex) {
-							delete this._renderTrackers[keyNumber]
-						}
-					}
-
-					if (this._startIndex !== minStartIndex) {
-						this._startIndex = minStartIndex - 1 > 0 ? minStartIndex - 1 : 0
-					}
-
-					if (this._endIndex !== maxEndIndex) {
-						this._endIndex = maxEndIndex - 1
-					}
-				}
-			},
-			{
-				root: this
-			}
-		)
-		this._startEndIntersectionobserver.observe((this.shadowRoot as ShadowRoot).querySelector('#render-tracker-start') as Element)
-		this._startEndIntersectionobserver.observe((this.shadowRoot as ShadowRoot).querySelector('#render-tracker-end') as Element)
-
-		this._contentItemIntersectionObserver = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					const renderItemElementID = this.RENDER_ITEM_CONTENT_ELEMENT_ID_REGEX.exec(entry.target.id)
-					if (renderItemElementID === null) {
-						continue
-					}
-
-					const itemID = Number(renderItemElementID[1])
-					if (typeof this._renderTrackers[itemID] === 'undefined') {
-						continue
-					}
-
-					this._renderTrackers[itemID].ContentIntersectionRatio = entry.intersectionRatio
-
-					if (this._renderTrackers[itemID].ContentIntersectionRatio > 0) {
-						if (this._itemsOutOfView.includes(itemID)) {
-							this._itemsOutOfView = this._itemsOutOfView.filter((itemid) => itemid !== itemID)
-						}
-
-						if (this._renderTrackers[itemID].ContentIntersectionRatio === 1) {
-							this._renderTrackers[itemID].ContentHasBeenInView = true
-						}
-					} else {
-						if (this._renderTrackers[itemID].ContentHasBeenInView && !this._itemsOutOfView.includes(itemID)) {
-							this._itemsOutOfView = [...this._itemsOutOfView, itemID]
-						}
-					}
-				}
-			},
-			{
-				root: this,
-				rootMargin: '500px',
-				threshold: [0.0, 0.25, 0.5, 0.75, 1.0]
-			}
-		)
-	}
-
-	@state() private _currentNumberOfRenderContent: number = 0
-
-	disconnectedCallback(): void {
-		super.disconnectedCallback()
-		this._startEndIntersectionobserver.disconnect()
-		this._contentItemIntersectionObserver.disconnect()
-		if (typeof this._startAddContentTimeout === 'number') {
-			window.clearTimeout(this._startAddContentTimeout)
-		}
-		if (typeof this._endAddContentTimeout === 'number') {
-			window.clearTimeout(this._endAddContentTimeout)
-		}
-	}
-
-	protected render(): unknown {
-		return html`
-			<div id="render-tracker-start" class="w-full h-fit flex flex-col justify-center">
-				${(() => {
-					if (typeof this._startAddContentTimeout === 'number') {
-						return html`
-							<div class="justify-self-end flex flex-col justify-center items-center text-xl space-y-5">
-								<div class="flex">
-									<span class="loading loading-ball loading-sm text-accent"></span>
-									<span class="loading loading-ball loading-md text-secondary"></span>
-									<span class="loading loading-ball loading-lg text-primary"></span>
-								</div>
-							</div>
-						`
-					} else if (this._startIndex > 0) {
-						return html`
-							<div class="divider h-fit">
-								<button
-									class="justify-self-end link link-hover"
-									@click=${() => {
-										if (typeof this._startAddContentTimeout === 'number') {
-											window.clearTimeout(this._startAddContentTimeout)
-										}
-
-										if (typeof this._endAddContentTimeout === 'number') {
-											window.clearTimeout(this._endAddContentTimeout)
-										}
-
-										this._startAddContentTimeout = window.setTimeout(() => this._addContentAtStartPosition(this._startIndex), 500)
-									}}
-								>
-									...load previous...
-								</button>
-							</div>
-						`
-					} else {
-						return nothing
-					}
-				})()}
-			</div>
-			${(() => {
-				if (!Array.isArray(this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS])) {
-					return html`
-						<div class="flex self-center w-fit">
-							<span class="self-center">Click the</span>
-							<iconify-icon icon="mdi:plus-circle" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon><span class="self-center">to add a new select option</span>
-						</div>
-					`
-				}
-
-				if (this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS].length !== this._currentNumberOfRenderContent) {
-					this._currentNumberOfRenderContent = this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS].length
-
-					this._startIndex = 0
-					if (typeof this._startAddContentTimeout === 'number') {
-						window.clearTimeout(this._startAddContentTimeout)
-						this._startAddContentTimeout = undefined
-					}
-					if (typeof this._endAddContentTimeout === 'number') {
-						window.clearTimeout(this._endAddContentTimeout)
-						this._endAddContentTimeout = undefined
-					}
-
-					this._endIndex = this._currentNumberOfRenderContent < this.NO_OF_RENDER_CONTENT_TO_ADD ? this._currentNumberOfRenderContent - 1 : this.NO_OF_RENDER_CONTENT_TO_ADD
-					for (let i = 0; i <= this._endIndex; i++) {
-						this._renderTrackers[i] = {
-							ContentIntersectionObserved: false,
-							ContentIntersectionRatio: 0,
-							ContentHasBeenInView: false
-						}
-					}
-					this._itemsOutOfView = []
-				}
-
-				return html`
-					${(() => {
-						let templates: TemplateResult<1>[] = []
-
-						for (let index = this._startIndex; index <= this._endIndex; index++) {
-							if (typeof this._renderTrackers[index] === 'undefined') {
-								this._renderTrackers[index] = {
-									ContentIntersectionObserved: false,
-									ContentIntersectionRatio: 0,
-									ContentHasBeenInView: false
-								}
-							}
-
-							;(async (Index: number) => {
-								await new Promise((resolve: (e: Element) => void) => {
-									if ((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${Index}`)) {
-										resolve((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${Index}`) as Element)
-										return
-									}
-
-									const observer = new MutationObserver(() => {
-										if ((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${Index}`)) {
-											resolve((this.shadowRoot as ShadowRoot).querySelector(`#render-tracker-content-item-${Index}`) as Element)
-											observer.disconnect()
-										}
-									})
-
-									observer.observe(this.shadowRoot as ShadowRoot, {
-										childList: true,
-										subtree: true
-									})
-								})
-									.then((e) => {
-										if (typeof this._renderTrackers[Index] === 'undefined') {
-											return
-										}
-										if (!this._renderTrackers[Index].ContentIntersectionObserved) {
-											this._contentItemIntersectionObserver.observe(e)
-											this._renderTrackers[Index].ContentIntersectionObserved = true
-										}
-									})
-									.catch((err) => {
-										Log.Log(Log.Level.ERROR, 'Observed item at index', Index, 'failed', err)
-									})
-							})(index)
-
-							try {
-								if (this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] !== MetadataModel.FieldType.ANY) {
-									switch (this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] as MetadataModel.FieldType) {
-										case MetadataModel.FieldType.TEXT:
-											if (this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] !== MetadataModel.FSelectType.TEXT) {
-												this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`, MetadataModel.FSelectType.TEXT)
-												this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FSelectType.TEXT
-											}
-											if (typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE] !== 'string') {
-												this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
-												delete this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE]
-											}
-											break
-										case MetadataModel.FieldType.NUMBER:
-											if (this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] !== MetadataModel.FSelectType.NUMBER) {
-												this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`, MetadataModel.FSelectType.NUMBER)
-												this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FSelectType.NUMBER
-											}
-											if (typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE] !== 'number') {
-												this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
-												delete this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE]
-											}
-											break
-										case MetadataModel.FieldType.BOOLEAN:
-											if (this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] !== MetadataModel.FSelectType.BOOLEAN) {
-												this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`, MetadataModel.FSelectType.BOOLEAN)
-												this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FSelectType.BOOLEAN
-											}
-											if (typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE] !== 'boolean') {
-												this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
-												delete this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE]
-											}
-											break
-									}
-								}
-
-								templates.push(html`
-									<div id="render-tracker-content-item-${index}" class="join-item flex">
-										<input
-											class="input h-[48px] rounded-none ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
-											type="text"
-											placeholder="label..."
-											.value=${this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.LABEL] || ''}
-											@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-												if (e.currentTarget.value.length > 0) {
-													this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.LABEL}`, e.currentTarget.value)
-												} else {
-													this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.LABEL}`)
-												}
-												this.updatefieldgroup(this.fieldgroup)
-											}}
-										/>
-										<select
-											class="select h-[48px] rounded-none ${this.color === Theme.Color.PRIMARY ? 'select-primary' : this.color === Theme.Color.SECONDARY ? 'select-secondary' : 'select-accent'} w-full"
-											@change=${(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) => {
-												if (e.currentTarget.value.length > 0) {
-													this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`, e.currentTarget.value)
-												} else {
-													this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`)
-												}
-												this.updatefieldgroup(this.fieldgroup)
-											}}
-											.disabled=${this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] !== MetadataModel.FieldType.ANY}
-										>
-											<option
-												disabled
-												value=""
-												.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] !== 'string' ||
-												(this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] as string).length === 0}
-											>
-												Choose value data type...
-											</option>
-											<option value="${MetadataModel.FSelectType.NUMBER}" .selected=${this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FSelectType.NUMBER}>Number</option>
-											<option value="${MetadataModel.FSelectType.TEXT}" .selected=${this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FSelectType.TEXT}>Text</option>
-											<option value="${MetadataModel.FSelectType.BOOLEAN}" .selected=${this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FSelectType.BOOLEAN}>Boolean</option>
-										</select>
-										${(() => {
-											switch (this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.TYPE] as MetadataModel.FSelectType) {
-												case MetadataModel.FSelectType.NUMBER:
-													return html`
-														<input
-															class="input h-[48px] rounded-none ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
-															type="number"
-															placeholder="value..."
-															.value=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE] === 'number'
-																? this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE].toString()
-																: ''}
-															@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																if (e.currentTarget.value.length > 0) {
-																	if (!Number.isNaN(e.currentTarget.value)) {
-																		this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`, Number(e.currentTarget.value))
-																	} else {
-																		this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
-																	}
-																} else {
-																	this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
-																}
-																this.updatefieldgroup(this.fieldgroup)
-															}}
-														/>
-													`
-												case MetadataModel.FSelectType.TEXT:
-													return html`
-														<input
-															class="input h-[48px] rounded-none  ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
-															type="text"
-															placeholder="value..."
-															.value=${this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE] || ''}
-															@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																if (e.currentTarget.value.length > 0) {
-																	this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`, e.currentTarget.value)
-																} else {
-																	this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
-																}
-																this.updatefieldgroup(this.fieldgroup)
-															}}
-														/>
-													`
-												case MetadataModel.FSelectType.BOOLEAN:
-													return html`
-														<input
-															class="checkbox h-[48px] w-[48px] rounded-none ${this.color === Theme.Color.PRIMARY ? 'checkbox-primary' : this.color === Theme.Color.SECONDARY ? 'checkbox-secondary' : 'checkbox-accent'}"
-															type="checkbox"
-															.checked=${this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS][index][MetadataModel.FSelectProperties.VALUE] || false}
-															@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`, e.currentTarget.checked)
-																this.updatefieldgroup(this.fieldgroup)
-															}}
-														/>
-													`
-												default:
-													return nothing
-											}
-										})()}
-										<button
-											class="btn h-[48px] min-h-[48px] btn-ghost rounded-none"
-											@click=${() => {
-												this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}]`)
-												this.updatefieldgroup(this.fieldgroup)
-											}}
-										>
-											<iconify-icon icon="mdi:delete" style="color: ${Theme.Color.ERROR};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</button>
-									</div>
-								`)
-							} catch (err) {
-								Log.Log(Log.Level.ERROR, this.localName, err)
-								templates.push(html`<code>${err}</code>`)
-							}
-						}
-
-						return templates
-					})()}
-				`
-			})()}
-			<div id="render-tracker-end" class="w-full h-fit flex flex-col justify-center">
-				${(() => {
-					if (typeof this._endAddContentTimeout === 'number') {
-						return html`
-							<div class="justify-self-end flex flex-col justify-center items-center text-xl space-y-5">
-								<div class="flex">
-									<span class="loading loading-ball loading-sm text-accent"></span>
-									<span class="loading loading-ball loading-md text-secondary"></span>
-									<span class="loading loading-ball loading-lg text-primary"></span>
-								</div>
-							</div>
-						`
-					} else if (this._endIndex < this._currentNumberOfRenderContent - 1) {
-						return html`
-							<div class="divider h-fit">
-								<button
-									class="justify-self-end link link-hover"
-									@click=${() => {
-										if (typeof this._endAddContentTimeout === 'number') {
-											window.clearTimeout(this._endAddContentTimeout)
-										}
-
-										if (typeof this._startAddContentTimeout === 'number') {
-											window.clearTimeout(this._startAddContentTimeout)
-										}
-
-										this._endAddContentTimeout = window.setTimeout(() => this._addContentAtEndPosition(this._endIndex), 500)
-									}}
-								>
-									...load next...
-								</button>
-							</div>
-						`
-					} else {
-						return nothing
-					}
-				})()}
-			</div>
-		`
-	}
-}
-
 declare global {
 	interface HTMLElementTagNameMap {
 		'metadata-model-build-edit-field-group': Component
-		'metadata-model-build-edit-field-group-select-options': ComponentSelectOptions
 	}
 }

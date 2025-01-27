@@ -2,7 +2,7 @@ import Json from '../json'
 import MetadataModel from '.'
 
 export function DatabaseGetColumnFieldValue(metadatamodel: any, columnFieldName: string, tableCollectionName: string, valueToGetFrom: any, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
-	if (!MetadataModel.isGroupFieldsValid(metadatamodel)) {
+	if (!MetadataModel.IsGroupFieldsValid(metadatamodel)) {
 		throw 'argument metadatamodel is not an object.'
 	}
 

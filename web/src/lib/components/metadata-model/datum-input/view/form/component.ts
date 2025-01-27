@@ -84,9 +84,9 @@ class Component extends LitElement {
 				}}
 			>
 				<div class="flex self-center">
-					<iconify-icon icon=${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'mdi:table-large' : 'mdi:form'} style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+					<iconify-icon icon=${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'mdi:form' : 'mdi:table-large'} style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
 				</div>
-				<div class="self-center font-bold">Data input view</div>
+				<div class="self-center font-bold">Switch to ${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'form' : 'table'} view</div>
 			</button>
 			<button
 				class="btn btn-ghost p-1 w-full justify-start"
@@ -141,12 +141,7 @@ class Component extends LitElement {
 								}
 							}}
 						>
-							<iconify-icon
-								icon="mdi:dots-vertical"
-								style="color:${Theme.GetColorContent(this.color)};"
-								width=${Misc.IconifySize()}
-								height=${Misc.IconifySize()}
-							></iconify-icon>
+							<iconify-icon icon="mdi:dots-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 						</button>
 						<div class="flex-[9] break-words text-md font-bold h-fit self-center">${this._getGroupName()} #${rowIndex + 1}</div>
 						${(() => {
@@ -162,12 +157,7 @@ class Component extends LitElement {
 											this._showDescription = `${rowIndex}`
 										}}
 									>
-										<iconify-icon
-											icon="mdi:question-mark-circle"
-											style="color:${Theme.GetColorContent(this.color)};"
-											width=${Misc.IconifySize()}
-											height=${Misc.IconifySize()}
-										></iconify-icon>
+										<iconify-icon icon="mdi:question-mark-circle" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 									</button>
 								`
 							}
@@ -186,12 +176,7 @@ class Component extends LitElement {
 											this.pastefieldgroupdata(groupKey, [...this.arrayindexplaceholders, rowIndex])
 										}}
 									>
-										<iconify-icon
-											icon="mdi:content-paste"
-											style="color:${Theme.GetColorContent(this.color)};"
-											width=${Misc.IconifySize()}
-											height=${Misc.IconifySize()}
-										></iconify-icon>
+										<iconify-icon icon="mdi:content-paste" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 									</button>
 								`
 							} else {
@@ -215,12 +200,7 @@ class Component extends LitElement {
 							}}
 							.disabled=${typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
 						>
-							<iconify-icon
-								icon="mdi:plus-bold"
-								style="color:${Theme.GetColorContent(this.color)};"
-								width=${Misc.IconifySize('30')}
-								height=${Misc.IconifySize('32')}
-							></iconify-icon>
+							<iconify-icon icon="mdi:plus-bold" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
 						</button>
 					</div>
 				</section>
@@ -319,12 +299,7 @@ class Component extends LitElement {
 					<div class="self-center">Start of ${this._getGroupName()}</div>
 					<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
 					<div class="self-center w-fit h-fit">
-						<iconify-icon
-							icon=${this._showTopMultipleEntryMenu ? 'mdi:menu-up' : 'mdi:menu-down'}
-							style="color:${Theme.GetColorContent(this.color)};"
-							width=${Misc.IconifySize('30')}
-							height=${Misc.IconifySize('32')}
-						></iconify-icon>
+						<iconify-icon icon=${this._showTopMultipleEntryMenu ? 'mdi:menu-up' : 'mdi:menu-down'} style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
 					</div>
 				</button>
 			</header>
@@ -338,15 +313,23 @@ class Component extends LitElement {
 				})()}
 			</section>
 			<virtual-flex-scroll
-				.totalnoofrows=${this._totalNoOfRows}
-				.foreachrowrender=${(rowIndex: number) => {
+				.data=${(() => {
+					let data: number[] = []
+
+					for (let dIndex = 0; dIndex < this._totalNoOfRows; dIndex++) {
+						data.push(dIndex)
+					}
+
+					return data
+				})()}
+				.foreachrowrender=${(datum: number, _: number) => {
 					if (this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE) {
 						if (this._viewJsonOutput) {
-							const jsonData = this.getdata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}[${rowIndex}]`, this.arrayindexplaceholders)
+							const jsonData = this.getdata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}[${datum}]`, this.arrayindexplaceholders)
 
 							return html`
 								<div class="flex flex-col min-w-fit min-h-fit mt-2 mb-2">
-									${this._headerHtmlTemplate(rowIndex)}
+									${this._headerHtmlTemplate(datum)}
 									<pre class="flex-1 bg-gray-700 text-white w-full h-fit max-h-[80vh] overflow-auto shadow-inner shadow-gray-800 p-1 rounded-b-md"><code>${JSON.stringify(jsonData, null, 4)}</code></pre>
 								</div>
 							`
@@ -366,7 +349,7 @@ class Component extends LitElement {
 									.deletedata=${this.deletedata}
 									.totalnoofrows=${20}
 									.headerhtmltemplate=${() => {
-										return this._headerHtmlTemplate(rowIndex)
+										return this._headerHtmlTemplate(datum)
 									}}
 								></metadata-model-datum-input-view-table>
 							</div>
@@ -375,10 +358,10 @@ class Component extends LitElement {
 
 					return html`
 						<div class="mt-2 mb-2">
-							${this._headerHtmlTemplate(rowIndex)}
+							${this._headerHtmlTemplate(datum)}
 							${(() => {
 								if (this._viewJsonOutput) {
-									const jsonData = this.getdata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}[${rowIndex}]`, this.arrayindexplaceholders)
+									const jsonData = this.getdata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}[${datum}]`, this.arrayindexplaceholders)
 
 									return html`<pre class="flex-1 bg-gray-700 text-white w-full h-fit max-h-[80vh] overflow-auto shadow-inner shadow-gray-800 p-1 rounded-b-md"><code>${JSON.stringify(jsonData, null, 4)}</code></pre>`
 								}
@@ -390,7 +373,7 @@ class Component extends LitElement {
 											.scrollelement=${this.scrollelement}
 											.group=${this.group}
 											.arrayindexplaceholders=${this.arrayindexplaceholders}
-											.grouprowindex=${rowIndex}
+											.grouprowindex=${datum}
 											.color=${Theme.GetNextColorA(this.color)}
 											.updatemetadatamodel=${this.updatemetadatamodel}
 											.getdata=${this.getdata}
@@ -405,7 +388,7 @@ class Component extends LitElement {
 										class="rounded-b-md p-2 shadow-inner shadow-gray-800"
 										.scrollelement=${this.scrollelement}
 										.group=${this.group}
-										.arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]}
+										.arrayindexplaceholders=${[...this.arrayindexplaceholders, datum]}
 										.color=${Theme.GetNextColorA(this.color)}
 										.updatemetadatamodel=${this.updatemetadatamodel}
 										.getdata=${this.getdata}
@@ -442,12 +425,7 @@ class Component extends LitElement {
 					<div class="self-center">End of ${this._getGroupName()}</div>
 					<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
 					<div class="self-center w-fit h-fit">
-						<iconify-icon
-							icon=${this._showBottomMultipleEntryMenu ? 'mdi:menu-down' : 'mdi:menu-up'}
-							style="color:${Theme.GetColorContent(this.color)};"
-							width=${Misc.IconifySize('30')}
-							height=${Misc.IconifySize('32')}
-						></iconify-icon>
+						<iconify-icon icon=${this._showBottomMultipleEntryMenu ? 'mdi:menu-down' : 'mdi:menu-up'} style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
 					</div>
 				</button>
 			</footer>
@@ -479,7 +457,7 @@ class ComponentGroupFields extends LitElement {
 	private _groupFieldHtmlTemplate(groupFieldIndex: number) {
 		const fieldGroup = this.group[MetadataModel.FgProperties.GROUP_FIELDS][0][this.group[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS][groupFieldIndex]]
 
-		if (!MetadataModel.isGroupFieldsValid(fieldGroup)) {
+		if (!MetadataModel.IsGroupFieldsValid(fieldGroup)) {
 			return html`<div class="h-fit w-full text-error mt-4 mb-4">fieldGroup not valid</div>`
 		}
 
@@ -523,20 +501,6 @@ class ComponentGroupFields extends LitElement {
 								.updatedata=${this.updatedata}
 								.deletedata=${this.deletedata}
 								.totalnoofrows=${20}
-								.headerhtmltemplate=${() => {
-									return html`
-										<metadata-model-datum-input-header
-											class="sticky top-0 z-[200] rounded-t-md w-full ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
-											.group=${fieldGroup}
-											.color=${this.color}
-											.viewjsonoutput=${this._viewJsonOutput === fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]}
-											.updateviewjsonoutput=${(newValue: boolean) => (this._viewJsonOutput = newValue ? fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] : '')}
-											.arrayindexplaceholders=${this.arrayindexplaceholders}
-											.updatemetadatamodel=${this.updatemetadatamodel}
-											.deletedata=${this.deletedata}
-										></metadata-model-datum-input-header>
-									`
-								}}
 							></metadata-model-datum-input-view-table>
 						</div>
 					`
@@ -644,9 +608,17 @@ class ComponentGroupFields extends LitElement {
 		return html`
 			<virtual-flex-scroll
 				.scrollelement=${this.scrollelement}
-				.totalnoofrows=${this._totalNoOfColumns}
-				.foreachrowrender=${(columnIndex: number) => {
-					return this._groupFieldHtmlTemplate(columnIndex)
+				.data=${(() => {
+					let data: number[] = []
+
+					for (let dIndex = 0; dIndex < this._totalNoOfColumns; dIndex++) {
+						data.push(dIndex)
+					}
+
+					return data
+				})()}
+				.foreachrowrender=${(datum: number, _: number) => {
+					return this._groupFieldHtmlTemplate(datum)
 				}}
 				.enablescrollintoview=${false}
 			></virtual-flex-scroll>

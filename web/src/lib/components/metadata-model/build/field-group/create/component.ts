@@ -68,12 +68,7 @@ class Component extends LitElement {
 				</select>
 				<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} md:w-fit h-fit p-0" @click=${this._handleCreateFieldGroup}>
 					<span class="md:hidden">Create Field/Group</span>
-					<iconify-icon
-						icon="mdi:plus"
-						style="color: ${Theme.GetColorContent(this.color)};"
-						width=${Misc.IconifySize('38')}
-						height=${Misc.IconifySize('38')}
-					></iconify-icon>
+					<iconify-icon icon="mdi:plus" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('38')} height=${Misc.IconifySize('38')}></iconify-icon>
 				</button>
 			</div>
 			${(() => {
@@ -83,9 +78,8 @@ class Component extends LitElement {
 							<span class="label-text text-error">${this._fieldGroupNameKeyError}</span>
 						</div>
 					`
-				} else {
-					return nothing
 				}
+				return nothing
 			})()}
 		`
 	}

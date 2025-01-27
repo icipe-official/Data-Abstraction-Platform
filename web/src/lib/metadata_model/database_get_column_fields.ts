@@ -55,22 +55,22 @@ class _ {
 	 * fg - Alias for field group
 	 */
 	getDatabaseColumnFields(mmGroup: MetadataModel.IMetadataModel | any) {
-		if (!MetadataModel.isGroupFieldsValid(mmGroup)) {
+		if (!MetadataModel.IsGroupFieldsValid(mmGroup)) {
 			throw `${this.getDatabaseColumnFields.name}: argument mmGroup is not an object.`
 		}
 
 		const mmGroupFields = mmGroup[MetadataModel.FgProperties.GROUP_FIELDS][0]
-		if (!MetadataModel.isGroupFieldsValid(mmGroupFields)) {
+		if (!MetadataModel.IsGroupFieldsValid(mmGroupFields)) {
 			throw `${this.getDatabaseColumnFields.name}: argument mmGroup ${MetadataModel.FgProperties.GROUP_FIELDS}[0] is not an object.`
 		}
 
 		const mmGroupReadOrderOfFields = mmGroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]
-		if (!MetadataModel.isGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
+		if (!MetadataModel.IsGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
 			throw `${this.getDatabaseColumnFields.name}: argument mmGroup ${MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS} is not an array.`
 		}
 
 		for (const fgKey of mmGroupReadOrderOfFields) {
-			if (!MetadataModel.isGroupFieldsValid(mmGroupFields[fgKey])) {
+			if (!MetadataModel.IsGroupFieldsValid(mmGroupFields[fgKey])) {
 				continue
 			}
 

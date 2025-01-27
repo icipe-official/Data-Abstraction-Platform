@@ -299,8 +299,9 @@ export interface I2DFields {
 
 export type RepositionFields = { [key: number]: I2DFieldViewPosition }
 
-export const isGroupFieldsValid = (fg: any) => typeof fg === 'object' && !Array.isArray(fg) && fg !== null
-export const isFieldGroupKeyValid = (fgKey: any) => typeof fgKey === 'string'
-export const isGroupReadOrderOfFieldsValid = (groofv: any) => typeof groofv === 'object' && Array.isArray(groofv)
+export const IsGroupFieldsValid = (fg: any) => typeof fg === 'object' && !Array.isArray(fg) && fg !== null
+export const IsFieldGroupKeyValid = (fgKey: any) => typeof fgKey === 'string'
+export const IsGroupReadOrderOfFieldsValid = (groofv: any) => typeof groofv === 'object' && Array.isArray(groofv)
+export const IsFieldAField = (fg: any) => typeof fg[FgProperties.FIELD_DATATYPE] === 'string' && typeof fg[FgProperties.FIELD_UI] === 'string'
 
 export type Error = any[]

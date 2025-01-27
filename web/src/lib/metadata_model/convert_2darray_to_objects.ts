@@ -79,7 +79,7 @@ export class Convert2DArrayToObjects {
 	 * @returns
 	 */
 	private _initFgConversion(mmGroup: MetadataModel.IMetadataModel | any) {
-		if (!MetadataModel.isFieldGroupKeyValid(mmGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
+		if (!MetadataModel.IsFieldGroupKeyValid(mmGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
 			throw [this._initFgConversion.name, `mmGroup.${MetadataModel.FgProperties.FIELD_GROUP_KEY} is not a string`, mmGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]]
 		}
 
@@ -94,11 +94,11 @@ export class Convert2DArrayToObjects {
 
 		// Set 2D Fields Indexes for current mmGroup
 		for (let fieldIndex = 0; fieldIndex < this._2DFields.length; fieldIndex++) {
-			if (!MetadataModel.isGroupFieldsValid(this._2DFields[fieldIndex])) {
+			if (!MetadataModel.IsGroupFieldsValid(this._2DFields[fieldIndex])) {
 				throw [this._initFgConversion.name, `this._2DFields[${fieldIndex}] is not an object`, structuredClone(this._2DFields[fieldIndex])]
 			}
 
-			if (!MetadataModel.isFieldGroupKeyValid(this._2DFields[fieldIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
+			if (!MetadataModel.IsFieldGroupKeyValid(this._2DFields[fieldIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
 				throw [this._initFgConversion.name, `this._2DFields[${fieldIndex}][${MetadataModel.FgProperties.FIELD_GROUP_KEY}] is not a string`, this._2DFields[fieldIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY]]
 			}
 
@@ -115,21 +115,21 @@ export class Convert2DArrayToObjects {
 		}
 
 		const mmGroupFields = mmGroup[MetadataModel.FgProperties.GROUP_FIELDS][0]
-		if (!MetadataModel.isGroupFieldsValid(mmGroupFields)) {
+		if (!MetadataModel.IsGroupFieldsValid(mmGroupFields)) {
 			throw [this._initFgConversion.name, `mmGroup[${MetadataModel.FgProperties.GROUP_FIELDS}][0] is not an object`, structuredClone(mmGroupFields)]
 		}
 
 		const mmGroupReadOrderOfFields = mmGroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]
-		if (!MetadataModel.isGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
+		if (!MetadataModel.IsGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
 			throw [this._initFgConversion.name, `mmGroup[${MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS}] is not an array`, structuredClone(mmGroupReadOrderOfFields)]
 		}
 
 		for (const fgKey of mmGroupReadOrderOfFields) {
-			if (!MetadataModel.isGroupFieldsValid(mmGroupFields[fgKey])) {
+			if (!MetadataModel.IsGroupFieldsValid(mmGroupFields[fgKey])) {
 				throw [this._initFgConversion.name, `mmGroupFields[${fgKey}] is not an object`, structuredClone(mmGroupFields[fgKey])]
 			}
 
-			if (!MetadataModel.isFieldGroupKeyValid(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
+			if (!MetadataModel.IsFieldGroupKeyValid(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
 				throw [this._initFgConversion.name, `mmGroupFields[${fgKey}][${MetadataModel.FgProperties.FIELD_GROUP_KEY}] is not a string`, structuredClone(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_KEY])]
 			}
 
@@ -165,11 +165,11 @@ export class Convert2DArrayToObjects {
 					for (let columnIndex = 0; columnIndex <= maxIndexOfValuesInObject; columnIndex++) {
 						let columnIndexHeaders: number[] = []
 						for (let fIndex = 0; fIndex < this._2DFields.length; fIndex++) {
-							if (!MetadataModel.isGroupFieldsValid(this._2DFields[fIndex])) {
+							if (!MetadataModel.IsGroupFieldsValid(this._2DFields[fIndex])) {
 								throw [this._initFgConversion.name, `this._2DFields[${fIndex}] is not an object`, this._2DFields[fIndex]]
 							}
 
-							if (!MetadataModel.isFieldGroupKeyValid(this._2DFields[fIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
+							if (!MetadataModel.IsFieldGroupKeyValid(this._2DFields[fIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
 								throw [this._initFgConversion.name, `this._2DFields[${fIndex}] is not a string`, this._2DFields[fIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY]]
 							}
 
@@ -410,7 +410,7 @@ export class Convert2DArrayToObjects {
 		let fields2DIndexes: number[] = []
 
 		for (const fgIndex of currentGroupIndexes) {
-			if (!MetadataModel.isGroupFieldsValid(this._2DFields[fgIndex])) {
+			if (!MetadataModel.IsGroupFieldsValid(this._2DFields[fgIndex])) {
 				throw [this._get2DFieldsIndexesFromCurrentGroupIndexes.name, `${fgIndex} Field is not an object`, structuredClone(this._2DFields[fgIndex])]
 			}
 
@@ -426,21 +426,21 @@ export class Convert2DArrayToObjects {
 		let primaryKeyIndexes: number[] = []
 
 		const mmGroupFields = mmGroup[MetadataModel.FgProperties.GROUP_FIELDS][0]
-		if (!MetadataModel.isGroupFieldsValid(mmGroupFields)) {
+		if (!MetadataModel.IsGroupFieldsValid(mmGroupFields)) {
 			throw [this._getPrimaryKey2DFieldsIndexes.name, `argument mmGroup[${MetadataModel.FgProperties.GROUP_FIELDS}][0] is not an object`, structuredClone(mmGroupFields)]
 		}
 
 		const mmGroupReadOrderOfFields = mmGroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]
-		if (!MetadataModel.isGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
+		if (!MetadataModel.IsGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
 			throw [this._getPrimaryKey2DFieldsIndexes.name, `argument mmGroup.${MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS} is not an array`, structuredClone(mmGroupReadOrderOfFields)]
 		}
 
 		for (const fgKey of mmGroupReadOrderOfFields) {
-			if (!MetadataModel.isGroupFieldsValid(mmGroupFields[fgKey])) {
+			if (!MetadataModel.IsGroupFieldsValid(mmGroupFields[fgKey])) {
 				throw [this._getPrimaryKey2DFieldsIndexes.name, 'mmGroupFields[fgKey] is not an object', structuredClone(mmGroupFields[fgKey])]
 			}
 
-			if (!MetadataModel.isFieldGroupKeyValid(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
+			if (!MetadataModel.IsFieldGroupKeyValid(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
 				throw [this._getPrimaryKey2DFieldsIndexes.name, `mmGroupFields[fgKey][${MetadataModel.FgProperties.FIELD_GROUP_KEY} ]is not a string`]
 			}
 
@@ -451,7 +451,7 @@ export class Convert2DArrayToObjects {
 				}
 
 				for (let fieldIndex = 0; fieldIndex < this._2DFields.length; fieldIndex++) {
-					if (!MetadataModel.isGroupFieldsValid(this._2DFields[fieldIndex])) {
+					if (!MetadataModel.IsGroupFieldsValid(this._2DFields[fieldIndex])) {
 						throw [this._getPrimaryKey2DFieldsIndexes.name, `this._2DFields[${fieldIndex}] is not an object`, this._2DFields[fieldIndex]]
 					}
 

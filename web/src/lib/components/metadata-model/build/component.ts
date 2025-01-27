@@ -129,7 +129,7 @@ class Component extends LitElement {
 										if (this._copiedfieldgroupkey.length > 0) {
 											pasteFieldGroup = Json.GetValueInObject(this.metadatamodel, this._copiedfieldgroupkey.replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]'))
 										} else {
-											pasteFieldGroup = JSON.parse(JSON.stringify(this._cutfieldgroup))
+											pasteFieldGroup = structuredClone(this._cutfieldgroup)
 										}
 										if (typeof pasteFieldGroup === 'undefined') {
 											Log.Log(Log.Level.ERROR, this.localName, 'pasteFieldGroup is undefined')
@@ -143,7 +143,7 @@ class Component extends LitElement {
 										}
 
 										if (Array.isArray(pasteFieldGroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
-											pasteFieldGroup = MetadataModel.MapFieldPropertiesInMetadataModel(pasteFieldGroup, (property) => {
+											pasteFieldGroup = MetadataModel.MapFieldGroups(pasteFieldGroup, (property) => {
 												if (typeof property[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
 													property[MetadataModel.FgProperties.FIELD_GROUP_KEY] = (property[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).replace(pasteFieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], destinationGroupKey)
 												}

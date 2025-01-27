@@ -15,7 +15,9 @@ class Component extends LitElement {
 	@property({ type: Array }) arrayindexplaceholders: number[] = []
 	@property({ type: String }) color!: Theme.Color
 	@property({ type: Boolean }) viewjsonoutput: boolean = false
-	@property({ attribute: false }) updateviewjsonoutput!: (newviewjsonoutput: boolean) => void
+	@property({ type: Boolean }) viewgrouptree: boolean = false
+	@property({ attribute: false }) updateviewjsonoutput!: (newvalue: boolean) => void
+	@property({ attribute: false }) updateviewgrouptree!: (newvalue: boolean) => void
 	@property({ attribute: false }) updatemetadatamodel!: (fieldGroup: any) => void
 	@property({ attribute: false }) deletedata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
 
@@ -30,7 +32,7 @@ class Component extends LitElement {
 					<button class="btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showMenu = !this._showMenu)}>
 						<iconify-icon
 							icon="mdi:dots-vertical"
-							style="color:${Theme.GetColorContent(this.color)};"
+							style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
 							width=${Misc.IconifySize()}
 							height=${Misc.IconifySize()}
 						></iconify-icon>
@@ -50,7 +52,7 @@ class Component extends LitElement {
 								<button class="ml-2 btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showDescription = !this._showDescription)}>
 									<iconify-icon
 										icon="mdi:question-mark-circle"
-										style="color:${Theme.GetColorContent(this.color)};"
+										style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
 										width=${Misc.IconifySize()}
 										height=${Misc.IconifySize()}
 									></iconify-icon>
@@ -95,9 +97,9 @@ class Component extends LitElement {
 										}}
 									>
 										<div class="flex self-center">
-											<iconify-icon icon=${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'mdi:table-large' : 'mdi:form'} style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+											<iconify-icon icon=${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'mdi:form' : 'mdi:table-large'} style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
 										</div>
-										<div class="self-center font-bold">data input view</div>
+										<div class="self-center font-bold">Switch to ${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'form' : 'table'} view</div>
 									</button>
 									<button
 										class="btn btn-ghost p-1 w-full justify-start"
@@ -110,6 +112,29 @@ class Component extends LitElement {
 										</div>
 										<div class="self-center font-bold">delete data</div>
 									</button>
+									${(() => {
+										if (typeof this.updateviewgrouptree === 'function') {
+											return html`
+												<button class="btn btn-ghost p-1 w-full justify-start" @click=${() => this.updateviewgrouptree(!this.viewgrouptree)}>
+													<div class="flex flex-col justify-center">
+														<div class="flex self-center">
+															<iconify-icon icon="mdi:file-tree" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+															${(() => {
+																if (this.viewgrouptree) {
+																	return html` <iconify-icon icon="mdi:close-circle" style="color: black;" width=${Misc.IconifySize('10')} height=${Misc.IconifySize('10')}></iconify-icon> `
+																} else {
+																	return nothing
+																}
+															})()}
+														</div>
+													</div>
+													<div class="self-center font-bold">view group tree</div>
+												</button>
+											`
+										}
+
+										return nothing
+									})()}
 								</div>
 							`
 						}

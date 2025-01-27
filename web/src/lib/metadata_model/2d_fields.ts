@@ -27,7 +27,7 @@ export class Extract2DFields {
 	 * @param removePrimaryKey Remove field if {@linkcode skipIfFGDisabled} or {@linkcode skipIfDataExtraction} even if {@linkcode MetadataModel.FgProperties.FIELD_GROUP_IS_PRIMARY_KEY} field property is true.
 	 */
 	constructor(metadatamodel: any, skipIfFGDisabled: boolean = true, skipIfDataExtraction: boolean = true, removePrimaryKey: boolean = true) {
-		if (!MetadataModel.isGroupFieldsValid(metadatamodel)) {
+		if (!MetadataModel.IsGroupFieldsValid(metadatamodel)) {
 			throw [Extract2DFields.name, 'argument metadatamodel is not an object']
 		}
 
@@ -90,23 +90,23 @@ export class Extract2DFields {
 		}
 
 		const mmGroupFields = mmGroup[MetadataModel.FgProperties.GROUP_FIELDS][0]
-		if (!MetadataModel.isGroupFieldsValid(mmGroupFields)) {
+		if (!MetadataModel.IsGroupFieldsValid(mmGroupFields)) {
 			throw [this._extract.name, `mmGroup${MetadataModel.FgProperties.GROUP_FIELDS}[0] is not an object`, structuredClone(mmGroupFields)]
 		}
 
 		const mmGroupReadOrderOfFields = mmGroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]
-		if (!MetadataModel.isGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
+		if (!MetadataModel.IsGroupReadOrderOfFieldsValid(mmGroupReadOrderOfFields)) {
 			throw [this._extract.name, `mmGroup${MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS} is not an array`, structuredClone(mmGroupReadOrderOfFields)]
 		}
 
 		for (const fgKey of mmGroupReadOrderOfFields) {
-			if (!MetadataModel.isGroupFieldsValid(mmGroupFields[fgKey])) {
+			if (!MetadataModel.IsGroupFieldsValid(mmGroupFields[fgKey])) {
 				throw [this._extract.name, `mmGroupFields[${fgKey}] is not an object`, structuredClone(mmGroupFields[fgKey])]
 			}
 
 			if (Array.isArray(mmGroupFields[fgKey][MetadataModel.FgProperties.GROUP_FIELDS])) {
-				const skipDataExtraction = (this._skipIfDataExtraction && mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION]) || mmGroupSkipDataExtraction
-				const viewDisable = (this._skipIfFGDisabled && mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) || mmGroupViewDisable
+				const skipDataExtraction = mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] || mmGroupSkipDataExtraction
+				const viewDisable = mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] || mmGroupViewDisable
 
 				if (mmGroupFields[fgKey][MetadataModel.FgProperties.GROUP_EXTRACT_AS_SINGLE_FIELD]) {
 					this._fields.push(mmGroupFields[fgKey])

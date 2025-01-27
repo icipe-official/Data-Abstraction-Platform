@@ -36,12 +36,10 @@ class Component extends LitElement {
 
 	private _focusSelectInputSearchField(e: MouseEvent) {
 		e.preventDefault()
-		// // Log.Log(Log.Level.DEBUG, this.localName, this._focusSelectInputSearchField.name, 'Focusing select input search field')
 		if (this._componentFocused) return
 		this._componentFocused = true
 		this._showSelectOptions = true
 		;(this.shadowRoot?.querySelector('.hs-multi-select-input-field') as HTMLInputElement).focus()
-		// // Log.Log(Log.Level.DEBUG, this.localName, this._focusSelectInputSearchField.name, 'select input search field focuse')
 	}
 
 	connectedCallback(): void {
@@ -206,30 +204,28 @@ class Component extends LitElement {
 			</header>
 			${(() => {
 				if (this._showSelectOptions) {
-					const currentSelectOptions = this.selectoptions.filter((so, index) => {
-						if (this.selectedoptions !== null && typeof this.selectedoptions === 'object') {
-							if (Array.isArray(this.selectedoptions)) {
-								for (let seo of this.selectedoptions) {
-									if (seo.label === so.label && seo.value === so.value) {
-										return false
-									}
-								}
-							}
-
-							if ((this.selectedoptions as SelectOption).label === so.label && (this.selectedoptions as SelectOption).value === so.value) {
-								return false
-							}
-						}
-
-						return this._selectSearchOptions.length === 0 || this._selectSearchOptions.includes(index)
-					})
-
 					return html`
 						<div class="w-full min-h-[4px]"></div>
 						<virtual-flex-scroll
 							class="rounded-lg bg-white shadow-md shadow-gray-800 p-1 w-full max-h-[30vh]"
-							.totalnoofrows=${currentSelectOptions.length}
-							.foreachrowrender=${(rowColumnIndex: number) => {
+							.data=${this.selectoptions.filter((so, index) => {
+								if (this.selectedoptions !== null && typeof this.selectedoptions === 'object') {
+									if (Array.isArray(this.selectedoptions)) {
+										for (let seo of this.selectedoptions) {
+											if (seo.label === so.label && seo.value === so.value) {
+												return false
+											}
+										}
+									}
+
+									if ((this.selectedoptions as SelectOption).label === so.label && (this.selectedoptions as SelectOption).value === so.value) {
+										return false
+									}
+								}
+
+								return this._selectSearchOptions.length === 0 || this._selectSearchOptions.includes(index)
+							})}
+							.foreachrowrender=${(datum: SelectOption, _: number) => {
 								return html`
 									<button
 										class="w-full p-1 mt-1 mb-1 text-left ${this.color === Theme.Color.PRIMARY
@@ -240,26 +236,25 @@ class Component extends LitElement {
 													? 'hover:bg-accent hover:text-accent-content'
 													: 'hover:bg-black hover:text-white'} disabled:hover:bg-white"
 										@click=${() => {
-											const so = currentSelectOptions[rowColumnIndex]
 											if (this.multiselect) {
 												if (Array.isArray(this.selectedoptions)) {
 													for (let seo of this.selectedoptions) {
-														if (seo.value === so.value && seo.label === so.label) {
+														if (seo.value === datum.value && seo.label === datum.label) {
 															return
 														}
 													}
-													this.selectedoptions = [...this.selectedoptions, so]
+													this.selectedoptions = [...this.selectedoptions, datum]
 												} else {
-													this.selectedoptions = [so]
+													this.selectedoptions = [datum]
 												}
 											} else {
-												this.selectedoptions = so
-												this._selectSearchQuery = so.label
+												this.selectedoptions = datum
+												this._selectSearchQuery = datum.label
 											}
 											this.dispatchEvent(
 												new CustomEvent('multi-select:addselectedoptions', {
 													detail: {
-														value: so
+														value: datum
 													}
 												})
 											)
@@ -283,7 +278,7 @@ class Component extends LitElement {
 											return false
 										})()}
 									>
-										${currentSelectOptions[rowColumnIndex].label}
+										${datum.label}
 									</button>
 								`
 							}}

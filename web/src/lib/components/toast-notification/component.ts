@@ -174,11 +174,11 @@ class Component extends LitElement {
 														.queryconditions=${this._queryConditions}
 														.metadatamodel=${this._toastMetadataModelSearchResults.metadata_model}
 														@metadata-model-view-panel:updatequeryconditions=${(e: CustomEvent) => {
-															this._queryConditions = JSON.parse(JSON.stringify(e.detail.value))
+															this._queryConditions = structuredClone(e.detail.value)
 														}}
 														@metadata-model-view-panel:updatemetadatamodel=${(e: CustomEvent) => {
 															this._toastMetadataModelSearchResults!.metadata_model = e.detail
-															this._toastMetadataModelSearchResults = JSON.parse(JSON.stringify(this._toastMetadataModelSearchResults))
+															this._toastMetadataModelSearchResults = structuredClone(this._toastMetadataModelSearchResults)
 														}}
 													></metadata-model-view-panel>
 													<button
