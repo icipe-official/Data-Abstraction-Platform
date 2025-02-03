@@ -40,17 +40,14 @@ class Component extends LitElement {
 									value: fss[MetadataModel.FSelectProperties.VALUE]
 								}
 							})
-							if (Array.isArray(fieldDatum)) {
-								let selectedOptions: any[] = []
-								for (const so of selectOptions) {
-									if (fieldDatum.includes(so.value)) {
-										selectedOptions = [...selectedOptions, so]
-									}
+							let selectedOptions: any[] = []
+							for (const so of selectOptions) {
+								if ((Array.isArray(fieldDatum) && fieldDatum.includes(so.value)) || so.value === fieldDatum) {
+									selectedOptions = [...selectedOptions, so]
 								}
-								return selectedOptions
-							} else {
-								return null
 							}
+
+							return selectedOptions.length > 0 ? selectedOptions : null
 						})()}
 						.multiselect=${this.field[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 1}
 						.maxselectedoptions=${this.field[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] || 0}

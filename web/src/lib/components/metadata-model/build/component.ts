@@ -296,6 +296,7 @@ class Component extends LitElement {
 										class="flex-1 p-1 overflow-hidden"
 										.color=${this._selectedFieldGroupColor}
 										.fieldgroup=${fieldGroup}
+										.metadatamodel=${this.metadatamodel}
 										.updatefieldgroup=${(fieldgroup: any) => {
 											if (typeof fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] !== 'string') {
 												return

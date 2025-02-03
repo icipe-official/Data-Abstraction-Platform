@@ -23,8 +23,8 @@ export class Extract2DFields {
 	 *
 	 * @param metadatamodel A valid metadata-model of type object (not array). Expected to presented as if converted from JSON.
 	 * @param skipIfFGDisabled Do not include field group if property {@linkcode MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE}($FG_VIEW_DISABLE) is true. Default true.
-	 * @param skipIfDataExtraction Do not include field group if property {@linkcode MetadataModel.FgProperties.FIELD_GROUP_SKIP_DATA_EXTRACTION}($FG_SKIP_DATA_EXTRACTION) is true. Default true.
-	 * @param removePrimaryKey Remove field if {@linkcode skipIfFGDisabled} or {@linkcode skipIfDataExtraction} even if {@linkcode MetadataModel.FgProperties.FIELD_GROUP_IS_PRIMARY_KEY} field property is true.
+	 * @param skipIfDataExtraction Do not include field group if property {@linkcode MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION}($DATABASE_SKIP_DATA_EXTRACTION) is true. Default true.
+	 * @param removePrimaryKey Remove field if {@linkcode skipIfFGDisabled} or {@linkcode skipIfDataExtraction} even if {@linkcode MetadataModel.FgProperties.FIELD_GROUP_IS_PRIMARY_KEY} field property is true. Default true.
 	 */
 	constructor(metadatamodel: any, skipIfFGDisabled: boolean = true, skipIfDataExtraction: boolean = true, removePrimaryKey: boolean = true) {
 		if (!MetadataModel.IsGroupFieldsValid(metadatamodel)) {
@@ -182,11 +182,7 @@ export class Extract2DFields {
 
 			let newField: any = structuredClone(mmGroupFields[fgKey])
 
-			if (
-				typeof newField[MetadataModel.FgProperties.FIELD_2D_VIEW_POSITION] === 'object' &&
-				!Array.isArray(newField[MetadataModel.FgProperties.FIELD_2D_VIEW_POSITION]) &&
-				typeof newField[MetadataModel.FgProperties.FIELD_2D_VIEW_POSITION][MetadataModel.Field2dPositionProperties.FIELD_GROUP_KEY] === 'string'
-			) {
+			if (MetadataModel.Is2DFieldViewPositionValid(newField)) {
 				this._repositionFields[this._fields.length] = newField[MetadataModel.FgProperties.FIELD_2D_VIEW_POSITION]
 			}
 
@@ -203,28 +199,28 @@ export class Extract2DFields {
 	}
 
 	/**
-	 * Calls {@linkcode Reposition2DFields}.
+	 * Calls {@linkcode Reposition2DFields} and updates {@linkcode Extract2DFields._fields}.
 	 */
 	Reposition() {
 		this._fields = Reposition2DFields({ fields: this._fields, reposition: this._repositionFields })
 	}
 
 	/**
-	 * Calls {@linkcode Reposition2DFields}.
+	 * Returns result of calling {@linkcode Reposition2DFields}.
 	 */
 	get FieldsRepositioned() {
 		return Reposition2DFields({ fields: this._fields, reposition: this._repositionFields })
 	}
 
 	/**
-	 * Calls {@linkcode RemoveSkipped2DFields}.
+	 * Calls {@linkcode RemoveSkipped2DFields} and updates {@linkcode Extract2DFields._fields}..
 	 */
 	RemoveSkipped() {
 		this._fields = RemoveSkipped2DFields(this._fields, this._skipIfFGDisabled, this._skipIfDataExtraction, this._removePrimaryKey)
 	}
 
 	/**
-	 * Calls {@linkcode RemoveSkipped2DFields}.
+	 * Returns result of calling {@linkcode RemoveSkipped2DFields}.
 	 */
 	get FieldsWithSkippedRemoved() {
 		return RemoveSkipped2DFields(this._fields, this._skipIfFGDisabled, this._skipIfDataExtraction, this._removePrimaryKey)

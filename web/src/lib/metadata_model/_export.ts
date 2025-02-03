@@ -38,5 +38,6 @@ export {
 	IsGroupFieldsValid,
 	IsFieldGroupKeyValid,
 	IsGroupReadOrderOfFieldsValid,
-	IsFieldAField
+	IsFieldAField,
+	Is2DFieldViewPositionValid
 } from './metadata_model'

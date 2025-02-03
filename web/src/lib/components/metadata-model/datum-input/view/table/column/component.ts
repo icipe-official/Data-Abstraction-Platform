@@ -37,9 +37,11 @@ class Component extends LitElement {
 	connectedCallback(): void {
 		super.connectedCallback()
 
-		const fieldData = this.getdata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
-		if (Array.isArray(fieldData) && fieldData.length > 1) {
-			this._totalNoOfRows = fieldData.length
+		if (this.field[MetadataModel.FgProperties.FIELD_UI] !== MetadataModel.FieldUi.SELECT) {
+			const fieldData = this.getdata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
+			if (Array.isArray(fieldData) && fieldData.length > 1) {
+				this._totalNoOfRows = fieldData.length
+			}
 		}
 	}
 
@@ -78,7 +80,7 @@ class Component extends LitElement {
 									continue
 								}
 
-								if (typeof rowField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] === 'number') {
+								if (rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] && typeof rowField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] === 'number') {
 									rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] = 1
 								}
 
@@ -103,7 +105,7 @@ class Component extends LitElement {
 															<metadata-model-datum-input-column-field-text
 																.color=${this.color}
 																.field=${rowField}
-																.arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]}
+																.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
 																.getdata=${this.getdata}
 																.deletedata=${this.deletedata}
 																.updatedata=${this.updatedata}
@@ -114,7 +116,7 @@ class Component extends LitElement {
 															<metadata-model-datum-input-column-field-number
 																.color=${this.color}
 																.field=${rowField}
-																.arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]}
+																.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
 																.getdata=${this.getdata}
 																.deletedata=${this.deletedata}
 																.updatedata=${this.updatedata}
@@ -125,7 +127,7 @@ class Component extends LitElement {
 															<metadata-model-datum-input-column-field-checkbox
 																.color=${this.color}
 																.field=${rowField}
-																.arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]}
+																.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
 																.getdata=${this.getdata}
 																.deletedata=${this.deletedata}
 																.updatedata=${this.updatedata}
@@ -136,7 +138,7 @@ class Component extends LitElement {
 															<metadata-model-datum-input-column-field-date-time
 																.color=${this.color}
 																.field=${rowField}
-																.arrayindexplaceholders=${[...this.arrayindexplaceholders, rowIndex]}
+																.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
 																.getdata=${this.getdata}
 																.deletedata=${this.deletedata}
 																.updatedata=${this.updatedata}
@@ -204,28 +206,6 @@ class Component extends LitElement {
 																return nothing
 															}
 														})()}
-														<button
-															class="btn btn-ghost p-1 w-full justify-start"
-															@click=${() => {
-																// this.setcopiedfieldgroupkey(`${rowField[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-															}}
-														>
-															<div class="flex self-center">
-																<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-															</div>
-															<div class="self-center font-bold">Copy field data</div>
-														</button>
-														<button
-															class="btn btn-ghost p-1 w-full justify-start"
-															@click=${() => {
-																// this.setcutfieldgroupdata(`${rowField[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-															}}
-														>
-															<div class="flex self-center">
-																<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-															</div>
-															<div class="self-center font-bold">Cut field data</div>
-														</button>
 														<button
 															class="btn btn-ghost p-1 w-full justify-start"
 															@click=${() => {

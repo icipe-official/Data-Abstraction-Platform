@@ -303,5 +303,6 @@ export const IsGroupFieldsValid = (fg: any) => typeof fg === 'object' && !Array.
 export const IsFieldGroupKeyValid = (fgKey: any) => typeof fgKey === 'string'
 export const IsGroupReadOrderOfFieldsValid = (groofv: any) => typeof groofv === 'object' && Array.isArray(groofv)
 export const IsFieldAField = (fg: any) => typeof fg[FgProperties.FIELD_DATATYPE] === 'string' && typeof fg[FgProperties.FIELD_UI] === 'string'
+export const Is2DFieldViewPositionValid = (fg: any) => typeof fg[FgProperties.FIELD_2D_VIEW_POSITION] === 'object' && !Array.isArray(fg[FgProperties.FIELD_2D_VIEW_POSITION]) && typeof fg[FgProperties.FIELD_2D_VIEW_POSITION][Field2dPositionProperties.FIELD_GROUP_KEY] === 'string'
 
 export type Error = any[]
