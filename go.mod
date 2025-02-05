@@ -2,11 +2,14 @@ module github.com/icipe-official/Data-Abstraction-Platform
 
 go 1.22.5
 
-require github.com/jackc/pgx/v5 v5.7.1
+require (
+	github.com/gofrs/uuid/v5 v5.0.0
+	github.com/jackc/pgx/v5 v5.7.1
+)
 
 require (
-	github.com/gofrs/uuid/v5 v5.0.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 require (

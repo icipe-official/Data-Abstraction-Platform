@@ -202,6 +202,14 @@ export class Convert2DArrayToObjects {
 	}
 
 	Convert(data: any[][]) {
+		data = data.filter(datum => {
+			for (let dIndex = 0; dIndex < datum.length; dIndex++) {
+				if (datum[dIndex] !== null && typeof datum[dIndex] !== 'undefined') {
+					return true
+				}
+			}
+			return false
+		})
 		let currentDataIndexes = new Array(data.length)
 		for (let cdIndex = 0; cdIndex < data.length; cdIndex++) {
 			currentDataIndexes[cdIndex] = cdIndex
@@ -238,7 +246,7 @@ export class Convert2DArrayToObjects {
 							for (let citmihIndex = 0; citmihIndex < ci2dhIndex.length; citmihIndex++) {
 								const fieldValue = this._extractFieldValueFromGroupedData(groupedDataIndexes[gdIndex], [ci2dhIndex[citmihIndex]])
 								if (fieldValue.length > 0) {
-									newFieldValue[field.read_order_of_fields[ci2dhIndex[citmihIndex]]] = fieldValue
+									newFieldValue[field.read_order_of_fields[citmihIndex]] = fieldValue
 								}
 							}
 
@@ -325,7 +333,7 @@ export class Convert2DArrayToObjects {
 		if (duplicateRowValues.length > 0) {
 			for (let drvIndex = 0; drvIndex < duplicateRowValues.length; drvIndex++) {
 				if (!Json.AreValuesEqual(duplicateRowValues[0], duplicateRowValues[drvIndex])) {
-					throw [this._extractFieldValueFromGroupedData.name, 'duplicateRowValues not equal']
+					throw [this._extractFieldValueFromGroupedData.name, 'duplicateRowValues not equal', duplicateRowValues, 'groupedDataIndexes', groupedDataIndexes, 'columnIndexes', columnIndexes]
 				}
 			}
 		}

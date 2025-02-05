@@ -17,7 +17,7 @@ class Component extends LitElement {
 	@state() private _fieldGroupNameKey: string = ''
 	@state() _fieldGroupNameKeyError: string | null = null
 	private readonly DEFAULT_FIELDGROUPNAMEKEY_ERROR = 'Name/Key must be at least one character in length...'
-	private _isFieldGroupNameKeyValid = () => this._fieldGroupNameKey.length > 1
+	private _isFieldGroupNameKeyValid = () => this._fieldGroupNameKey.length > 0
 
 	@state() private _isField: boolean = true
 

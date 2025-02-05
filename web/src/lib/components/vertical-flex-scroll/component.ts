@@ -318,7 +318,7 @@ class Component extends LitElement {
 	}
 
 	protected render(): unknown {
-		if (this._rowEndIndex > this.data.length) {
+		if (this._rowEndIndex > this.data.length - 1) {
 			this._rowEndIndex = this.data.length - 1
 		}
 

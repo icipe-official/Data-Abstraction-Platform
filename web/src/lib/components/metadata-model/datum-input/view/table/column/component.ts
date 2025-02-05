@@ -131,6 +131,7 @@ class Component extends LitElement {
 																.getdata=${this.getdata}
 																.deletedata=${this.deletedata}
 																.updatedata=${this.updatedata}
+																.includeplaceholdertext=${false}
 															></metadata-model-datum-input-column-field-checkbox>
 														`
 													case MetadataModel.FieldUi.DATETIME:

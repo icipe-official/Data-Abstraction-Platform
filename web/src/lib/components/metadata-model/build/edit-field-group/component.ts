@@ -162,8 +162,9 @@ class Component extends LitElement {
 												.value=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' ? this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES].toString() : ''}
 												@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 													if (e.currentTarget.value.length > 0) {
-														if (!Number.isNaN(e.currentTarget.value)) {
+														if (!Number.isNaN(Number(e.currentTarget.value))) {
 															this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] = Math.round(Number(e.currentTarget.value))
+															this._fieldGroupMaxEntriesError = null
 														} else {
 															this._fieldGroupMaxEntriesError = this.FIELD_GROUP_MAX_ENTRIES_ERROR
 														}
@@ -1049,22 +1050,56 @@ class Component extends LitElement {
 														<section class="join join-vertical w-full">
 															<div class="join-item h-fit ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex justify-between">
 																<span class="h-fit self-center">Select Options (REQUIRED)</span>
-																<button
-																	class="btn btn-circle btn-ghost"
-																	@click=${(e: Event) => {
-																		try {
-																			if (Array.isArray(this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS])) {
-																				this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}`, [{}, ...this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS]])
-																			} else {
-																				this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[0]`, {})
+																<span class="flex space-x-1">
+																	<button
+																		class="btn btn-circle btn-ghost"
+																		@click=${(e: Event) => {
+																			try {
+																				const dataToParse: any[][] = (this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS] as MetadataModel.ISelectOption[]).map((so) => {
+																					let selOpt: any[] = []
+																					if (typeof so[MetadataModel.FSelectProperties.LABEL] === 'string') {
+																						selOpt.push(so[MetadataModel.FSelectProperties.LABEL])
+																					}
+																					if (typeof so[MetadataModel.FSelectProperties.VALUE] !== 'undefined') {
+																						selOpt.push(so[MetadataModel.FSelectProperties.VALUE])
+																					}
+																					return selOpt
+																				})
+
+																				const objectUrl = URL.createObjectURL(new Blob([Papa.unparse(dataToParse, { header: true })], { type: 'text/csv' }))
+																				const downloadLink = document.createElement('a')
+																				downloadLink.href = objectUrl
+																				downloadLink.setAttribute('download', `data.csv`)
+																				document.body.appendChild(downloadLink)
+																				downloadLink.click()
+																				document.body.removeChild(downloadLink)
+																				URL.revokeObjectURL(objectUrl)
+																			} catch (err) {
+																				Log.Log(Log.Level.ERROR, this.localName, e, err)
 																			}
-																		} catch (err) {
-																			Log.Log(Log.Level.ERROR, this.localName, e, err)
-																		}
-																	}}
-																>
-																	<iconify-icon icon="mdi:plus-circle" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-																</button>
+																		}}
+																		.disabled=${!Array.isArray(this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS]) || this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS].length === 0}
+																	>
+																		<iconify-icon icon="mdi:download-circle" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																	</button>
+																	<button
+																		class="btn btn-circle btn-ghost"
+																		@click=${(e: Event) => {
+																			try {
+																				if (Array.isArray(this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS])) {
+																					this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}`, [{}, ...this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS]])
+																				} else {
+																					this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[0]`, {})
+																				}
+																				this.fieldgroup = structuredClone(this.fieldgroup)
+																			} catch (err) {
+																				Log.Log(Log.Level.ERROR, this.localName, e, err)
+																			}
+																		}}
+																	>
+																		<iconify-icon icon="mdi:plus-circle" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																	</button>
+																</span>
 															</div>
 															${(() => {
 																if (this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] === MetadataModel.FieldType.ANY || this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] === MetadataModel.FieldType.TEXT) {
@@ -1190,7 +1225,7 @@ class Component extends LitElement {
 																								} else {
 																									this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.LABEL}`)
 																								}
-																								this.updatefieldgroup(this.fieldgroup)
+																								this.fieldgroup = structuredClone(this.fieldgroup)
 																							}}
 																						/>
 																						<select
@@ -1201,7 +1236,7 @@ class Component extends LitElement {
 																								} else {
 																									this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.TYPE}`)
 																								}
-																								this.updatefieldgroup(this.fieldgroup)
+																								this.fieldgroup = structuredClone(this.fieldgroup)
 																							}}
 																							.disabled=${this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] !== MetadataModel.FieldType.ANY}
 																						>
@@ -1229,7 +1264,7 @@ class Component extends LitElement {
 																												} else {
 																													this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
 																												}
-																												this.updatefieldgroup(this.fieldgroup)
+																												this.fieldgroup = structuredClone(this.fieldgroup)
 																											}}
 																										/>
 																									`
@@ -1246,7 +1281,7 @@ class Component extends LitElement {
 																												} else {
 																													this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`)
 																												}
-																												this.updatefieldgroup(this.fieldgroup)
+																												this.fieldgroup = structuredClone(this.fieldgroup)
 																											}}
 																										/>
 																									`
@@ -1258,7 +1293,7 @@ class Component extends LitElement {
 																											.checked=${datum[MetadataModel.FSelectProperties.VALUE] || false}
 																											@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																												this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_SELECT_OPTIONS}[${index}].${MetadataModel.FSelectProperties.VALUE}`, e.currentTarget.checked)
-																												this.updatefieldgroup(this.fieldgroup)
+																												this.fieldgroup = structuredClone(this.fieldgroup)
 																											}}
 																										/>
 																									`

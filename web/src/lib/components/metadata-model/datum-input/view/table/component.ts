@@ -7,6 +7,7 @@ import Json from '$src/lib/json'
 import Misc from '$src/lib/miscellaneous'
 import './column/component'
 import { cache } from 'lit/directives/cache.js'
+import { keyed } from 'lit/directives/keyed.js'
 import '$src/lib/components/vertical-flex-scroll/component'
 import '../../tree/component'
 import Papa from 'papaparse'
@@ -382,100 +383,104 @@ class Component extends LitElement {
 	}
 
 	private _rowColumnDataHtmlTemplate(rowIndex: number, columnIndex: number, stickyleft: number, stickytop: number) {
-		return html`
-			<metadata-model-datum-input-table-column
-				.field=${this._data2DFields[columnIndex]}
-				.arrayindexplaceholders=${[rowIndex, columnIndex]}
-				.color=${this.color}
-				.stickyleft=${stickyleft}
-				.stickytop=${stickytop}
-				.getdata=${(_: string, arrayPlaceholderIndexes: number[]) => {
-					return Json.GetValueInObject(this._data2DArray, arrayPlaceholderIndexes.join('.'))
-				}}
-				.updatedata=${(_: string, arrayPlaceholderIndexes: number[], value: any) => {
-					Json.SetValueInObject(this._data2DArray, arrayPlaceholderIndexes.join('.'), value)
-					this._updateData()
-				}}
-				.deletedata=${(_: string, arrayPlaceholderIndexes: number[]) => {
-					if (this._data2DFields[arrayPlaceholderIndexes[1]][MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 1) {
-						Json.SetValueInObject(this._data2DArray, arrayPlaceholderIndexes.join('.'), undefined)
-					} else {
-						Json.DeleteValueInObject(this._data2DArray, arrayPlaceholderIndexes.join('.'))
-					}
-					this._updateData()
-				}}
-				.selectedrowminindex=${this._selectedrowminindex}
-				.selectedrowmaxindex=${this._selectedrowmaxindex}
-				.selectedcolumnminindex=${this._selectedcolumnminindex}
-				.selectedcolumnmaxindex=${this._selectedcolumnmaxindex}
-				.updateselectedrowcolumnindex=${(row: number, column: number) => {
-					if (this._copyModeActive) {
-						if (row > this._data2DArray.length) {
-							for (let rIndex = this._data2DArray.length; rIndex < row; rIndex++) {
-								this._data2DArray.push([])
-							}
-						}
-
-						if (this._data2DArray.length <= row + this._selectedrowmaxindex - this._selectedrowminindex) {
-							for (let rIndex = this._data2DArray.length - 1; rIndex <= row + this._selectedrowmaxindex - this._selectedrowminindex; rIndex++) {
-								this._data2DArray.push([])
-							}
-						}
-
-						let scmi = -1
-						for (let rIndex = row; rIndex <= row + this._selectedrowmaxindex - this._selectedrowminindex; rIndex++) {
-							scmi += 1
-							if (this._selectedcolumnminindex === 0 && this._selectedcolumnmaxindex === this._data2DFields.length - 1) {
-								this._data2DArray[rIndex] = structuredClone(this._data2DArray[this._selectedrowminindex + scmi])
-								continue
-							}
-
-							for (let cIndex = this._selectedcolumnminindex; cIndex <= this._selectedcolumnmaxindex; cIndex++) {
-								this._data2DArray = Json.SetValueInObject(this._data2DArray, `$.${rIndex}.${cIndex}`, structuredClone(this._data2DArray[this._selectedrowminindex + scmi][cIndex]))
-							}
+		return keyed(
+			`${rowIndex}-${columnIndex}`,
+			html`
+				<metadata-model-datum-input-table-column
+					id="${rowIndex}-${columnIndex}"
+					.field=${this._data2DFields[columnIndex]}
+					.arrayindexplaceholders=${[rowIndex, columnIndex]}
+					.color=${this.color}
+					.stickyleft=${stickyleft}
+					.stickytop=${stickytop}
+					.getdata=${(_: string, arrayPlaceholderIndexes: number[]) => {
+						return Json.GetValueInObject(this._data2DArray, arrayPlaceholderIndexes.join('.'))
+					}}
+					.updatedata=${(_: string, arrayPlaceholderIndexes: number[], value: any) => {
+						Json.SetValueInObject(this._data2DArray, arrayPlaceholderIndexes.join('.'), value)
+						this._updateData()
+					}}
+					.deletedata=${(_: string, arrayPlaceholderIndexes: number[]) => {
+						if (this._data2DFields[arrayPlaceholderIndexes[1]][MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 1) {
+							Json.SetValueInObject(this._data2DArray, arrayPlaceholderIndexes.join('.'), undefined)
+						} else {
+							Json.DeleteValueInObject(this._data2DArray, arrayPlaceholderIndexes.join('.'))
 						}
 						this._updateData()
-						return
-					}
+					}}
+					.selectedrowminindex=${this._selectedrowminindex}
+					.selectedrowmaxindex=${this._selectedrowmaxindex}
+					.selectedcolumnminindex=${this._selectedcolumnminindex}
+					.selectedcolumnmaxindex=${this._selectedcolumnmaxindex}
+					.updateselectedrowcolumnindex=${(row: number, column: number) => {
+						if (this._copyModeActive) {
+							if (row > this._data2DArray.length) {
+								for (let rIndex = this._data2DArray.length; rIndex < row; rIndex++) {
+									this._data2DArray.push([])
+								}
+							}
 
-					if (this._selectedRowColumnIndexes.length === 2) {
-						if ((this._selectedRowColumnIndexes[0].row === row && this._selectedRowColumnIndexes[0].column === column) || (this._selectedRowColumnIndexes[1].row === row && this._selectedRowColumnIndexes[1].column === column)) {
-							this._resetSelectedFields()
+							if (this._data2DArray.length <= row + this._selectedrowmaxindex - this._selectedrowminindex) {
+								for (let rIndex = this._data2DArray.length - 1; rIndex <= row + this._selectedrowmaxindex - this._selectedrowminindex; rIndex++) {
+									this._data2DArray.push([])
+								}
+							}
+
+							let scmi = -1
+							for (let rIndex = row; rIndex <= row + this._selectedrowmaxindex - this._selectedrowminindex; rIndex++) {
+								scmi += 1
+								if (this._selectedcolumnminindex === 0 && this._selectedcolumnmaxindex === this._data2DFields.length - 1) {
+									this._data2DArray[rIndex] = structuredClone(this._data2DArray[this._selectedrowminindex + scmi])
+									continue
+								}
+
+								for (let cIndex = this._selectedcolumnminindex; cIndex <= this._selectedcolumnmaxindex; cIndex++) {
+									this._data2DArray = Json.SetValueInObject(this._data2DArray, `$.${rIndex}.${cIndex}`, structuredClone(this._data2DArray[this._selectedrowminindex + scmi][cIndex]))
+								}
+							}
+							this._updateData()
 							return
 						}
-						const secondRowColumnIndex = structuredClone(this._selectedRowColumnIndexes[1])
-						this._selectedRowColumnIndexes = [{ row, column }, secondRowColumnIndex]
-					} else {
-						this._selectedRowColumnIndexes.push({ row, column })
-					}
 
-					if (this._selectedRowColumnIndexes.length === 1) {
-						this._selectedrowminindex = row
-						this._selectedrowmaxindex = row
-						this._selectedcolumnminindex = 0
-						this._selectedcolumnmaxindex = this._data2DFields.length - 1
-					}
-
-					if (this._selectedRowColumnIndexes.length === 2) {
-						if (this._selectedRowColumnIndexes[0].row < this._selectedRowColumnIndexes[1].row) {
-							this._selectedrowminindex = this._selectedRowColumnIndexes[0].row
-							this._selectedrowmaxindex = this._selectedRowColumnIndexes[1].row
+						if (this._selectedRowColumnIndexes.length === 2) {
+							if ((this._selectedRowColumnIndexes[0].row === row && this._selectedRowColumnIndexes[0].column === column) || (this._selectedRowColumnIndexes[1].row === row && this._selectedRowColumnIndexes[1].column === column)) {
+								this._resetSelectedFields()
+								return
+							}
+							const secondRowColumnIndex = structuredClone(this._selectedRowColumnIndexes[1])
+							this._selectedRowColumnIndexes = [{ row, column }, secondRowColumnIndex]
 						} else {
-							this._selectedrowminindex = this._selectedRowColumnIndexes[1].row
-							this._selectedrowmaxindex = this._selectedRowColumnIndexes[0].row
+							this._selectedRowColumnIndexes.push({ row, column })
 						}
 
-						if (this._selectedRowColumnIndexes[0].column < this._selectedRowColumnIndexes[1].column) {
-							this._selectedcolumnminindex = this._selectedRowColumnIndexes[0].column
-							this._selectedcolumnmaxindex = this._selectedRowColumnIndexes[1].column
-						} else {
-							this._selectedcolumnminindex = this._selectedRowColumnIndexes[1].column
-							this._selectedcolumnmaxindex = this._selectedRowColumnIndexes[0].column
+						if (this._selectedRowColumnIndexes.length === 1) {
+							this._selectedrowminindex = row
+							this._selectedrowmaxindex = row
+							this._selectedcolumnminindex = 0
+							this._selectedcolumnmaxindex = this._data2DFields.length - 1
 						}
-					}
-				}}
-			></metadata-model-datum-input-table-column>
-		`
+
+						if (this._selectedRowColumnIndexes.length === 2) {
+							if (this._selectedRowColumnIndexes[0].row < this._selectedRowColumnIndexes[1].row) {
+								this._selectedrowminindex = this._selectedRowColumnIndexes[0].row
+								this._selectedrowmaxindex = this._selectedRowColumnIndexes[1].row
+							} else {
+								this._selectedrowminindex = this._selectedRowColumnIndexes[1].row
+								this._selectedrowmaxindex = this._selectedRowColumnIndexes[0].row
+							}
+
+							if (this._selectedRowColumnIndexes[0].column < this._selectedRowColumnIndexes[1].column) {
+								this._selectedcolumnminindex = this._selectedRowColumnIndexes[0].column
+								this._selectedcolumnmaxindex = this._selectedRowColumnIndexes[1].column
+							} else {
+								this._selectedcolumnminindex = this._selectedRowColumnIndexes[1].column
+								this._selectedcolumnmaxindex = this._selectedRowColumnIndexes[0].column
+							}
+						}
+					}}
+				></metadata-model-datum-input-table-column>
+			`
+		)
 	}
 
 	private _resetSelectedFields() {
@@ -498,18 +503,7 @@ class Component extends LitElement {
 
 		return html`
 			<button class="btn btn-md btn-ghost" @click=${this._decreaseColumnUnlockedStartIndex}>
-				<iconify-icon
-					icon="mdi:rewind"
-					style="color:${(() => {
-						if (inHeader) {
-							return Theme.GetColorContent(this.color)
-						}
-
-						return this.color
-					})()};"
-					width=${Misc.IconifySize()}
-					height=${Misc.IconifySize()}
-				></iconify-icon>
+				<iconify-icon icon="mdi:rewind" style="color:${inHeader ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 			</button>
 		`
 	}
@@ -561,6 +555,7 @@ class Component extends LitElement {
 					@click=${() => {
 						if (typeof this._rowStartAddContentTimeout === 'number') {
 							window.clearTimeout(this._rowStartAddContentTimeout)
+							this._rowStartAddContentTimeout = undefined
 						}
 
 						if (typeof this._rowEndAddContentTimeout === 'number') {
@@ -586,18 +581,7 @@ class Component extends LitElement {
 
 		return html`
 			<button class="btn btn-md btn-ghost" @click=${this._increaseColumnUnlockedEndIndex}>
-				<iconify-icon
-					icon="mdi:fast-forward"
-					style="color:${(() => {
-						if (inHeader) {
-							return Theme.GetColorContent(this.color)
-						}
-
-						return this.color
-					})()};"
-					width=${Misc.IconifySize()}
-					height=${Misc.IconifySize()}
-				></iconify-icon>
+				<iconify-icon icon="mdi:fast-forward" style="color:${inHeader ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 			</button>
 		`
 	}
@@ -1135,6 +1119,7 @@ class Component extends LitElement {
 																@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																	this._rowNumberColumnMenuTextSearchFieldsQuery = e.currentTarget.value
 																}}
+																.value=${this._rowNumberColumnMenuTextSearchFieldsQuery}
 															/>
 															<div class="z-50 join-item flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-search-show-frozen-columns-only')} @mouseout=${() => (this._showHintID = '')}>
 																<button
