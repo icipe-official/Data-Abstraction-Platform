@@ -322,56 +322,57 @@ class Component extends LitElement {
 			this._rowEndIndex = this.data.length - 1
 		}
 
-		;(async () => {
-			await new Promise((resolve: (e: Element) => void) => {
-				if ((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-start')) {
-					resolve((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-start') as Element)
-					return
-				}
-
-				const observer = new MutationObserver(() => {
+		if (!this._rowRenderTrackerStartObserved) {
+			;(async () => {
+				await new Promise((resolve: (e: Element) => void) => {
 					if ((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-start')) {
 						resolve((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-start') as Element)
-						observer.disconnect()
+						return
 					}
-				})
 
-				observer.observe(this.shadowRoot as ShadowRoot, {
-					childList: true,
-					subtree: true
-				})
-			}).then((e) => {
-				if (!this._rowRenderTrackerStartObserved) {
+					const observer = new MutationObserver(() => {
+						if ((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-start')) {
+							resolve((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-start') as Element)
+							observer.disconnect()
+						}
+					})
+
+					observer.observe(this.shadowRoot as ShadowRoot, {
+						childList: true,
+						subtree: true
+					})
+				}).then((e) => {
 					this._rowStartEndIntersectionobserver.observe(e)
 					this._rowRenderTrackerStartObserved = true
-				}
-			})
-		})()
-		;(async () => {
-			await new Promise((resolve: (e: Element) => void) => {
-				if ((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-end')) {
-					resolve((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-end') as Element)
-					return
-				}
+				})
+			})()	
+		}
 
-				const observer = new MutationObserver(() => {
+		if (!this._rowRenderTrackerEndObserved) {
+			;(async () => {
+				await new Promise((resolve: (e: Element) => void) => {
 					if ((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-end')) {
 						resolve((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-end') as Element)
-						observer.disconnect()
+						return
 					}
-				})
 
-				observer.observe(this.shadowRoot as ShadowRoot, {
-					childList: true,
-					subtree: true
-				})
-			}).then((e) => {
-				if (!this._rowRenderTrackerEndObserved) {
+					const observer = new MutationObserver(() => {
+						if ((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-end')) {
+							resolve((this.shadowRoot as ShadowRoot).querySelector('#row-render-tracker-end') as Element)
+							observer.disconnect()
+						}
+					})
+
+					observer.observe(this.shadowRoot as ShadowRoot, {
+						childList: true,
+						subtree: true
+					})
+				}).then((e) => {
 					this._rowStartEndIntersectionobserver.observe(e)
 					this._rowRenderTrackerEndObserved = true
-				}
-			})
-		})()
+				})
+			})()
+		}
 
 		return html`
 			<div id="row-render-tracker-start" class="w-full h-fit flex flex-col justify-center">

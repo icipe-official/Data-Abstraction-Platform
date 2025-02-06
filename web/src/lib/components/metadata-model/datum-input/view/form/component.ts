@@ -67,10 +67,12 @@ class Component extends LitElement {
 				}}
 				.disabled=${typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
 			>
-				<div class="flex self-center">
-					<iconify-icon icon="mdi:plus-bold" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('30')}></iconify-icon>
+				<div class="flex">
+					<div class="flex self-center">
+						<iconify-icon icon="mdi:plus-bold" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('30')}></iconify-icon>
+					</div>
+					<div class="self-center font-bold">Add new ${this._getGroupName()}</div>
 				</div>
-				<div class="self-center font-bold">Add new ${this._getGroupName()}</div>
 			</button>
 			<button
 				class="btn btn-ghost p-1 w-full justify-start"
@@ -83,10 +85,12 @@ class Component extends LitElement {
 					this.updatemetadatamodel(this.group)
 				}}
 			>
-				<div class="flex self-center">
-					<iconify-icon icon=${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'mdi:form' : 'mdi:table-large'} style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+				<div class="flex">
+					<div class="flex self-center">
+						<iconify-icon icon=${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'mdi:form' : 'mdi:table-large'} style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+					</div>
+					<div class="self-center font-bold">Switch to ${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'form' : 'table'} view</div>
 				</div>
-				<div class="self-center font-bold">Switch to ${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'form' : 'table'} view</div>
 			</button>
 			<button
 				class="btn btn-ghost p-1 w-full justify-start"
@@ -95,25 +99,29 @@ class Component extends LitElement {
 					this._totalNoOfRows = 1
 				}}
 			>
-				<div class="flex self-center">
-					<iconify-icon icon="mdi:delete-empty" style="color: black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('30')}></iconify-icon>
+				<div class="flex">
+					<div class="flex self-center">
+						<iconify-icon icon="mdi:delete-empty" style="color: black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('30')}></iconify-icon>
+					</div>
+					<div class="self-center font-bold">Delete all ${this._getGroupName()}</div>
 				</div>
-				<div class="self-center font-bold">Delete all ${this._getGroupName()}</div>
 			</button>
 			<button class="btn btn-ghost p-1 w-full justify-start" @click=${() => (this._viewJsonOutput = !this._viewJsonOutput)}>
-				<div class="flex flex-col justify-center">
-					<div class="flex self-center">
-						<iconify-icon icon="mdi:code-json" style="color: black;" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
-						${(() => {
-							if (this._viewJsonOutput) {
-								return html` <iconify-icon icon="mdi:close-circle" style="color: black;" width=${Misc.IconifySize('10')} height=${Misc.IconifySize('10')}></iconify-icon> `
-							} else {
-								return nothing
-							}
-						})()}
+				<div class="flex">
+					<div class="flex flex-col justify-center">
+						<div class="flex self-center">
+							<iconify-icon icon="mdi:code-json" style="color: black;" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
+							${(() => {
+								if (this._viewJsonOutput) {
+									return html` <iconify-icon icon="mdi:close-circle" style="color: black;" width=${Misc.IconifySize('10')} height=${Misc.IconifySize('10')}></iconify-icon> `
+								} else {
+									return nothing
+								}
+							})()}
+						</div>
 					</div>
+					<div class="self-center font-bold">view json data</div>
 				</div>
-				<div class="self-center font-bold">view json data</div>
 			</button>
 		`
 	}

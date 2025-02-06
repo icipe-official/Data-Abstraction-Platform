@@ -11,6 +11,7 @@ import '../../column-field/select/component'
 import MetadataModel from '$src/lib/metadata_model'
 import Misc from '$src/lib/miscellaneous'
 import 'iconify-icon'
+import '$src/lib/components/drop-down/component'
 
 @customElement('metadata-model-datum-input-table-column')
 class Component extends LitElement {
@@ -55,7 +56,7 @@ class Component extends LitElement {
 					? `bg-opacity-40 ${this.color === Theme.Color.PRIMARY ? 'bg-primary' : this.color === Theme.Color.SECONDARY ? 'bg-secondary' : 'bg-accent'}`
 					: ''}"
 			>
-				<div style="left: ${this.stickyleft}px; top: ${this.stickytop}px;" class="sticky flex min-w-fit w-fit h-fit">
+				<div style="left: ${this.stickyleft}px; top: ${this.stickytop}px;" class="flex min-w-fit w-fit h-fit">
 					<div class="w-fit h-full">
 						<button class="w-fit h-fit" @click=${() => this.updateselectedrowcolumnindex(this.arrayindexplaceholders[0], this.arrayindexplaceholders[1])}>
 							<iconify-icon
@@ -85,82 +86,83 @@ class Component extends LitElement {
 								}
 
 								templates.push(html`
-									<section class="flex-1 flex flex-col space-y-1 w-fit">
-										<div class="flex space-x-1 w-fit">
-											${(() => {
-												if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 'number' || rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 1) {
-													if (typeof rowField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] !== 'number') {
-														rowField[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${rowField[MetadataModel.FgProperties.FIELD_GROUP_NAME]} #${rowIndex + 1}`
-														return html` <div class="font-bold text-lg h-full self-start">${rowIndex + 1}</div> `
-													}
+									<section class="flex space-x-1 w-fit">
+										${(() => {
+											if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 'number' || rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 1) {
+												if (typeof rowField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] !== 'number') {
+													rowField[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${rowField[MetadataModel.FgProperties.FIELD_GROUP_NAME]} #${rowIndex + 1}`
+													return html` <div class="font-bold text-lg h-full self-start">${rowIndex + 1}</div> `
 												}
+											}
 
-												return nothing
-											})()}
-											${(() => {
-												switch (rowField[MetadataModel.FgProperties.FIELD_UI] as MetadataModel.FieldUi) {
-													case MetadataModel.FieldUi.TEXT:
-													case MetadataModel.FieldUi.TEXTAREA:
-														return html`
-															<metadata-model-datum-input-column-field-text
-																.color=${this.color}
-																.field=${rowField}
-																.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
-																.getdata=${this.getdata}
-																.deletedata=${this.deletedata}
-																.updatedata=${this.updatedata}
-															></metadata-model-datum-input-column-field-text>
-														`
-													case MetadataModel.FieldUi.NUMBER:
-														return html`
-															<metadata-model-datum-input-column-field-number
-																.color=${this.color}
-																.field=${rowField}
-																.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
-																.getdata=${this.getdata}
-																.deletedata=${this.deletedata}
-																.updatedata=${this.updatedata}
-															></metadata-model-datum-input-column-field-number>
-														`
-													case MetadataModel.FieldUi.CHECKBOX:
-														return html`
-															<metadata-model-datum-input-column-field-checkbox
-																.color=${this.color}
-																.field=${rowField}
-																.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
-																.getdata=${this.getdata}
-																.deletedata=${this.deletedata}
-																.updatedata=${this.updatedata}
-																.includeplaceholdertext=${false}
-															></metadata-model-datum-input-column-field-checkbox>
-														`
-													case MetadataModel.FieldUi.DATETIME:
-														return html`
-															<metadata-model-datum-input-column-field-date-time
-																.color=${this.color}
-																.field=${rowField}
-																.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
-																.getdata=${this.getdata}
-																.deletedata=${this.deletedata}
-																.updatedata=${this.updatedata}
-															></metadata-model-datum-input-column-field-date-time>
-														`
-													case MetadataModel.FieldUi.SELECT:
-														return html`
-															<metadata-model-datum-input-column-field-select
-																.color=${this.color}
-																.field=${rowField}
-																.arrayindexplaceholders=${this.arrayindexplaceholders}
-																.getdata=${this.getdata}
-																.deletedata=${this.deletedata}
-																.updatedata=${this.updatedata}
-															></metadata-model-datum-input-column-field-select>
-														`
-													default:
-														return html`<div class="text-error">...field ui is not valid/supported...</div>`
-												}
-											})()}
+											return nothing
+										})()}
+										${(() => {
+											switch (rowField[MetadataModel.FgProperties.FIELD_UI] as MetadataModel.FieldUi) {
+												case MetadataModel.FieldUi.TEXT:
+												case MetadataModel.FieldUi.TEXTAREA:
+													return html`
+														<metadata-model-datum-input-column-field-text
+															.color=${this.color}
+															.field=${rowField}
+															.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
+															.getdata=${this.getdata}
+															.deletedata=${this.deletedata}
+															.updatedata=${this.updatedata}
+														></metadata-model-datum-input-column-field-text>
+													`
+												case MetadataModel.FieldUi.NUMBER:
+													return html`
+														<metadata-model-datum-input-column-field-number
+															.color=${this.color}
+															.field=${rowField}
+															.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
+															.getdata=${this.getdata}
+															.deletedata=${this.deletedata}
+															.updatedata=${this.updatedata}
+														></metadata-model-datum-input-column-field-number>
+													`
+												case MetadataModel.FieldUi.CHECKBOX:
+													return html`
+														<metadata-model-datum-input-column-field-checkbox
+															.color=${this.color}
+															.field=${rowField}
+															.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
+															.getdata=${this.getdata}
+															.deletedata=${this.deletedata}
+															.updatedata=${this.updatedata}
+															.includeplaceholdertext=${false}
+														></metadata-model-datum-input-column-field-checkbox>
+													`
+												case MetadataModel.FieldUi.DATETIME:
+													return html`
+														<metadata-model-datum-input-column-field-date-time
+															.color=${this.color}
+															.field=${rowField}
+															.arrayindexplaceholders=${rowField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] ? this.arrayindexplaceholders : [...this.arrayindexplaceholders, rowIndex]}
+															.getdata=${this.getdata}
+															.deletedata=${this.deletedata}
+															.updatedata=${this.updatedata}
+														></metadata-model-datum-input-column-field-date-time>
+													`
+												case MetadataModel.FieldUi.SELECT:
+													return html`
+														<metadata-model-datum-input-column-field-select
+															.color=${this.color}
+															.field=${rowField}
+															.arrayindexplaceholders=${this.arrayindexplaceholders}
+															.getdata=${this.getdata}
+															.deletedata=${this.deletedata}
+															.updatedata=${this.updatedata}
+														></metadata-model-datum-input-column-field-select>
+													`
+												default:
+													return html`<div class="text-error">...field ui is not valid/supported...</div>`
+											}
+										})()}
+										<drop-down .showdropdown=${this._showRowMenuIndex === `${rowIndex}`}>
 											<button
+												slot="header"
 												class="btn btn-circle btn-xs btn-ghost self-start"
 												@click=${() => {
 													if (this._showRowMenuIndex === '') {
@@ -172,62 +174,54 @@ class Component extends LitElement {
 											>
 												<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 											</button>
-										</div>
-										${(() => {
-											if (this._showRowMenuIndex === `${rowIndex}`) {
-												return html`
-													<div class="flex flex-col w-full bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
-														${(() => {
-															if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 1 && rowField[MetadataModel.FgProperties.FIELD_UI] !== MetadataModel.FieldUi.SELECT) {
-																return html`
-																	<button
-																		class="btn btn-ghost p-1 w-full justify-start"
-																		@click=${() => {
-																			if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number') {
-																				if (rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] < 1) {
-																					this._totalNoOfRows += 1
-																				} else {
-																					if (this._totalNoOfRows < rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]) {
-																						this._totalNoOfRows += 1
-																					}
-																				}
-																			} else {
+											<div slot="content" class="flex flex-col w-full bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
+												${(() => {
+													if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 1 && rowField[MetadataModel.FgProperties.FIELD_UI] !== MetadataModel.FieldUi.SELECT) {
+														return html`
+															<button
+																class="btn btn-ghost p-1 w-full justify-start"
+																@click=${() => {
+																	if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number') {
+																		if (rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] < 1) {
+																			this._totalNoOfRows += 1
+																		} else {
+																			if (this._totalNoOfRows < rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]) {
 																				this._totalNoOfRows += 1
 																			}
-																		}}
-																		.disabled=${typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
-																	>
-																		<div class="flex self-center">
-																			<iconify-icon icon="mdi:plus" style="color:black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('28')}></iconify-icon>
-																		</div>
-																		<div class="self-center font-bold">Add field data</div>
-																	</button>
-																`
-															} else {
-																return nothing
-															}
-														})()}
-														<button
-															class="btn btn-ghost p-1 w-full justify-start"
-															@click=${() => {
-																this.deletedata(`${rowField[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
+																		}
+																	} else {
+																		this._totalNoOfRows += 1
+																	}
+																}}
+																.disabled=${typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
+															>
+																<div class="flex self-center">
+																	<iconify-icon icon="mdi:plus" style="color:black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('28')}></iconify-icon>
+																</div>
+																<div class="self-center font-bold">Add field data</div>
+															</button>
+														`
+													} else {
+														return nothing
+													}
+												})()}
+												<button
+													class="btn btn-ghost p-1 w-full justify-start"
+													@click=${() => {
+														this.deletedata(`${rowField[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
 
-																if (this._totalNoOfRows - 1 !== 0) {
-																	this._totalNoOfRows -= 1
-																}
-															}}
-														>
-															<div class="flex self-center">
-																<iconify-icon icon="mdi:delete" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-															</div>
-															<div class="self-center font-bold">Delete field data</div>
-														</button>
+														if (this._totalNoOfRows - 1 !== 0) {
+															this._totalNoOfRows -= 1
+														}
+													}}
+												>
+													<div class="flex self-center">
+														<iconify-icon icon="mdi:delete" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 													</div>
-												`
-											}
-
-											return nothing
-										})()}
+													<div class="self-center font-bold">Delete field data</div>
+												</button>
+											</div>
+										</drop-down>
 									</section>
 								`)
 							}

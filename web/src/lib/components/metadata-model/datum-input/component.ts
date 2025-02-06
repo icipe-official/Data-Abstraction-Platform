@@ -158,7 +158,7 @@ class Component extends LitElement {
 			${(() => {
 				if (this._viewgrouptree) {
 					return html`
-						<section id="view-group-tree-scroll-element" class="flex flex-grow flex-col w-full h-fit overflow-auto pt-1 shadow-inner shadow-gray-800">
+						<section id="view-group-tree-scroll-element" class="flex flex-1 flex-col w-full h-fit overflow-auto pt-1 shadow-inner shadow-gray-800">
 							${(() => {
 								;(async () => {
 									await new Promise((resolve: (e: Element) => void) => {
@@ -209,7 +209,7 @@ class Component extends LitElement {
 			})()}
 			<main
 				id="metadata-model-datum-input-view-scroll"
-				class="overflow-auto h-fit ${(!this._viewjsonoutput && !currentMetadataModelGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW]) || currentMetadataModelGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.FORM
+				class="flex-1 overflow-auto h-fit ${(!this._viewjsonoutput && !currentMetadataModelGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW]) || currentMetadataModelGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.FORM
 					? ' shadow-inner shadow-gray-800 rounded-b-md pl-2 pr-2 pb-2'
 					: ''}"
 			>

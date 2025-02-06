@@ -7,6 +7,7 @@ import Misc from '$src/lib/miscellaneous'
 import 'iconify-icon'
 import '$src/lib/components/metadata-model/build/component'
 import '$src/lib/components/metadata-model/datum-input/component'
+import '$src/lib/components/metadata-model/view/table/component'
 import Log from '$src/lib/log'
 
 enum Tab {
@@ -53,7 +54,7 @@ class Page extends LitElement {
 		return html`
 			<header role="tablist" class="tabs tabs-bordered">
 				<button role="tab" class="tab${this._currentViewTab === ViewTab.DATUM_INPUT ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.DATUM_INPUT)}>Datum Input</button>
-				<button disabled role="tab" class="tab${this._currentViewTab === ViewTab.TABLE ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.TABLE)}>Table</button>
+				<button role="tab" class="tab${this._currentViewTab === ViewTab.TABLE ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.TABLE)}>Table</button>
 				<button disabled role="tab" class="tab${this._currentViewTab === ViewTab.FILTER ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.FILTER)}>Filter</button>
 			</header>
 			<main class="flex-[9] h-full w-full overflow-hidden">
@@ -72,6 +73,14 @@ class Page extends LitElement {
 										this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
 									}}
 								></metadata-model-datum-input>
+							`
+						case ViewTab.TABLE:
+							return html`
+							<metadata-model-view-table
+								class="flex-1 rounded-md"
+								.metadatamodel=${this._datuminputsamplemetadatamodel}
+								.data=${[this._datuminputsampledata]}
+							></metadata-model-view-table>
 							`
 						default:
 							return html`<div class="text-error font-bold">Tab not implemented</div>`
