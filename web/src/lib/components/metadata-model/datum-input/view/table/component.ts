@@ -1006,9 +1006,12 @@ class Component extends LitElement {
 			this._columnData2DFieldsLockStateChanged = false
 		}
 
-		if (this._unlockedColumnEndIndex > this._unlockedColumnData2DFieldsIndex.length) {
+		if (this._unlockedColumnEndIndex > this._unlockedColumnData2DFieldsIndex.length - 1) {
 			this._unlockedColumnEndIndex = this._unlockedColumnData2DFieldsIndex.length - 1
-			this._unlockedColumnStartIndex = this._unlockedColumnData2DFieldsIndex.length - this.NO_OF_RENDER_CONTENT_TO_ADD > 0 ? this._unlockedColumnData2DFieldsIndex.length - this.NO_OF_RENDER_CONTENT_TO_ADD : 0
+		}
+
+		if (this._unlockedColumnStartIndex >= this._unlockedColumnEndIndex) {
+			this._unlockedColumnStartIndex = this._unlockedColumnEndIndex - this._totalNoOfColumns > 0 ? this._unlockedColumnEndIndex - this._totalNoOfColumns : 0
 		}
 
 		return html`
@@ -1179,7 +1182,10 @@ class Component extends LitElement {
 									</div>
 									<virtual-flex-scroll
 										class="w-full h-full max-h-[30vh] shadow-inner shadow-gray-800 rounded-md p-1 flex flex-col"
-										.data=${[...this._lockedColumnData2DFieldsIndex.filter((dfIndex) => this._includeField(dfIndex)).map((dfIndex, cIndex) => [cIndex, dfIndex]), ...this._unlockedColumnData2DFieldsIndex.filter((dfIndex) => this._includeField(dfIndex)).map((dfIndex, cIndex) => [cIndex, dfIndex])]}
+										.data=${[
+											...this._lockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2),
+											...this._unlockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2)
+										]}
 										.foreachrowrender=${(datum: number[], _: number) => {
 											return this._rowNumberColumnMenuFieldsHtmlTemplate(datum[0], datum[1])
 										}}
@@ -1466,7 +1472,7 @@ class Component extends LitElement {
 				}
 
 				return html`
-					<main class="relative grid w-full h-full min-h-fit min-w-fit rounded-md overflow-visible" style="grid-template-columns: repeat(${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}, minmax(min-content,500px));">
+					<main class="relative grid w-full h-full min-h-fit min-w-fit rounded-md" style="grid-template-columns: repeat(${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}, minmax(min-content,500px));">
 						<header
 							id="column-header"
 							style="top: ${this._topHeaderHeight}px; grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;"
