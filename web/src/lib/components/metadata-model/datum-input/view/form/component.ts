@@ -10,6 +10,7 @@ import './field/component'
 import '../../header/component'
 import '../table/component'
 import '$src/lib/components/vertical-flex-scroll/component'
+import '$src/lib/components/drop-down/component'
 
 @customElement('metadata-model-datum-input-view-form')
 class Component extends LitElement {
@@ -41,10 +42,6 @@ class Component extends LitElement {
 	}
 
 	@state() private _viewJsonOutput: boolean = false
-
-	@state() private _showTopMultipleEntryMenu: boolean = false
-
-	@state() private _showBottomMultipleEntryMenu: boolean = false
 
 	@state() private _showRowMenuID: string = ''
 
@@ -139,18 +136,63 @@ class Component extends LitElement {
 			<header class="sticky top-0 z-[200] flex flex-col space-y-1 p-1 w-full rounded-t-md ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}">
 				<section class="flex justify-between">
 					<section class="flex space-x-1 h-fit self-center sticky left-0">
-						<button
-							class="btn btn-circle btn-sm btn-ghost self-start"
-							@click=${() => {
-								if (this._showRowMenuID === `${rowIndex}`) {
-									this._showRowMenuID = ''
-								} else {
-									this._showRowMenuID = `${rowIndex}`
-								}
-							}}
+						<drop-down
+							.contenthtmltemplate=${html`
+								<div class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
+									<button
+										class="btn btn-ghost p-1 w-full justify-start"
+										@click=${() => {
+											this.deletedata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}[${rowIndex}]`, this.arrayindexplaceholders)
+											if (this._totalNoOfRows - 1 >= 0) {
+												this._totalNoOfRows -= 1
+											}
+										}}
+									>
+										<div class="flex self-center">
+											<iconify-icon icon="mdi:delete-empty" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+										</div>
+										<div class="self-center font-bold break-words">delete data for #${rowIndex + 1}</div>
+									</button>
+									<button
+										class="btn btn-ghost p-1 w-full justify-start"
+										@click=${() => {
+											this.setcopiedfieldgroupkey(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
+										}}
+									>
+										<div class="flex self-center">
+											<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										</div>
+										<div class="self-center font-bold">copy data</div>
+									</button>
+									<button
+										class="btn btn-ghost p-1 w-full justify-start"
+										@click=${() => {
+											this.setcutfieldgroupdata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
+										}}
+									>
+										<div class="flex self-center">
+											<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										</div>
+										<div class="self-center font-bold">cut data</div>
+									</button>
+									${this._multipleEntryFormMenuHtmlTemplate()}
+								</div>
+							`}
 						>
-							<iconify-icon icon="mdi:dots-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-						</button>
+							<button
+								slot="header"
+								class="btn btn-circle btn-sm btn-ghost self-start"
+								@click=${() => {
+									if (this._showRowMenuID === `${rowIndex}`) {
+										this._showRowMenuID = ''
+									} else {
+										this._showRowMenuID = `${rowIndex}`
+									}
+								}}
+							>
+								<iconify-icon icon="mdi:dots-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+							</button>
+						</drop-down>
 						<div class="flex-[9] break-words text-md font-bold h-fit self-center">${this._getGroupName()} #${rowIndex + 1}</div>
 						${(() => {
 							if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
@@ -220,57 +262,6 @@ class Component extends LitElement {
 					return nothing
 				})()}
 			</header>
-			<div class="sticky top-[48px] z-[1000]">
-				<div class="relative w-fit">
-					${(() => {
-						if (this._showRowMenuID === `${rowIndex}`) {
-							return html`
-								<div class="absolute top-0 flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
-									<button
-										class="btn btn-ghost p-1 w-full justify-start"
-										@click=${() => {
-											this.deletedata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}[${rowIndex}]`, this.arrayindexplaceholders)
-											if (this._totalNoOfRows - 1 >= 0) {
-												this._totalNoOfRows -= 1
-											}
-										}}
-									>
-										<div class="flex self-center">
-											<iconify-icon icon="mdi:delete-empty" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
-										</div>
-										<div class="self-center font-bold break-words">delete data for #${rowIndex + 1}</div>
-									</button>
-									<button
-										class="btn btn-ghost p-1 w-full justify-start"
-										@click=${() => {
-											this.setcopiedfieldgroupkey(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-										}}
-									>
-										<div class="flex self-center">
-											<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</div>
-										<div class="self-center font-bold">copy data</div>
-									</button>
-									<button
-										class="btn btn-ghost p-1 w-full justify-start"
-										@click=${() => {
-											this.setcutfieldgroupdata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-										}}
-									>
-										<div class="flex self-center">
-											<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</div>
-										<div class="self-center font-bold">cut data</div>
-									</button>
-									${this._multipleEntryFormMenuHtmlTemplate()}
-								</div>
-							`
-						}
-
-						return nothing
-					})()}
-				</div>
-			</div>
 		`
 	}
 
@@ -299,27 +290,17 @@ class Component extends LitElement {
 		}
 
 		return html`
-			<header class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
-				<button
-					class="btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}"
-					@click=${() => (this._showTopMultipleEntryMenu = !this._showTopMultipleEntryMenu)}
-				>
-					<div class="self-center">Start of ${this._getGroupName()}</div>
-					<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
-					<div class="self-center w-fit h-fit">
-						<iconify-icon icon=${this._showTopMultipleEntryMenu ? 'mdi:menu-up' : 'mdi:menu-down'} style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
-					</div>
-				</button>
-			</header>
-			<section class="relative w-full flex justify-center">
-				${(() => {
-					if (this._showTopMultipleEntryMenu) {
-						return html` <div class="absolute top-0 flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px] z-[500]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `
-					}
-
-					return nothing
-				})()}
-			</section>
+			<drop-down .contenthtmltemplate=${html` <div class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `}>
+				<header slot="header" class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
+					<button class="btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}">
+						<div class="self-center">Start of ${this._getGroupName()}</div>
+						<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
+						<div class="self-center w-fit h-fit">
+							<iconify-icon icon="mdi:arrow-down" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+						</div>
+					</button>
+				</header>
+			</drop-down>
 			<virtual-flex-scroll
 				.data=${(() => {
 					let data: number[] = []
@@ -416,27 +397,17 @@ class Component extends LitElement {
 				.enablescrollintoview=${false}
 				.disableremoveitemsoutofview=${false}
 			></virtual-flex-scroll>
-			<section class="relative w-full flex justify-center">
-				${(() => {
-					if (this._showBottomMultipleEntryMenu) {
-						return html` <div class="absolute bottom-0 flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `
-					}
-
-					return nothing
-				})()}
-			</section>
-			<footer class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
-				<button
-					class="btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}"
-					@click=${() => (this._showBottomMultipleEntryMenu = !this._showBottomMultipleEntryMenu)}
-				>
-					<div class="self-center">End of ${this._getGroupName()}</div>
-					<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
-					<div class="self-center w-fit h-fit">
-						<iconify-icon icon=${this._showBottomMultipleEntryMenu ? 'mdi:menu-down' : 'mdi:menu-up'} style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
-					</div>
-				</button>
-			</footer>
+			<drop-down .contenthtmltemplate=${html` <div class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `}>
+				<footer slot="header" class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
+					<button class="btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}">
+						<div class="self-center">End of ${this._getGroupName()}</div>
+						<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
+						<div class="self-center w-fit h-fit">
+							<iconify-icon icon="mdi:arrow-up" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+						</div>
+					</button>
+				</footer>
+			</drop-down>
 		`
 	}
 }

@@ -256,28 +256,33 @@ class Component extends LitElement {
 		)
 	}
 
+	private _currStyleSet: boolean = false
+
 	connectedCallback(): void {
 		super.connectedCallback()
 		if (this.data.length > this.NO_OF_ROWS_TO_ADD) {
 			this._rowEndIndex = this.data.length > this.NO_OF_ROWS_TO_ADD ? this.NO_OF_ROWS_TO_ADD : this.data.length
 		}
 
-		let currStyle = this.getAttribute('style')
-		if (typeof this.scrollelement === 'undefined') {
-			this.scrollelement = this
-			if (typeof currStyle === 'string') {
-				currStyle = `${currStyle} ${this.flexcolumn ? 'overflow-x: hidden; overflow-y: auto; flex-direction: column;' : 'overflow-x: auto; overflow-y: hidden;'}`
+		if (!this._currStyleSet) {
+			let currStyle = this.getAttribute('style')
+			if (typeof this.scrollelement === 'undefined') {
+				this.scrollelement = this
+				if (typeof currStyle === 'string') {
+					currStyle = `${currStyle} ${this.flexcolumn ? 'overflow-x: hidden; overflow-y: auto; flex-direction: column;' : 'overflow-x: auto; overflow-y: hidden;'}`
+				} else {
+					currStyle = this.flexcolumn ? 'overflow-x: hidden; overflow-y: auto; flex-direction: column;' : 'overflow-x: auto; overflow-y: hidden;'
+				}
 			} else {
-				currStyle = this.flexcolumn ? 'overflow-x: hidden; overflow-y: auto; flex-direction: column;' : 'overflow-x: auto; overflow-y: hidden;'
+				if (typeof currStyle === 'string') {
+					currStyle = `${currStyle} overflow-x: visible; overflow-y: visible; min-height: fit-content; min-width: fit-content;${this.flexcolumn ? ' flex-direction: column;' : ''}`
+				} else {
+					currStyle = `overflow-x: visible; overflow-y: visible; min-height: fit-content; min-width: fit-content;${this.flexcolumn ? ' flex-direction: column;' : ''}`
+				}
 			}
-		} else {
-			if (typeof currStyle === 'string') {
-				currStyle = `${currStyle} overflow-x: visible; overflow-y: visible; min-height: fit-content; min-width: fit-content;${this.flexcolumn ? ' flex-direction: column;' : ''}`
-			} else {
-				currStyle = `overflow-x: visible; overflow-y: visible; min-height: fit-content; min-width: fit-content;${this.flexcolumn ? ' flex-direction: column;' : ''}`
-			}
+			this.setAttribute('style', currStyle)
+			this._currStyleSet = true
 		}
-		this.setAttribute('style', currStyle)
 	}
 
 	disconnectedCallback(): void {
@@ -345,7 +350,7 @@ class Component extends LitElement {
 					this._rowStartEndIntersectionobserver.observe(e)
 					this._rowRenderTrackerStartObserved = true
 				})
-			})()	
+			})()
 		}
 
 		if (!this._rowRenderTrackerEndObserved) {

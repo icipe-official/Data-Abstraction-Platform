@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, unsafeCSS } from 'lit'
+import { html, LitElement, nothing, TemplateResult, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '$src/assets/index.css?inline'
 
@@ -6,11 +6,11 @@ import indexCss from '$src/assets/index.css?inline'
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss)]
 
-	@property({ type: Boolean }) showdropdown: boolean = false
+	@property({ type: Object }) contenthtmltemplate!: TemplateResult<1>
 
 	private _headerElement!: Element
 
-	private _contentElement!: Element
+	private _contentElement: Element | undefined
 	@state() private _contentElementTopBottomFixedPosition: string = 'top'
 	@state() private _contentElementTopBottomPosition: number = 0
 
@@ -40,87 +40,169 @@ class Component extends LitElement {
 		}
 	}
 
+	private _contentElementID: string = 'dropdown-content-'
+
+	@state() private _headerIsFocused: boolean = false
+	@state() private _contentIsFocused: boolean = false
+
+	connectedCallback(): void {
+		super.connectedCallback()
+		let randomContentID = new Int32Array(1)
+		window.crypto.getRandomValues(randomContentID)
+		this._contentElementID = this._contentElementID + randomContentID[0].toString()
+	}
+
 	disconnectedCallback(): void {
+		super.disconnectedCallback()
+		this._removeContentFromView()
+		this._contentElement = undefined
+		if (typeof this._removeContentFromViewTimeout === 'number') {
+			window.clearTimeout(this._removeContentFromViewTimeout)
+		}
+	}
+
+	private _removeContentFromView() {
 		if (typeof this._contentPositionInterval === 'number') {
 			window.clearInterval(this._contentPositionInterval)
+			this._contentPositionInterval = undefined
 		}
-		super.disconnectedCallback()
+		if (document.body.querySelector(`#${this._contentElementID}`) && this._contentElement) {
+			document.body.removeChild(this._contentElement)
+		}
+	}
+
+	private _removeContentFromViewTimeout: number | undefined
+	private _newHeaderIsFocused?: boolean
+	private _newContentIsFocused?: boolean
+
+	private _handleFocusUpdate(_headerIsFocused?: boolean, _contentIsFocused?: boolean) {
+		if (typeof _headerIsFocused === 'boolean') {
+			if (!_headerIsFocused && !this._contentIsFocused) {
+				this._newHeaderIsFocused = _headerIsFocused
+				this._removeContentFromViewTimeout = window.setTimeout(() => {
+					this._headerIsFocused = this._newHeaderIsFocused as boolean
+				}, 30)
+				return
+			}
+			this._headerIsFocused = _headerIsFocused
+			if (typeof this._newContentIsFocused === 'boolean') {
+				this._contentIsFocused = this._newContentIsFocused
+				this._newContentIsFocused = undefined
+			}
+		}
+		if (typeof _contentIsFocused === 'boolean') {
+			if (!this._headerIsFocused && !_contentIsFocused) {
+				this._newContentIsFocused = _contentIsFocused
+				this._removeContentFromViewTimeout = window.setTimeout(() => {
+					this._contentIsFocused = this._newContentIsFocused as boolean
+				}, 30)
+				return
+			}
+			this._contentIsFocused = _contentIsFocused
+			if (typeof this._newHeaderIsFocused === 'boolean') {
+				this._headerIsFocused = this._newHeaderIsFocused
+				this._newHeaderIsFocused = undefined
+			}
+		}
+
+		if (typeof this._removeContentFromViewTimeout === 'number') {
+			window.clearTimeout(this._removeContentFromViewTimeout)
+		}
 	}
 
 	protected render(): unknown {
 		return html`
-			<div class="flex flex-col">
-				<div id="header">
-					${(() => {
-						if (typeof this._headerElement === 'undefined') {
-							;(async () => {
-								await new Promise((resolve: (e: Element) => void) => {
+			<div
+				id="header"
+				@focusin=${() => {
+					this._handleFocusUpdate(true)
+				}}
+				@focusout=${() => {
+					this._handleFocusUpdate(false)
+				}}
+			>
+				${(() => {
+					if (typeof this._headerElement === 'undefined') {
+						;(async () => {
+							await new Promise((resolve: (e: Element) => void) => {
+								if ((this.shadowRoot as ShadowRoot).querySelector('#header')) {
+									resolve((this.shadowRoot as ShadowRoot).querySelector('#header') as Element)
+									return
+								}
+
+								const observer = new MutationObserver(() => {
 									if ((this.shadowRoot as ShadowRoot).querySelector('#header')) {
 										resolve((this.shadowRoot as ShadowRoot).querySelector('#header') as Element)
-										return
+										observer.disconnect()
 									}
-
-									const observer = new MutationObserver(() => {
-										if ((this.shadowRoot as ShadowRoot).querySelector('#header')) {
-											resolve((this.shadowRoot as ShadowRoot).querySelector('#header') as Element)
-											observer.disconnect()
-										}
-									})
-
-									observer.observe(this.shadowRoot as ShadowRoot, {
-										childList: true,
-										subtree: true
-									})
-								}).then((e) => {
-									this._headerElement = e
 								})
-							})()
-						}
 
-						return html` <slot name="header"></slot>`
-					})()}
-				</div>
-				<div id="content" class="fixed" style="${this._contentElementTopBottomFixedPosition}: ${this._contentElementTopBottomPosition}px; ${this._contentElementLeftRightFixedPosition}: ${this._contentElementLeftRightPosition}px;z-index: 99999999999999999999999999;">
-					${(() => {
-						if (typeof this._contentElement === 'undefined') {
-							;(async () => {
-								await new Promise((resolve: (e: Element) => void) => {
-									if ((this.shadowRoot as ShadowRoot).querySelector('#content')) {
-										resolve((this.shadowRoot as ShadowRoot).querySelector('#content') as Element)
-										return
+								observer.observe(this.shadowRoot as ShadowRoot, {
+									childList: true,
+									subtree: true
+								})
+							}).then((e) => {
+								this._headerElement = e
+							})
+						})()
+					}
+
+					return html` <slot name="header"></slot>`
+				})()}
+			</div>
+			<div
+				id="${this._contentElementID}"
+				class="fixed"
+				style="${this._contentElementTopBottomFixedPosition}: ${this._contentElementTopBottomPosition}px; ${this._contentElementLeftRightFixedPosition}: ${this._contentElementLeftRightPosition}px;z-index: 999;"
+				@focusin=${() => {
+					this._handleFocusUpdate(undefined, true)
+				}}
+				@focusout=${() => {
+					this._handleFocusUpdate(undefined, false)
+				}}
+			>
+				${(() => {
+					if (typeof this._contentElement === 'undefined') {
+						;(async () => {
+							await new Promise((resolve: (e: Element) => void) => {
+								if ((this.shadowRoot as ShadowRoot).querySelector(`#${this._contentElementID}`)) {
+									resolve((this.shadowRoot as ShadowRoot).querySelector(`#${this._contentElementID}`) as Element)
+									return
+								}
+
+								const observer = new MutationObserver(() => {
+									if ((this.shadowRoot as ShadowRoot).querySelector(`#${this._contentElementID}`)) {
+										resolve((this.shadowRoot as ShadowRoot).querySelector(`#${this._contentElementID}`) as Element)
+										observer.disconnect()
 									}
-
-									const observer = new MutationObserver(() => {
-										if ((this.shadowRoot as ShadowRoot).querySelector('#content')) {
-											resolve((this.shadowRoot as ShadowRoot).querySelector('#content') as Element)
-											observer.disconnect()
-										}
-									})
-
-									observer.observe(this.shadowRoot as ShadowRoot, {
-										childList: true,
-										subtree: true
-									})
-								}).then((e) => {
-									this._contentElement = e
-									this._handleUpdateContentPosition()
 								})
-							})()
-						}
 
-						if (this.showdropdown) {
+								observer.observe(this.shadowRoot as ShadowRoot, {
+									childList: true,
+									subtree: true
+								})
+							}).then((e) => {
+								this._contentElement = e
+								this._handleUpdateContentPosition()
+							})
+						})()
+					}
+
+					if (this._headerIsFocused || this._contentIsFocused) {
+						if (typeof this._contentPositionInterval !== 'number') {
 							this._contentPositionInterval = window.setInterval(() => this._handleUpdateContentPosition(), 50)
-							return html` <slot name="content"></slot>`
+						}
+						if (!document.body.querySelector(`#${this._contentElementID}`) && this._contentElement) {
+							document.body.appendChild(this._contentElement)
 						}
 
-						if (typeof this._contentPositionInterval === 'number') {
-							window.clearInterval(this._contentPositionInterval)
-							this._contentPositionInterval = undefined
-						}
+						return this.contenthtmltemplate
+					}
 
-						return nothing
-					})()}
-				</div>
+					this._removeContentFromView()
+
+					return nothing
+				})()}
 			</div>
 		`
 	}

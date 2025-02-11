@@ -30,18 +30,8 @@ class Component extends LitElement {
 	@property({ type: Boolean }) addinputborder: boolean = true
 	@property({ type: Boolean }) borderrounded: boolean = true
 
-	@state() private _showSelectOptions: boolean = false
-	@state() private _componentFocused: boolean = false
 	@state() private _selectSearchQuery: string = ''
 	@state() private _selectSearchOptions: number[] = []
-
-	private _focusSelectInputSearchField(e: MouseEvent) {
-		e.preventDefault()
-		if (this._componentFocused) return
-		this._componentFocused = true
-		this._showSelectOptions = true
-		;(this.shadowRoot?.querySelector('.hs-multi-select-input-field') as HTMLInputElement).focus()
-	}
 
 	connectedCallback(): void {
 		super.connectedCallback()
@@ -52,17 +42,91 @@ class Component extends LitElement {
 				this._selectSearchQuery = (this.selectedoptions as SelectOption).label
 			}
 		}
-		this.addEventListener('mousedown', (e) => this._focusSelectInputSearchField(e))
-	}
-
-	disconnectedCallback(): void {
-		super.disconnectedCallback()
-		this.removeEventListener('mousedown', this._focusSelectInputSearchField)
 	}
 
 	protected render(): unknown {
 		return html`
-			<drop-down .showdropdown=${this._showSelectOptions}>
+			<drop-down
+				.contenthtmltemplate=${html`
+					<virtual-flex-scroll
+						class="rounded-lg bg-white shadow-md shadow-gray-800 p-1 min-w-[300px] w-full max-h-[30vh]"
+						.data=${this.selectoptions.filter((so, index) => {
+							if (this.selectedoptions !== null && typeof this.selectedoptions === 'object') {
+								if (Array.isArray(this.selectedoptions)) {
+									for (let seo of this.selectedoptions) {
+										if (seo.label === so.label && seo.value === so.value) {
+											return false
+										}
+									}
+								}
+
+								if ((this.selectedoptions as SelectOption).label === so.label && (this.selectedoptions as SelectOption).value === so.value) {
+									return false
+								}
+							}
+
+							return this._selectSearchOptions.length === 0 || this._selectSearchOptions.includes(index)
+						})}
+						.foreachrowrender=${(datum: SelectOption, _: number) => {
+							return html`
+								<button
+									class="w-full p-1 mt-1 mb-1 text-left ${this.color === Theme.Color.PRIMARY
+										? 'hover:bg-primary hover:text-primary-content'
+										: this.color === Theme.Color.SECONDARY
+											? 'hover:bg-secondary hover:text-secondary-content'
+											: this.color === Theme.Color.ACCENT
+												? 'hover:bg-accent hover:text-accent-content'
+												: 'hover:bg-black hover:text-white'} disabled:hover:bg-white"
+									@click=${() => {
+										if (this.multiselect) {
+											if (Array.isArray(this.selectedoptions)) {
+												for (let seo of this.selectedoptions) {
+													if (seo.value === datum.value && seo.label === datum.label) {
+														return
+													}
+												}
+												this.selectedoptions = [...this.selectedoptions, datum]
+											} else {
+												this.selectedoptions = [datum]
+											}
+										} else {
+											this.selectedoptions = datum
+											this._selectSearchQuery = datum.label
+										}
+										this.dispatchEvent(
+											new CustomEvent('multi-select:addselectedoptions', {
+												detail: {
+													value: datum
+												}
+											})
+										)
+										this.dispatchEvent(
+											new CustomEvent('multi-select:updateselectedoptions', {
+												detail: {
+													value: this.selectedoptions
+												}
+											})
+										)
+									}}
+									.disabled=${(() => {
+										if (this.disabled) {
+											return true
+										}
+
+										if (this.maxselectedoptions > 1 && this.maxselectedoptions === (Array.isArray(this.selectedoptions) ? this.selectedoptions.length : 0)) {
+											return true
+										}
+
+										return false
+									})()}
+								>
+									${datum.label}
+								</button>
+							`
+						}}
+					></virtual-flex-scroll>
+				`}
+			>
 				<header
 					slot="header"
 					class="h-fit w-full min-w-[300px] overflow-y-auto max-h-[200px] overflow-x-hidden flex flex-wrap input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : this.color === Theme.Color.ACCENT ? 'input-accent' : ''} ${this
@@ -117,16 +181,14 @@ class Component extends LitElement {
 														></iconify-icon>
 													</button>
 												`
-											} else {
-												return nothing
 											}
+											return nothing
 										})()}
 									</div>
 								`
 							})
-						} else {
-							return nothing
 						}
+						return nothing
 					})()}
 					<div class="flex-1 flex justify-between m-[2px] min-w-[200px] w-full">
 						<input
@@ -136,10 +198,6 @@ class Component extends LitElement {
 							.value=${this._selectSearchQuery}
 							.placeholder=${`${this.placeholder} ${this.multiselect && this.maxselectedoptions > 0 ? `(MAX ${this.maxselectedoptions})` : ''}`}
 							@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-								if (!this._componentFocused) {
-									this._componentFocused = true
-								}
-
 								this._selectSearchQuery = e.currentTarget.value
 								this._selectSearchOptions = []
 								if (this._selectSearchQuery.length > 0) {
@@ -152,10 +210,6 @@ class Component extends LitElement {
 									this._selectSearchOptions = []
 								}
 								// // Log.Log(Log.Level.DEBUG, this.localName, e, this._selectSearchOptions, 'Searched select options')
-							}}
-							@focusout=${() => {
-								this._componentFocused = false
-								this._showSelectOptions = false
 							}}
 						/>
 						<button
@@ -205,84 +259,6 @@ class Component extends LitElement {
 						})()}
 					</div>
 				</header>
-				<virtual-flex-scroll
-					slot="content"
-					class="rounded-lg bg-white shadow-md shadow-gray-800 p-1 min-w-[300px] w-full max-h-[30vh]"
-					.data=${this.selectoptions.filter((so, index) => {
-						if (this.selectedoptions !== null && typeof this.selectedoptions === 'object') {
-							if (Array.isArray(this.selectedoptions)) {
-								for (let seo of this.selectedoptions) {
-									if (seo.label === so.label && seo.value === so.value) {
-										return false
-									}
-								}
-							}
-
-							if ((this.selectedoptions as SelectOption).label === so.label && (this.selectedoptions as SelectOption).value === so.value) {
-								return false
-							}
-						}
-
-						return this._selectSearchOptions.length === 0 || this._selectSearchOptions.includes(index)
-					})}
-					.foreachrowrender=${(datum: SelectOption, _: number) => {
-						return html`
-							<button
-								class="w-full p-1 mt-1 mb-1 text-left ${this.color === Theme.Color.PRIMARY
-									? 'hover:bg-primary hover:text-primary-content'
-									: this.color === Theme.Color.SECONDARY
-										? 'hover:bg-secondary hover:text-secondary-content'
-										: this.color === Theme.Color.ACCENT
-											? 'hover:bg-accent hover:text-accent-content'
-											: 'hover:bg-black hover:text-white'} disabled:hover:bg-white"
-								@click=${() => {
-									if (this.multiselect) {
-										if (Array.isArray(this.selectedoptions)) {
-											for (let seo of this.selectedoptions) {
-												if (seo.value === datum.value && seo.label === datum.label) {
-													return
-												}
-											}
-											this.selectedoptions = [...this.selectedoptions, datum]
-										} else {
-											this.selectedoptions = [datum]
-										}
-									} else {
-										this.selectedoptions = datum
-										this._selectSearchQuery = datum.label
-									}
-									this.dispatchEvent(
-										new CustomEvent('multi-select:addselectedoptions', {
-											detail: {
-												value: datum
-											}
-										})
-									)
-									this.dispatchEvent(
-										new CustomEvent('multi-select:updateselectedoptions', {
-											detail: {
-												value: this.selectedoptions
-											}
-										})
-									)
-								}}
-								.disabled=${(() => {
-									if (this.disabled) {
-										return true
-									}
-
-									if (this.maxselectedoptions > 1 && this.maxselectedoptions === (Array.isArray(this.selectedoptions) ? this.selectedoptions.length : 0)) {
-										return true
-									}
-
-									return false
-								})()}
-							>
-								${datum.label}
-							</button>
-						`
-					}}
-				></virtual-flex-scroll>
 			</drop-down>
 		`
 	}
