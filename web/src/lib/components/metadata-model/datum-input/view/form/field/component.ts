@@ -34,6 +34,10 @@ class Component extends LitElement {
 
 	@state() private _showDescription: boolean = false
 
+	@state() private _showMenuContent: boolean = false
+
+	@state() private _showIndividualFieldMenuContentID: string = ''
+
 	private _inputFieldHtmlTemplate(rowIndex: number) {
 		switch (this.field[MetadataModel.FgProperties.FIELD_UI] as MetadataModel.FieldUi) {
 			case MetadataModel.FieldUi.TEXT:
@@ -97,6 +101,7 @@ class Component extends LitElement {
 	protected render(): unknown {
 		return html`
 			<drop-down
+				.showdropdowncontent=${this._showMenuContent}
 				.contenthtmltemplate=${html`
 					<div class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
 						<button
@@ -158,8 +163,11 @@ class Component extends LitElement {
 						})()}
 					</div>
 				`}
+				@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
+					this._showMenuContent = e.detail.value
+				}}
 			>
-				<button slot="header" class="btn btn-circle btn-sm btn-ghost self-start">
+				<button slot="header" class="btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showMenuContent = !this._showMenuContent)}>
 					<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 				</button>
 			</drop-down>
@@ -303,6 +311,7 @@ class Component extends LitElement {
 									}
 								})()}
 								<drop-down
+									.showdropdowncontent=${this._showIndividualFieldMenuContentID === `${rowIndex}`}
 									.contenthtmltemplate=${html`
 										<div class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
 											<button
@@ -358,8 +367,17 @@ class Component extends LitElement {
 											</button>
 										</div>
 									`}
+									@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
+										this._showIndividualFieldMenuContentID = e.detail.value ? `${rowIndex}` : ''
+									}}
 								>
-									<button slot="header" class="btn btn-circle btn-xs btn-ghost self-start">
+									<button
+										slot="header"
+										class="btn btn-circle btn-xs btn-ghost self-start"
+										@click=${() => {
+											this._showIndividualFieldMenuContentID = this._showIndividualFieldMenuContentID === `${rowIndex}` ? '' : `${rowIndex}`
+										}}
+									>
 										<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 									</button>
 								</drop-down>

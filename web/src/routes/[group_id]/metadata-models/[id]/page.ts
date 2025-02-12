@@ -57,7 +57,7 @@ class Page extends LitElement {
 				<button role="tab" class="tab${this._currentViewTab === ViewTab.TABLE ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.TABLE)}>Table</button>
 				<button disabled role="tab" class="tab${this._currentViewTab === ViewTab.FILTER ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.FILTER)}>Filter</button>
 			</header>
-			<main class="flex-[9] h-full w-full overflow-hidden">
+			<main class="flex-[9] h-full w-full overflow-hidden flex">
 				${(() => {
 					switch (this._currentViewTab) {
 						case ViewTab.DATUM_INPUT:
@@ -75,13 +75,7 @@ class Page extends LitElement {
 								></metadata-model-datum-input>
 							`
 						case ViewTab.TABLE:
-							return html`
-							<metadata-model-view-table
-								class="flex-1 rounded-md"
-								.metadatamodel=${this._datuminputsamplemetadatamodel}
-								.data=${[this._datuminputsampledata]}
-							></metadata-model-view-table>
-							`
+							return html` <div class="border-[1px] border-gray-400 flex-1 h-fit max-h-full max-w-full flex overflow-hidden"><metadata-model-view-table .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${[this._datuminputsampledata]}></metadata-model-view-table></div> `
 						default:
 							return html`<div class="text-error font-bold">Tab not implemented</div>`
 					}

@@ -339,7 +339,7 @@ class Component extends LitElement {
 								</div>
 							`}
 						>
-							<div slot="header" class="min-w-[120px] flex space-x-1 p-1 w-fit h-full${!fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? ' sticky right-0' : ''}" style="left: ${this._columnHeaderLockedWidth + 2}px;">
+							<div slot="header" class="min-w-[120px] flex space-x-1 p-1 w-fit h-full${!fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? ' sticky right-0' : ''}" style="left: ${this._columnHeaderLockedWidth}px;">
 								<button
 									class="w-fit h-fit p-0 self-center"
 									@click=${() => {
@@ -1020,7 +1020,7 @@ class Component extends LitElement {
 		return html`
 			<header
 				id="top-header"
-				class="rounded-t-md h-fit min-w-fit sticky top-0 left-0 right-0 text-sm font-bold z-50 flex flex-col ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content '}"
+				class="h-fit min-w-fit sticky top-0 left-0 right-0 text-sm font-bold z-50 flex flex-col ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content '}"
 			>
 				<section class="h-fit w-full flex flex-col justify-between p-1">
 					<section class="w-full flex justify-between">
@@ -1474,7 +1474,7 @@ class Component extends LitElement {
 				if (this._viewJsonOutput) {
 					const jsonData = this.getdata(this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
 
-					return html` <pre class="bg-gray-700 text-white w-full h-fit shadow-inner shadow-gray-800 p-1 rounded-b-md"><code>${JSON.stringify(jsonData, null, 4)}</code></pre> `
+					return html` <pre class="bg-gray-700 text-white w-full h-fit shadow-inner shadow-gray-800 p-1"><code>${JSON.stringify(jsonData, null, 4)}</code></pre> `
 				}
 
 				return html`
@@ -1585,7 +1585,7 @@ class Component extends LitElement {
 									for (let index = 0; index < this._lockedColumnData2DFieldsIndex.length + 1; index++) {
 										templates.push(html`
 											<div class="w-full min-w-full h-fit">
-												<div style="top: ${this._columnHeaderHeight + 2}px; left: ${this._columnHeaderLockedWidth + 2}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
+												<div style="top: ${this._columnHeaderHeight}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
 											</div>
 										`)
 									}
@@ -1606,7 +1606,7 @@ class Component extends LitElement {
 									} else {
 										templates.push(html`
 											<div class="w-full min-w-full h-fit">
-												<div style="top: ${this._columnHeaderHeight + 2}px; left: ${this._columnHeaderLockedWidth + 2}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
+												<div style="top: ${this._columnHeaderHeight}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
 											</div>
 										`)
 									}
@@ -1714,7 +1714,7 @@ class Component extends LitElement {
 												})}
 											</div>
 											<div class="w-fit h-full flex flex-col">
-												<div style="top: ${this._columnHeaderHeight + 2}px; left: ${this._columnHeaderLockedWidth + 2}px;" class="sticky w-fit h-fit">${this._columnStartHtmlTemplate(false)}</div>
+												<div style="top: ${this._columnHeaderHeight}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky w-fit h-fit">${this._columnStartHtmlTemplate(false)}</div>
 											</div>
 											${(() => {
 												let templates: TemplateResult<1>[] = []
@@ -1733,7 +1733,7 @@ class Component extends LitElement {
 												return templates
 											})()}
 											<div class="w-fit h-full flex flex-col">
-												<div style="top: ${this._columnHeaderHeight + 2}px; left: ${this._columnHeaderLockedWidth + 2}px;" class="sticky w-fit h-fit">${this._columnEndHtmlTemplate(false)}</div>
+												<div style="top: ${this._columnHeaderHeight}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky w-fit h-fit">${this._columnEndHtmlTemplate(false)}</div>
 											</div>
 										</div>
 									`)
@@ -1742,8 +1742,8 @@ class Component extends LitElement {
 								return templates
 							})()
 						)}
-						<div id="row-render-tracker-end" class="grid rounded-b-md bg-white shadow-md shadow-gray-800" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
-							<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this._columnHeaderHeight}px;" class="grid sticky left-0 bg-white shadow-md shadow-gray-800 z-10 rounded-bl-md">
+						<div id="row-render-tracker-end" class="grid bg-white shadow-md shadow-gray-800" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
+							<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this._columnHeaderHeight}px;" class="grid sticky left-0 bg-white shadow-md shadow-gray-800 z-10">
 								${(() => {
 									let templates: TemplateResult<1>[] = []
 
@@ -1771,7 +1771,7 @@ class Component extends LitElement {
 									} else {
 										templates.push(html`
 											<div class="w-full min-w-full h-full min-h-full flex justify-center">
-												<div style="left: ${this._columnHeaderLockedWidth + 2}px;" class="sticky w-fit">${this._rowEndRenderTrackerHtmlTemplate()}</div>
+												<div style="left: ${this._columnHeaderLockedWidth}px;" class="sticky w-fit">${this._rowEndRenderTrackerHtmlTemplate()}</div>
 											</div>
 										`)
 									}

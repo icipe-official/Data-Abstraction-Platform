@@ -161,6 +161,7 @@ class Component extends LitElement {
 											}
 										})()}
 										<drop-down
+											.showdropdowncontent=${this._showRowMenuIndex === `${rowIndex}`}
 											.contenthtmltemplate=${html`
 												<div slot="content" class="flex flex-col w-full bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
 													${(() => {
@@ -210,16 +211,15 @@ class Component extends LitElement {
 													</button>
 												</div>
 											`}
+											drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
+												this._showRowMenuIndex = e.detail.value ? `${rowIndex}` : ''
+											}}
 										>
 											<button
 												slot="header"
 												class="btn btn-circle btn-xs btn-ghost self-start"
 												@click=${() => {
-													if (this._showRowMenuIndex === '') {
-														this._showRowMenuIndex = `${rowIndex}`
-													} else {
-														this._showRowMenuIndex = ''
-													}
+													this._showRowMenuIndex = this._showRowMenuIndex === `${rowIndex}` ? '' : `${rowIndex}`
 												}}
 											>
 												<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>

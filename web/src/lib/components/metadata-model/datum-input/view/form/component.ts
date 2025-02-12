@@ -45,6 +45,9 @@ class Component extends LitElement {
 
 	@state() private _showRowMenuID: string = ''
 
+	@state() private _showMultipleEntryTopMenu: boolean = false
+	@state() private _showMultipleEntryBottomMenu: boolean = false
+
 	private _multipleEntryFormMenuHtmlTemplate() {
 		return html`
 			<button
@@ -137,6 +140,7 @@ class Component extends LitElement {
 				<section class="flex justify-between">
 					<section class="flex space-x-1 h-fit self-center sticky left-0">
 						<drop-down
+							.showdropdowncontent=${this._showRowMenuID === `${rowIndex}`}
 							.contenthtmltemplate=${html`
 								<div class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
 									<button
@@ -178,16 +182,15 @@ class Component extends LitElement {
 									${this._multipleEntryFormMenuHtmlTemplate()}
 								</div>
 							`}
+							@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
+								this._showRowMenuID = e.detail.value ? '' : `${rowIndex}`
+							}}
 						>
 							<button
 								slot="header"
 								class="btn btn-circle btn-sm btn-ghost self-start"
 								@click=${() => {
-									if (this._showRowMenuID === `${rowIndex}`) {
-										this._showRowMenuID = ''
-									} else {
-										this._showRowMenuID = `${rowIndex}`
-									}
+									this._showRowMenuID = this._showRowMenuID === `${rowIndex}` ? '' : `${rowIndex}`
 								}}
 							>
 								<iconify-icon icon="mdi:dots-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
@@ -290,17 +293,27 @@ class Component extends LitElement {
 		}
 
 		return html`
-			<drop-down .contenthtmltemplate=${html` <div class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `}>
-				<header slot="header" class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
-					<button class="btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}">
+			<header class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
+				<drop-down
+					.showdropdowncontent=${this._showMultipleEntryTopMenu}
+					.contenthtmltemplate=${html` <div class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `}
+					@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
+						this._showMultipleEntryTopMenu = e.detail.value
+					}}
+				>
+					<button
+						slot="header"
+						class="btn h-fit min-h-fit w-fit min-w-fit flex ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}"
+						@click=${() => (this._showMultipleEntryTopMenu = !this._showMultipleEntryTopMenu)}
+					>
 						<div class="self-center">Start of ${this._getGroupName()}</div>
 						<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
 						<div class="self-center w-fit h-fit">
 							<iconify-icon icon="mdi:arrow-down" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
 						</div>
 					</button>
-				</header>
-			</drop-down>
+				</drop-down>
+			</header>
 			<virtual-flex-scroll
 				.data=${(() => {
 					let data: number[] = []
@@ -330,7 +343,7 @@ class Component extends LitElement {
 									class="w-full h-fit"
 									.scrollelement=${this.scrollelement}
 									.group=${this.group}
-									.color=${Theme.GetNextColorA(this.color)}
+									.color=${this.color}
 									.arrayindexplaceholders=${this.arrayindexplaceholders}
 									.updatemetadatamodel=${this.updatemetadatamodel}
 									.getdata=${this.getdata}
@@ -363,7 +376,7 @@ class Component extends LitElement {
 											.group=${this.group}
 											.arrayindexplaceholders=${this.arrayindexplaceholders}
 											.grouprowindex=${datum}
-											.color=${Theme.GetNextColorA(this.color)}
+											.color=${this.color}
 											.updatemetadatamodel=${this.updatemetadatamodel}
 											.getdata=${this.getdata}
 											.updatedata=${this.updatedata}
@@ -378,7 +391,7 @@ class Component extends LitElement {
 										.scrollelement=${this.scrollelement}
 										.group=${this.group}
 										.arrayindexplaceholders=${[...this.arrayindexplaceholders, datum]}
-										.color=${Theme.GetNextColorA(this.color)}
+										.color=${this.color}
 										.updatemetadatamodel=${this.updatemetadatamodel}
 										.getdata=${this.getdata}
 										.updatedata=${this.updatedata}
@@ -397,17 +410,27 @@ class Component extends LitElement {
 				.enablescrollintoview=${false}
 				.disableremoveitemsoutofview=${false}
 			></virtual-flex-scroll>
-			<drop-down .contenthtmltemplate=${html` <div class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `}>
-				<footer slot="header" class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
-					<button class="btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}">
+			<footer class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
+				<drop-down
+					.showdropdowncontent=${this._showMultipleEntryBottomMenu}
+					.contenthtmltemplate=${html` <div class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `}
+					@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
+						this._showMultipleEntryBottomMenu = e.detail.value
+					}}
+				>
+					<button
+						slot="header"
+						class="btn h-fit min-h-fit w-fit min-w-fit flex ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}"
+						@click=${() => (this._showMultipleEntryBottomMenu = !this._showMultipleEntryBottomMenu)}
+					>
 						<div class="self-center">End of ${this._getGroupName()}</div>
 						<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
 						<div class="self-center w-fit h-fit">
 							<iconify-icon icon="mdi:arrow-up" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
 						</div>
 					</button>
-				</footer>
-			</drop-down>
+				</drop-down>
+			</footer>
 		`
 	}
 }
@@ -473,7 +496,7 @@ class ComponentGroupFields extends LitElement {
 								class="w-full h-fit"
 								.scrollelement=${this.scrollelement}
 								.group=${fieldGroup}
-								.color=${Theme.GetNextColorA(this.color)}
+								.color=${this.color}
 								.arrayindexplaceholders=${this.arrayindexplaceholders}
 								.updatemetadatamodel=${this.updatemetadatamodel}
 								.getdata=${this.getdata}
@@ -514,7 +537,7 @@ class ComponentGroupFields extends LitElement {
 										<metadata-model-datum-input-view-form
 											.scrollelement=${this.scrollelement}
 											.group=${fieldGroup}
-											.color=${Theme.GetNextColorA(this.color)}
+											.color=${this.color}
 											.arrayindexplaceholders=${this.arrayindexplaceholders}
 											.updatemetadatamodel=${this.updatemetadatamodel}
 											.getdata=${this.getdata}

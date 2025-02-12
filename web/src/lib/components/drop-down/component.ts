@@ -6,6 +6,7 @@ import indexCss from '$src/assets/index.css?inline'
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss)]
 
+	@property({ type: Boolean }) showdropdowncontent: boolean = true
 	@property({ type: Object }) contenthtmltemplate!: TemplateResult<1>
 
 	private _headerElement!: Element
@@ -81,6 +82,7 @@ class Component extends LitElement {
 				this._newHeaderIsFocused = _headerIsFocused
 				this._removeContentFromViewTimeout = window.setTimeout(() => {
 					this._headerIsFocused = this._newHeaderIsFocused as boolean
+					this._updateShowdropdownContent()
 				}, 30)
 				return
 			}
@@ -95,6 +97,7 @@ class Component extends LitElement {
 				this._newContentIsFocused = _contentIsFocused
 				this._removeContentFromViewTimeout = window.setTimeout(() => {
 					this._contentIsFocused = this._newContentIsFocused as boolean
+					this._updateShowdropdownContent()
 				}, 30)
 				return
 			}
@@ -108,6 +111,16 @@ class Component extends LitElement {
 		if (typeof this._removeContentFromViewTimeout === 'number') {
 			window.clearTimeout(this._removeContentFromViewTimeout)
 		}
+	}
+
+	private _updateShowdropdownContent() {
+		this.dispatchEvent(
+			new CustomEvent('drop-down:showdropdowncontentupdate', {
+				detail: {
+					value: this._headerIsFocused || this._contentIsFocused
+				}
+			})
+		)
 	}
 
 	protected render(): unknown {
@@ -188,7 +201,7 @@ class Component extends LitElement {
 						})()
 					}
 
-					if (this._headerIsFocused || this._contentIsFocused) {
+					if ((this._headerIsFocused || this._contentIsFocused) && this.showdropdowncontent) {
 						if (typeof this._contentPositionInterval !== 'number') {
 							this._contentPositionInterval = window.setInterval(() => this._handleUpdateContentPosition(), 50)
 						}

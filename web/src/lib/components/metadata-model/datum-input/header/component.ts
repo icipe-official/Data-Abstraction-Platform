@@ -24,6 +24,8 @@ class Component extends LitElement {
 
 	@state() private _showDescription: boolean = false
 
+	@state() private _showMenu: boolean = false
+
 	protected render(): unknown {
 		return html`
 			<section class="w-full">
@@ -98,8 +100,10 @@ class Component extends LitElement {
 								})()}
 							</div>
 						`}
+						.showdropdowncontent=${this._showMenu}
+						@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => (this._showMenu = e.detail.value)}
 					>
-						<button slot="header" class="btn btn-circle btn-sm btn-ghost self-start">
+						<button slot="header" class="btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showMenu = !this._showMenu)}>
 							<iconify-icon
 								icon="mdi:dots-vertical"
 								style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
