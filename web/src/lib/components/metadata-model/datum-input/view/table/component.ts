@@ -1021,42 +1021,27 @@ class Component extends LitElement {
 				class="h-fit min-w-fit sticky left-0 right-0 text-sm font-bold z-[2] flex flex-col ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content '}"
 				style="top: ${this.basestickytop}px;"
 			>
-				<section class="h-fit w-full flex flex-col justify-between p-1">
-					<section class="w-full flex justify-between">
-						<div class="flex sticky left-0 w-fit">
-							<span class="self-center sticky">
-								${(() => {
-									if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
-										return this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
-									}
-
-									return 'Data Entry'
-								})()}
-							</span>
+				<section class="h-fit w-full flex justify-between p-1">
+					<div class="flex sticky left-0 w-fit">
+						<span class="self-center sticky">
 							${(() => {
-								if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
-									return html`
-										<button class="ml-2 btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showDescription = !this._showDescription)}>
-											<iconify-icon icon="mdi:question-mark-circle" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</button>
-									`
+								if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
+									return this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
 								}
 
-								return nothing
+								return 'Data Entry'
 							})()}
-						</div>
-						<div class="flex sticky right-1 w-fit font-bold text-sm h-fit self-center">
-							<span class="italic">rows with data: </span>
-							<span>${this._data2DArray.length}</span>
-						</div>
-					</section>
-					<section class="sticky left-0 z-[60] w-fit">
-						<div class="flex relative w-fit">
-							${(() => {
-								if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0 && this._showDescription) {
-									return html`
+						</span>
+						${(() => {
+							if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
+								return html`
+									<drop-down .showdropdowncontent=${this._showDescription} @drop-down:showdropdowncontentupdate=${(e: CustomEvent) => (this._showDescription = e.detail.value)}>
+										<button slot="header" class="ml-2 btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showDescription = !this._showDescription)}>
+											<iconify-icon icon="mdi:question-mark-circle" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										</button>
 										<div
-											class="absolute top-0 left-0 w-[500px] max-w-[700px] overflow-auto max-h-[200px] flex flex-wrap text-sm shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
+											slot="content"
+											class="w-[500px] max-w-[700px] overflow-auto max-h-[200px] flex flex-wrap text-sm shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
 												? 'bg-primary text-primary-content'
 												: this.color === Theme.Color.SECONDARY
 													? 'bg-secondary text-secondary-content'
@@ -1064,13 +1049,17 @@ class Component extends LitElement {
 										>
 											${this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION]}
 										</div>
-									`
-								}
+									</drop-down>
+								`
+							}
 
-								return nothing
-							})()}
-						</div>
-					</section>
+							return nothing
+						})()}
+					</div>
+					<div class="flex sticky right-0 w-fit font-bold text-sm h-fit self-center">
+						<span class="italic">rows with data: </span>
+						<span>${this._data2DArray.length}</span>
+					</div>
 				</section>
 				<section id="header-menu" class="ml-1 mr-1 shadow-inner shadow-gray-800 rounded-md p-1 flex">
 					<div class="sticky left-0 w-fit flex space-x-4 z-50">

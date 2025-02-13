@@ -33,7 +33,7 @@ class Component extends LitElement {
 	@property({ type: Number }) basestickytop: number = 0
 
 	@state() private _totalNoOfRows: number = 1
-	
+
 	private _getGroupName() {
 		if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
 			return this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
@@ -196,25 +196,31 @@ class Component extends LitElement {
 					return data
 				})()}
 				.foreachrowrender=${(datum: number, _: number) => {
-					const newGroup = structuredClone(this.group)
-					newGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] = newGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] + ` #${datum + 1}`
-
 					return html`
 						<div class="mt-2 mb-2">
 							<metadata-model-datum-input-header
 								class="sticky z-[2] ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
 								style="top: ${this.basestickytop}px;"
-								.group=${newGroup}
+								.group=${(() => {
+									const newGroup = structuredClone(this.group)
+									newGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${newGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME]} #${datum + 1}`
+									return structuredClone(newGroup)
+								})()}
 								.viewjsonoutput=${this._viewJsonOutput}
 								.updateviewjsonoutput=${(newviewjsonoutput: boolean) => (this._viewJsonOutput = newviewjsonoutput)}
-								.updatemetadatamodel=${this.updatemetadatamodel}
-								.deletedata=${this.deletedata}
+								.updatemetadatamodel=${(fieldGroup: any) => {
+									fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] = this._getGroupName()
+									this.updatemetadatamodel(fieldGroup)
+								}}
+								.deletedata=${() => {
+									this.deletedata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, datum])
+									this._totalNoOfRows = this._totalNoOfRows - 1 > 1 ? this._totalNoOfRows - 1 : 1
+								}}
 								.color=${this.color}
 								.headerheightupdate=${(newheight: number) => {
 									this._formHeaderHeightTracker = structuredClone(Json.SetValueInObject(this._formHeaderHeightTracker, `$.${datum}`, newheight))
 								}}
 							>
-								<div slot="header-menu-additional-content" class="flex flex-col">${this._multipleEntryFormMenuHtmlTemplate()}</div>
 								<div slot="header-sticky-right-content">
 									${(() => {
 										const groupKey = `${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`
@@ -269,7 +275,7 @@ class Component extends LitElement {
 									<metadata-model-datum-input-view-form-group-fields
 										class="z-[1] p-2 shadow-inner shadow-gray-800"
 										.scrollelement=${this.scrollelement}
-										.group=${newGroup}
+										.group=${this.group}
 										.arrayindexplaceholders=${[...this.arrayindexplaceholders, datum]}
 										.color=${this.color}
 										.updatemetadatamodel=${this.updatemetadatamodel}
