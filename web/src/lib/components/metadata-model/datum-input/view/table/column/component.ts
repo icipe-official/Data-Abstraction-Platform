@@ -162,55 +162,6 @@ class Component extends LitElement {
 										})()}
 										<drop-down
 											.showdropdowncontent=${this._showRowMenuIndex === `${rowIndex}`}
-											.contenthtmltemplate=${html`
-												<div slot="content" class="flex flex-col w-full bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
-													${(() => {
-														if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 1 && rowField[MetadataModel.FgProperties.FIELD_UI] !== MetadataModel.FieldUi.SELECT) {
-															return html`
-																<button
-																	class="btn btn-ghost p-1 w-full justify-start"
-																	@click=${() => {
-																		if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number') {
-																			if (rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] < 1) {
-																				this._totalNoOfRows += 1
-																			} else {
-																				if (this._totalNoOfRows < rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]) {
-																					this._totalNoOfRows += 1
-																				}
-																			}
-																		} else {
-																			this._totalNoOfRows += 1
-																		}
-																	}}
-																	.disabled=${typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
-																>
-																	<div class="flex self-center">
-																		<iconify-icon icon="mdi:plus" style="color:black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('28')}></iconify-icon>
-																	</div>
-																	<div class="self-center font-bold">Add field data</div>
-																</button>
-															`
-														} else {
-															return nothing
-														}
-													})()}
-													<button
-														class="btn btn-ghost p-1 w-full justify-start"
-														@click=${() => {
-															this.deletedata(`${rowField[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-
-															if (this._totalNoOfRows - 1 !== 0) {
-																this._totalNoOfRows -= 1
-															}
-														}}
-													>
-														<div class="flex self-center">
-															<iconify-icon icon="mdi:delete" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-														</div>
-														<div class="self-center font-bold">Delete field data</div>
-													</button>
-												</div>
-											`}
 											drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
 												this._showRowMenuIndex = e.detail.value ? `${rowIndex}` : ''
 											}}
@@ -224,6 +175,53 @@ class Component extends LitElement {
 											>
 												<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 											</button>
+											<div slot="content" class="flex flex-col w-full bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
+												${(() => {
+													if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 1 && rowField[MetadataModel.FgProperties.FIELD_UI] !== MetadataModel.FieldUi.SELECT) {
+														return html`
+															<button
+																class="btn btn-ghost p-1 w-full justify-start"
+																@click=${() => {
+																	if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number') {
+																		if (rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] < 1) {
+																			this._totalNoOfRows += 1
+																		} else {
+																			if (this._totalNoOfRows < rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]) {
+																				this._totalNoOfRows += 1
+																			}
+																		}
+																	} else {
+																		this._totalNoOfRows += 1
+																	}
+																}}
+																.disabled=${typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
+															>
+																<div class="flex self-center">
+																	<iconify-icon icon="mdi:plus" style="color:black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('28')}></iconify-icon>
+																</div>
+																<div class="self-center font-bold">Add field data</div>
+															</button>
+														`
+													} else {
+														return nothing
+													}
+												})()}
+												<button
+													class="btn btn-ghost p-1 w-full justify-start"
+													@click=${() => {
+														this.deletedata(`${rowField[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
+
+														if (this._totalNoOfRows - 1 !== 0) {
+															this._totalNoOfRows -= 1
+														}
+													}}
+												>
+													<div class="flex self-center">
+														<iconify-icon icon="mdi:delete" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+													</div>
+													<div class="self-center font-bold">Delete field data</div>
+												</button>
+											</div>
 										</drop-down>
 									</section>
 								`)

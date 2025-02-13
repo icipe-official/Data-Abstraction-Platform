@@ -46,87 +46,7 @@ class Component extends LitElement {
 
 	protected render(): unknown {
 		return html`
-			<drop-down
-				.contenthtmltemplate=${html`
-					<virtual-flex-scroll
-						class="rounded-lg bg-white shadow-md shadow-gray-800 p-1 min-w-[300px] w-full max-h-[30vh]"
-						.data=${this.selectoptions.filter((so, index) => {
-							if (this.selectedoptions !== null && typeof this.selectedoptions === 'object') {
-								if (Array.isArray(this.selectedoptions)) {
-									for (let seo of this.selectedoptions) {
-										if (seo.label === so.label && seo.value === so.value) {
-											return false
-										}
-									}
-								}
-
-								if ((this.selectedoptions as SelectOption).label === so.label && (this.selectedoptions as SelectOption).value === so.value) {
-									return false
-								}
-							}
-
-							return this._selectSearchOptions.length === 0 || this._selectSearchOptions.includes(index)
-						})}
-						.foreachrowrender=${(datum: SelectOption, _: number) => {
-							return html`
-								<button
-									class="w-full p-1 mt-1 mb-1 text-left ${this.color === Theme.Color.PRIMARY
-										? 'hover:bg-primary hover:text-primary-content'
-										: this.color === Theme.Color.SECONDARY
-											? 'hover:bg-secondary hover:text-secondary-content'
-											: this.color === Theme.Color.ACCENT
-												? 'hover:bg-accent hover:text-accent-content'
-												: 'hover:bg-black hover:text-white'} disabled:hover:bg-white"
-									@click=${() => {
-										if (this.multiselect) {
-											if (Array.isArray(this.selectedoptions)) {
-												for (let seo of this.selectedoptions) {
-													if (seo.value === datum.value && seo.label === datum.label) {
-														return
-													}
-												}
-												this.selectedoptions = [...this.selectedoptions, datum]
-											} else {
-												this.selectedoptions = [datum]
-											}
-										} else {
-											this.selectedoptions = datum
-											this._selectSearchQuery = datum.label
-										}
-										this.dispatchEvent(
-											new CustomEvent('multi-select:addselectedoptions', {
-												detail: {
-													value: datum
-												}
-											})
-										)
-										this.dispatchEvent(
-											new CustomEvent('multi-select:updateselectedoptions', {
-												detail: {
-													value: this.selectedoptions
-												}
-											})
-										)
-									}}
-									.disabled=${(() => {
-										if (this.disabled) {
-											return true
-										}
-
-										if (this.maxselectedoptions > 1 && this.maxselectedoptions === (Array.isArray(this.selectedoptions) ? this.selectedoptions.length : 0)) {
-											return true
-										}
-
-										return false
-									})()}
-								>
-									${datum.label}
-								</button>
-							`
-						}}
-					></virtual-flex-scroll>
-				`}
-			>
+			<drop-down>
 				<header
 					slot="header"
 					class="h-fit w-full min-w-[300px] overflow-y-auto max-h-[200px] overflow-x-hidden flex flex-wrap input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : this.color === Theme.Color.ACCENT ? 'input-accent' : ''} ${this
@@ -259,6 +179,84 @@ class Component extends LitElement {
 						})()}
 					</div>
 				</header>
+				<virtual-flex-scroll
+					slot="content"
+					class="rounded-lg bg-white shadow-md shadow-gray-800 p-1 min-w-[300px] w-full max-h-[30vh]"
+					.data=${this.selectoptions.filter((so, index) => {
+						if (this.selectedoptions !== null && typeof this.selectedoptions === 'object') {
+							if (Array.isArray(this.selectedoptions)) {
+								for (let seo of this.selectedoptions) {
+									if (seo.label === so.label && seo.value === so.value) {
+										return false
+									}
+								}
+							}
+
+							if ((this.selectedoptions as SelectOption).label === so.label && (this.selectedoptions as SelectOption).value === so.value) {
+								return false
+							}
+						}
+
+						return this._selectSearchOptions.length === 0 || this._selectSearchOptions.includes(index)
+					})}
+					.foreachrowrender=${(datum: SelectOption, _: number) => {
+						return html`
+							<button
+								class="w-full p-1 mt-1 mb-1 text-left ${this.color === Theme.Color.PRIMARY
+									? 'hover:bg-primary hover:text-primary-content'
+									: this.color === Theme.Color.SECONDARY
+										? 'hover:bg-secondary hover:text-secondary-content'
+										: this.color === Theme.Color.ACCENT
+											? 'hover:bg-accent hover:text-accent-content'
+											: 'hover:bg-black hover:text-white'} disabled:hover:bg-white"
+								@click=${() => {
+									if (this.multiselect) {
+										if (Array.isArray(this.selectedoptions)) {
+											for (let seo of this.selectedoptions) {
+												if (seo.value === datum.value && seo.label === datum.label) {
+													return
+												}
+											}
+											this.selectedoptions = [...this.selectedoptions, datum]
+										} else {
+											this.selectedoptions = [datum]
+										}
+									} else {
+										this.selectedoptions = datum
+										this._selectSearchQuery = datum.label
+									}
+									this.dispatchEvent(
+										new CustomEvent('multi-select:addselectedoptions', {
+											detail: {
+												value: datum
+											}
+										})
+									)
+									this.dispatchEvent(
+										new CustomEvent('multi-select:updateselectedoptions', {
+											detail: {
+												value: this.selectedoptions
+											}
+										})
+									)
+								}}
+								.disabled=${(() => {
+									if (this.disabled) {
+										return true
+									}
+
+									if (this.maxselectedoptions > 1 && this.maxselectedoptions === (Array.isArray(this.selectedoptions) ? this.selectedoptions.length : 0)) {
+										return true
+									}
+
+									return false
+								})()}
+							>
+								${datum.label}
+							</button>
+						`
+					}}
+				></virtual-flex-scroll>
 			</drop-down>
 		`
 	}

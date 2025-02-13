@@ -102,67 +102,6 @@ class Component extends LitElement {
 		return html`
 			<drop-down
 				.showdropdowncontent=${this._showMenuContent}
-				.contenthtmltemplate=${html`
-					<div class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
-						<button
-							class="btn btn-ghost p-1 w-full justify-start"
-							@click=${() => {
-								this.deletedata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
-								this._totalNoOfRows = 1
-							}}
-						>
-							<div class="flex self-center">
-								<iconify-icon icon="mdi:delete-empty" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
-							</div>
-							<div class="self-center font-bold">delete data</div>
-						</button>
-						<button class="btn btn-ghost p-1 w-full justify-start" @click=${() => (this._viewJsonOutput = !this._viewJsonOutput)}>
-							<div class="flex flex-col justify-center">
-								<div class="flex self-center">
-									<iconify-icon icon="mdi:code-json" style="color:black;" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
-									${(() => {
-										if (this._viewJsonOutput) {
-											return html` <iconify-icon icon="mdi:close-circle" style="color:black;" width=${Misc.IconifySize('10')} height=${Misc.IconifySize('10')}></iconify-icon> `
-										} else {
-											return nothing
-										}
-									})()}
-								</div>
-							</div>
-							<div class="self-center font-bold">view json data</div>
-						</button>
-						${(() => {
-							if (this.copiedcutfieldgroupkey !== this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]) {
-								return html`
-									<button
-										class="btn btn-ghost p-1 w-full justify-start"
-										@click=${() => {
-											this.setcopiedfieldgroupkey(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
-										}}
-									>
-										<div class="flex self-center">
-											<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</div>
-										<div class="self-center font-bold">copy data</div>
-									</button>
-									<button
-										class="btn btn-ghost p-1 w-full justify-start"
-										@click=${() => {
-											this.setcutfieldgroupdata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
-										}}
-									>
-										<div class="flex self-center">
-											<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</div>
-										<div class="self-center font-bold">cut data</div>
-									</button>
-								`
-							} else {
-								return nothing
-							}
-						})()}
-					</div>
-				`}
 				@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
 					this._showMenuContent = e.detail.value
 				}}
@@ -170,6 +109,65 @@ class Component extends LitElement {
 				<button slot="header" class="btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showMenuContent = !this._showMenuContent)}>
 					<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 				</button>
+				<div slot="content" class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
+					<button
+						class="btn btn-ghost p-1 w-full justify-start"
+						@click=${() => {
+							this.deletedata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
+							this._totalNoOfRows = 1
+						}}
+					>
+						<div class="flex self-center">
+							<iconify-icon icon="mdi:delete-empty" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+						</div>
+						<div class="self-center font-bold">delete data</div>
+					</button>
+					<button class="btn btn-ghost p-1 w-full justify-start" @click=${() => (this._viewJsonOutput = !this._viewJsonOutput)}>
+						<div class="flex flex-col justify-center">
+							<div class="flex self-center">
+								<iconify-icon icon="mdi:code-json" style="color:black;" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
+								${(() => {
+									if (this._viewJsonOutput) {
+										return html` <iconify-icon icon="mdi:close-circle" style="color:black;" width=${Misc.IconifySize('10')} height=${Misc.IconifySize('10')}></iconify-icon> `
+									} else {
+										return nothing
+									}
+								})()}
+							</div>
+						</div>
+						<div class="self-center font-bold">view json data</div>
+					</button>
+					${(() => {
+						if (this.copiedcutfieldgroupkey !== this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]) {
+							return html`
+								<button
+									class="btn btn-ghost p-1 w-full justify-start"
+									@click=${() => {
+										this.setcopiedfieldgroupkey(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
+									}}
+								>
+									<div class="flex self-center">
+										<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+									</div>
+									<div class="self-center font-bold">copy data</div>
+								</button>
+								<button
+									class="btn btn-ghost p-1 w-full justify-start"
+									@click=${() => {
+										this.setcutfieldgroupdata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
+									}}
+								>
+									<div class="flex self-center">
+										<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+									</div>
+									<div class="self-center font-bold">cut data</div>
+								</button>
+							`
+						} else {
+							return nothing
+						}
+					})()}
+				</div>
 			</drop-down>
 			<header class="flex flex-col">
 				<div class="flex space-x-1 h-full">
@@ -312,61 +310,6 @@ class Component extends LitElement {
 								})()}
 								<drop-down
 									.showdropdowncontent=${this._showIndividualFieldMenuContentID === `${rowIndex}`}
-									.contenthtmltemplate=${html`
-										<div class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
-											<button
-												class="btn btn-ghost p-1 w-full justify-end"
-												@click=${() => {
-													this.setcopiedfieldgroupkey(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-												}}
-											>
-												<div class="self-center font-bold">Copy field data</div>
-												<div class="flex self-center">
-													<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-												</div>
-											</button>
-											<button
-												class="btn btn-ghost p-1 w-full justify-end"
-												@click=${() => {
-													this.setcutfieldgroupdata(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-												}}
-											>
-												<div class="self-center font-bold">Cut field data</div>
-												<div class="flex self-center">
-													<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-												</div>
-											</button>
-											<button
-												class="btn btn-ghost p-1 w-full justify-end"
-												@click=${() => {
-													this.deletedata(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-													if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
-														const fieldData = this.getdata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
-														if (Array.isArray(fieldData)) {
-															if ((fieldData as any[]).length !== 0) {
-																this._totalNoOfRows = (fieldData as any[]).length
-																for (const fd of fieldData) {
-																	if (fd) {
-																		return
-																	}
-																}
-															}
-															this.deletedata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
-														} else {
-															if (this._totalNoOfRows - 1 !== 0) {
-																this._totalNoOfRows -= 1
-															}
-														}
-													}
-												}}
-											>
-												<div class="self-center font-bold">Delete field data</div>
-												<div class="flex self-center">
-													<iconify-icon icon="mdi:delete" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-												</div>
-											</button>
-										</div>
-									`}
 									@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
 										this._showIndividualFieldMenuContentID = e.detail.value ? `${rowIndex}` : ''
 									}}
@@ -380,6 +323,59 @@ class Component extends LitElement {
 									>
 										<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 									</button>
+									<div slot="content" class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
+										<button
+											class="btn btn-ghost p-1 w-full justify-end"
+											@click=${() => {
+												this.setcopiedfieldgroupkey(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
+											}}
+										>
+											<div class="self-center font-bold">Copy field data</div>
+											<div class="flex self-center">
+												<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+											</div>
+										</button>
+										<button
+											class="btn btn-ghost p-1 w-full justify-end"
+											@click=${() => {
+												this.setcutfieldgroupdata(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
+											}}
+										>
+											<div class="self-center font-bold">Cut field data</div>
+											<div class="flex self-center">
+												<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+											</div>
+										</button>
+										<button
+											class="btn btn-ghost p-1 w-full justify-end"
+											@click=${() => {
+												this.deletedata(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
+												if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
+													const fieldData = this.getdata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
+													if (Array.isArray(fieldData)) {
+														if ((fieldData as any[]).length !== 0) {
+															this._totalNoOfRows = (fieldData as any[]).length
+															for (const fd of fieldData) {
+																if (fd) {
+																	return
+																}
+															}
+														}
+														this.deletedata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
+													} else {
+														if (this._totalNoOfRows - 1 !== 0) {
+															this._totalNoOfRows -= 1
+														}
+													}
+												}
+											}}
+										>
+											<div class="self-center font-bold">Delete field data</div>
+											<div class="flex self-center">
+												<iconify-icon icon="mdi:delete" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+											</div>
+										</button>
+									</div>
 								</drop-down>
 							</div>
 						`)

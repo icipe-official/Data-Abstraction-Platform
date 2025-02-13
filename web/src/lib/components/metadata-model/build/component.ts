@@ -25,7 +25,7 @@ class Component extends LitElement {
 	private _createUpdateMetadataModel(path: string, value: any) {
 		try {
 			// Log.Log(Log.Level.DEBUG, this.localName, 'Create Update Metadata Model', path, value)
-			this.metadatamodel = Json.SetValueInObject(this.metadatamodel, path, value)
+			this.metadatamodel = structuredClone(Json.SetValueInObject(this.metadatamodel, path, value))
 			this.dispatchEvent(
 				new CustomEvent('metadata-model-build:updatemetadatamodel', {
 					detail: {

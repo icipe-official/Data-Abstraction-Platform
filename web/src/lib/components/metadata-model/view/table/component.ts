@@ -169,53 +169,6 @@ class Component extends LitElement {
 						return html`
 							<drop-down
 								.showdropdowncontent=${this._currentOpenDropdownID === columnId}
-								.contenthtmltemplate=${html`
-									<div id="content" class="min-w-[120px] shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black w-full flex flex-col">
-										<button
-											class="flex w-full space-x-1"
-											@click=${() => {
-												if (fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]) {
-													delete fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]
-												} else {
-													fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] = true
-												}
-												this._currentOpenDropdownID = ''
-												this.dispatchEvent(
-													new CustomEvent('metadata-model-view-table:updatefieldgroup', {
-														detail: {
-															value: fieldGroup
-														}
-													})
-												)
-												this._columnDataFieldsLockStateChanged = true
-											}}
-										>
-											<div class="w-fit h-fit self-center">
-												<iconify-icon icon=${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'mdi:lock-open-variant' : 'mdi:lock'} style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-											</div>
-											<div class="w-fit h-fit self-center">${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'unfreeze' : 'freeze'} column</div>
-										</button>
-										<button
-											class="flex w-full space-x-1"
-											@click=${() => {
-												fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
-												this._currentOpenDropdownID = ''
-												this.dispatchEvent(
-													new CustomEvent('metadata-model-view-table:updatefieldgroup', {
-														detail: {
-															value: fieldGroup
-														}
-													})
-												)
-											}}
-										>
-											<div class="w-fit h-fit self-center">
-												<iconify-icon icon="mdi:eye-off" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-											</div>
-											<div class="w-fit h-fit self-center">hide column</div>
-										</button>
-									</div>
-								`}
 								@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
 									this._currentOpenDropdownID = e.detail.value ? columnId : ''
 								}}
@@ -236,17 +189,6 @@ class Component extends LitElement {
 											return html`
 												<drop-down
 													.showdropdowncontent=${this._currentOpenDropdownID === dropdownColumnID}
-													.contenthtmltemplate=${html`
-														<div
-															class="min-w-fit max-w-[700px] overflow-auto max-h-[200px] flex flex-wrap text-sm shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
-																? 'bg-primary text-primary-content'
-																: this.color === Theme.Color.SECONDARY
-																	? 'bg-secondary text-secondary-content'
-																	: 'bg-accent text-accent-content'}"
-														>
-															${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION]}
-														</div>
-													`}
 													@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
 														this._currentOpenDropdownID = e.detail.value ? dropdownColumnID : ''
 													}}
@@ -254,12 +196,68 @@ class Component extends LitElement {
 													<button slot="header" class="btn btn-circle btn-sm btn-ghost" @click=${() => (this._currentOpenDropdownID = this._currentOpenDropdownID === dropdownColumnID ? '' : dropdownColumnID)}>
 														<iconify-icon icon="mdi:question-mark-circle" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 													</button>
+
+													<div
+														slot="content"
+														class="min-w-fit max-w-[700px] overflow-auto max-h-[200px] flex flex-wrap text-sm shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
+															? 'bg-primary text-primary-content'
+															: this.color === Theme.Color.SECONDARY
+																? 'bg-secondary text-secondary-content'
+																: 'bg-accent text-accent-content'}"
+													>
+														${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION]}
+													</div>
 												</drop-down>
 											`
 										}
 
 										return nothing
 									})()}
+								</div>
+								<div slot="content" class="min-w-[120px] shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black w-full flex flex-col">
+									<button
+										class="flex w-full space-x-1"
+										@click=${() => {
+											if (fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]) {
+												delete fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]
+											} else {
+												fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] = true
+											}
+											this._currentOpenDropdownID = ''
+											this.dispatchEvent(
+												new CustomEvent('metadata-model-view-table:updatefieldgroup', {
+													detail: {
+														value: fieldGroup
+													}
+												})
+											)
+											this._columnDataFieldsLockStateChanged = true
+										}}
+									>
+										<div class="w-fit h-fit self-center">
+											<iconify-icon icon=${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'mdi:lock-open-variant' : 'mdi:lock'} style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										</div>
+										<div class="w-fit h-fit self-center">${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'unfreeze' : 'freeze'} column</div>
+									</button>
+									<button
+										class="flex w-full space-x-1"
+										@click=${() => {
+											fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
+											this._currentOpenDropdownID = ''
+											this.dispatchEvent(
+												new CustomEvent('metadata-model-view-table:updatefieldgroup', {
+													detail: {
+														value: fieldGroup
+													}
+												})
+											)
+										}}
+									>
+										<div class="w-fit h-fit self-center">
+											<iconify-icon icon="mdi:eye-off" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										</div>
+										<div class="w-fit h-fit self-center">hide column</div>
+									</button>
 								</div>
 							</drop-down>
 						`
@@ -1145,96 +1143,6 @@ class Component extends LitElement {
 										<div class="flex">
 											<drop-down
 												.showdropdowncontent=${this._currentOpenDropdownID === 'header-menu-view-columns'}
-												.contenthtmltemplate=${html`
-													<div class="shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black flex flex-col min-w-[500px] max-w-[800px] max-h-[800px] min-h-[200px] overflow-auto space-y-1">
-														<div class="join w-full shadow-inner shadow-gray-800">
-															${(() => {
-																if (this._unlockedColumnStartIndex === 0) {
-																	return nothing
-																}
-
-																return html`
-																	<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._decreaseColumnUnlockedStartIndex}>
-																		<iconify-icon icon="mdi:rewind" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-																	</button>
-																`
-															})()}
-															<div class="join-item flex justify-center w-full min-h-full ">
-																<div class="p-1 min-w-[150px]  h-fit self-center text-center">${this._unlockedColumnStartIndex + 1}/${this._unlockedColumnEndIndex + 1} of ${this._unlockedColumnData2DFieldsIndex.length} columns</div>
-															</div>
-															${(() => {
-																if (this._unlockedColumnEndIndex === this._unlockedColumnData2DFieldsIndex.length - 1) {
-																	return nothing
-																}
-
-																return html`
-																	<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._increaseColumnUnlockedEndIndex}>
-																		<iconify-icon icon="mdi:fast-forward" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-																	</button>
-																`
-															})()}
-														</div>
-														<div class="join">
-															<input
-																class="join-item input w-full min-w-[250px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
-																type="search"
-																placeholder="search columns..."
-																@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																	this._rowNumberColumnMenuTextSearchFieldsQuery = e.currentTarget.value
-																}}
-																.value=${this._rowNumberColumnMenuTextSearchFieldsQuery}
-															/>
-															<div class="z-50 join-item flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-search-show-frozen-columns-only')} @mouseout=${() => (this._showHintID = '')}>
-																<button
-																	class="join-item btn ${this._rowNumberColumnMenuShowLockedColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
-																	@click=${() => (this._rowNumberColumnMenuShowLockedColumnsOnly = !this._rowNumberColumnMenuShowLockedColumnsOnly)}
-																>
-																	<iconify-icon icon="mdi:lock" style="color:${this._rowNumberColumnMenuShowLockedColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-																</button>
-																${(() => {
-																	if (this._showHintID === 'header-menu-search-show-frozen-columns-only') {
-																		return html`
-																			<div class="relative">
-																				<div class="z-50 absolute top-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 bg-white text-black">show only frozen columns</div>
-																			</div>
-																		`
-																	}
-
-																	return nothing
-																})()}
-															</div>
-															<div class="z-50 join-item flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-search-show-hidden-columns-only')} @mouseout=${() => (this._showHintID = '')}>
-																<button
-																	class="join-item btn ${this._rowNumberColumnMenuShowHiddenColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
-																	@click=${() => (this._rowNumberColumnMenuShowHiddenColumnsOnly = !this._rowNumberColumnMenuShowHiddenColumnsOnly)}
-																>
-																	<iconify-icon icon="mdi:eye-off" style="color:${this._rowNumberColumnMenuShowHiddenColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-																</button>
-																${(() => {
-																	if (this._showHintID === 'header-menu-search-show-hidden-columns-only') {
-																		return html`
-																			<div class="relative">
-																				<div class="z-50 absolute top-0 right-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 bg-white text-black">show only hidden columns</div>
-																			</div>
-																		`
-																	}
-
-																	return nothing
-																})()}
-															</div>
-														</div>
-														<virtual-flex-scroll
-															class="w-full h-full max-h-[30vh] shadow-inner shadow-gray-800 rounded-md p-1 flex flex-col"
-															.data=${[
-																...this._lockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2),
-																...this._unlockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2)
-															]}
-															.foreachrowrender=${(datum: number[], _: number) => {
-																return this._rowNumberColumnMenuFieldsHtmlTemplate(datum[0], datum[1])
-															}}
-														></virtual-flex-scroll>
-													</div>
-												`}
 												@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
 													this._currentOpenDropdownID = e.detail.value ? 'header-menu-view-columns' : ''
 												}}
@@ -1267,6 +1175,94 @@ class Component extends LitElement {
 
 														return nothing
 													})()}
+												</div>
+												<div slot="content" class="shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black flex flex-col min-w-[500px] max-w-[800px] max-h-[800px] min-h-[200px] overflow-auto space-y-1">
+													<div class="join w-full shadow-inner shadow-gray-800">
+														${(() => {
+															if (this._unlockedColumnStartIndex === 0) {
+																return nothing
+															}
+
+															return html`
+																<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._decreaseColumnUnlockedStartIndex}>
+																	<iconify-icon icon="mdi:rewind" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																</button>
+															`
+														})()}
+														<div class="join-item flex justify-center w-full min-h-full ">
+															<div class="p-1 min-w-[150px]  h-fit self-center text-center">${this._unlockedColumnStartIndex + 1}/${this._unlockedColumnEndIndex + 1} of ${this._unlockedColumnData2DFieldsIndex.length} columns</div>
+														</div>
+														${(() => {
+															if (this._unlockedColumnEndIndex === this._unlockedColumnData2DFieldsIndex.length - 1) {
+																return nothing
+															}
+
+															return html`
+																<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._increaseColumnUnlockedEndIndex}>
+																	<iconify-icon icon="mdi:fast-forward" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																</button>
+															`
+														})()}
+													</div>
+													<div class="join">
+														<input
+															class="join-item input w-full min-w-[250px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
+															type="search"
+															placeholder="search columns..."
+															@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+																this._rowNumberColumnMenuTextSearchFieldsQuery = e.currentTarget.value
+															}}
+															.value=${this._rowNumberColumnMenuTextSearchFieldsQuery}
+														/>
+														<div class="z-50 join-item flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-search-show-frozen-columns-only')} @mouseout=${() => (this._showHintID = '')}>
+															<button
+																class="join-item btn ${this._rowNumberColumnMenuShowLockedColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
+																@click=${() => (this._rowNumberColumnMenuShowLockedColumnsOnly = !this._rowNumberColumnMenuShowLockedColumnsOnly)}
+															>
+																<iconify-icon icon="mdi:lock" style="color:${this._rowNumberColumnMenuShowLockedColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+															</button>
+															${(() => {
+																if (this._showHintID === 'header-menu-search-show-frozen-columns-only') {
+																	return html`
+																		<div class="relative">
+																			<div class="z-50 absolute top-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 bg-white text-black">show only frozen columns</div>
+																		</div>
+																	`
+																}
+
+																return nothing
+															})()}
+														</div>
+														<div class="z-50 join-item flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-search-show-hidden-columns-only')} @mouseout=${() => (this._showHintID = '')}>
+															<button
+																class="join-item btn ${this._rowNumberColumnMenuShowHiddenColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
+																@click=${() => (this._rowNumberColumnMenuShowHiddenColumnsOnly = !this._rowNumberColumnMenuShowHiddenColumnsOnly)}
+															>
+																<iconify-icon icon="mdi:eye-off" style="color:${this._rowNumberColumnMenuShowHiddenColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+															</button>
+															${(() => {
+																if (this._showHintID === 'header-menu-search-show-hidden-columns-only') {
+																	return html`
+																		<div class="relative">
+																			<div class="z-50 absolute top-0 right-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 bg-white text-black">show only hidden columns</div>
+																		</div>
+																	`
+																}
+
+																return nothing
+															})()}
+														</div>
+													</div>
+													<virtual-flex-scroll
+														class="w-full h-full max-h-[30vh] shadow-inner shadow-gray-800 rounded-md p-1 flex flex-col"
+														.data=${[
+															...this._lockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2),
+															...this._unlockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2)
+														]}
+														.foreachrowrender=${(datum: number[], _: number) => {
+															return this._rowNumberColumnMenuFieldsHtmlTemplate(datum[0], datum[1])
+														}}
+													></virtual-flex-scroll>
 												</div>
 											</drop-down>
 											<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-view-json-output')} @mouseout=${() => (this._showHintID = '')}>

@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, TemplateResult, unsafeCSS } from 'lit'
+import { html, LitElement, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '$src/assets/index.css?inline'
 
@@ -7,16 +7,16 @@ class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss)]
 
 	@property({ type: Boolean }) showdropdowncontent: boolean = true
-	@property({ type: Object }) contenthtmltemplate!: TemplateResult<1>
 
 	private _headerElement!: Element
 
 	private _contentElement: Element | undefined
+	private _contentElements: Element[] | undefined
 	@state() private _contentElementTopBottomFixedPosition: string = 'top'
-	@state() private _contentElementTopBottomPosition: number = 0
+	@state() private _contentElementTopBottomPosition: number = -window.innerHeight / 2
 
 	@state() private _contentElementLeftRightFixedPosition: string = 'left'
-	@state() private _contentElementLeftRightPosition: number = 0
+	@state() private _contentElementLeftRightPosition: number = -window.innerWidth / 2
 
 	private _contentPositionInterval: number | undefined
 
@@ -124,6 +124,31 @@ class Component extends LitElement {
 	}
 
 	protected render(): unknown {
+		if (typeof this._contentElement !== 'undefined' && typeof this._contentElements === 'undefined') {
+			;(async () => {
+				await new Promise((resolve: (e: HTMLSlotElement) => void) => {
+					if ((this.shadowRoot as ShadowRoot).querySelector('slot[name=content]')) {
+						resolve((this.shadowRoot as ShadowRoot).querySelector('slot[name=content]') as HTMLSlotElement)
+						return
+					}
+
+					const observer = new MutationObserver(() => {
+						if ((this.shadowRoot as ShadowRoot).querySelector('slot[name=content]')) {
+							resolve((this.shadowRoot as ShadowRoot).querySelector('slot[name=content]') as HTMLSlotElement)
+							observer.disconnect()
+						}
+					})
+
+					observer.observe(this.shadowRoot as ShadowRoot, {
+						childList: true,
+						subtree: true
+					})
+				}).then((e) => {
+					this._contentElements = e.assignedElements()
+				})
+			})()
+		}
+
 		return html`
 			<div
 				id="header"
@@ -165,8 +190,9 @@ class Component extends LitElement {
 			</div>
 			<div
 				id="${this._contentElementID}"
-				class="fixed"
-				style="${this._contentElementTopBottomFixedPosition}: ${this._contentElementTopBottomPosition}px; ${this._contentElementLeftRightFixedPosition}: ${this._contentElementLeftRightPosition}px;z-index: 999;"
+				class="fixed max-w-fit max-h-fit"
+				style="${(this._headerIsFocused || this._contentIsFocused) && this.showdropdowncontent && this._contentElementTopBottomPosition >= 0 && this._contentElementLeftRightPosition >= 0 ? '' : 'visibility: hidden;'} ${this._contentElementTopBottomFixedPosition}: ${this
+					._contentElementTopBottomPosition}px; ${this._contentElementLeftRightFixedPosition}: ${this._contentElementLeftRightPosition}px;z-index: 999;"
 				@focusin=${() => {
 					this._handleFocusUpdate(undefined, true)
 				}}
@@ -174,6 +200,7 @@ class Component extends LitElement {
 					this._handleFocusUpdate(undefined, false)
 				}}
 			>
+				<slot name="content"></slot>
 				${(() => {
 					if (typeof this._contentElement === 'undefined') {
 						;(async () => {
@@ -196,20 +223,21 @@ class Component extends LitElement {
 								})
 							}).then((e) => {
 								this._contentElement = e
-								this._handleUpdateContentPosition()
 							})
 						})()
 					}
 
+					// if (true) {
 					if ((this._headerIsFocused || this._contentIsFocused) && this.showdropdowncontent) {
 						if (typeof this._contentPositionInterval !== 'number') {
 							this._contentPositionInterval = window.setInterval(() => this._handleUpdateContentPosition(), 50)
 						}
-						if (!document.body.querySelector(`#${this._contentElementID}`) && this._contentElement) {
+						if (!document.body.querySelector(`#${this._contentElementID}`) && this._contentElement && Array.isArray(this._contentElements)) {
 							document.body.appendChild(this._contentElement)
+							this._contentElement.append(...this._contentElements)
 						}
 
-						return this.contenthtmltemplate
+						return nothing
 					}
 
 					this._removeContentFromView()

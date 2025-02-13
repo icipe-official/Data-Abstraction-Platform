@@ -32,6 +32,7 @@ class Component extends LitElement {
 	@property({ attribute: false }) updatedata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[], value: any) => void
 	@property({ attribute: false }) deletedata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
 	@property({ type: Number }) totalnoofrows: number = 100
+	@property({ type: Number }) basestickytop: number = 0
 
 	@state() private _data2DArray: any[][] = []
 	private _data2DFields: (MetadataModel.IMetadataModel | any)[] = []
@@ -302,43 +303,7 @@ class Component extends LitElement {
 					}
 
 					return html`
-						<drop-down
-							.contenthtmltemplate=${html`
-								<div class="min-w-[120px] shadow-md shadow-gray-800 p-1 rounded-md bg-white text-black w-full flex flex-col">
-									<button
-										class="flex w-full space-x-1"
-										@click=${() => {
-											if (fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]) {
-												delete fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]
-											} else {
-												fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] = true
-											}
-											this._currentOpenDropdownID = ''
-											this.updatemetadatamodel(fieldGroup)
-											this._columnData2DFieldsLockStateChanged = true
-										}}
-									>
-										<div class="w-fit h-fit self-center">
-											<iconify-icon icon=${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'mdi:lock-open-variant' : 'mdi:lock'} style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</div>
-										<div class="w-fit h-fit self-center">${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'unfreeze' : 'freeze'} column</div>
-									</button>
-									<button
-										class="flex w-full space-x-1"
-										@click=${() => {
-											fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
-											this._currentOpenDropdownID = ''
-											this.updatemetadatamodel(fieldGroup)
-										}}
-									>
-										<div class="w-fit h-fit self-center">
-											<iconify-icon icon="mdi:eye-off" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</div>
-										<div class="w-fit h-fit self-center">hide column</div>
-									</button>
-								</div>
-							`}
-						>
+						<drop-down>
 							<div slot="header" class="min-w-[120px] flex space-x-1 p-1 w-fit h-full${!fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? ' sticky right-0' : ''}" style="left: ${this._columnHeaderLockedWidth}px;">
 								<button
 									class="w-fit h-fit p-0 self-center"
@@ -349,6 +314,39 @@ class Component extends LitElement {
 									<iconify-icon icon="mdi:dots-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 								</button>
 								<div class="self-center">${columnIndex + 1} - ${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME]}</div>
+							</div>
+							<div slot="content" class="min-w-[120px] shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black w-full flex flex-col">
+								<button
+									class="flex w-full space-x-1"
+									@click=${() => {
+										if (fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]) {
+											delete fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]
+										} else {
+											fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] = true
+										}
+										this._currentOpenDropdownID = ''
+										this.updatemetadatamodel(fieldGroup)
+										this._columnData2DFieldsLockStateChanged = true
+									}}
+								>
+									<div class="w-fit h-fit self-center">
+										<iconify-icon icon=${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'mdi:lock-open-variant' : 'mdi:lock'} style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+									</div>
+									<div class="w-fit h-fit self-center">${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'unfreeze' : 'freeze'} column</div>
+								</button>
+								<button
+									class="flex w-full space-x-1"
+									@click=${() => {
+										fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
+										this._currentOpenDropdownID = ''
+										this.updatemetadatamodel(fieldGroup)
+									}}
+								>
+									<div class="w-fit h-fit self-center">
+										<iconify-icon icon="mdi:eye-off" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+									</div>
+									<div class="w-fit h-fit self-center">hide column</div>
+								</button>
 							</div>
 						</drop-down>
 					`
@@ -1020,7 +1018,8 @@ class Component extends LitElement {
 		return html`
 			<header
 				id="top-header"
-				class="h-fit min-w-fit sticky top-0 left-0 right-0 text-sm font-bold z-50 flex flex-col ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content '}"
+				class="h-fit min-w-fit sticky left-0 right-0 text-sm font-bold z-[2] flex flex-col ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content '}"
+				style="top: ${this.basestickytop}px;"
 			>
 				<section class="h-fit w-full flex flex-col justify-between p-1">
 					<section class="w-full flex justify-between">
@@ -1076,98 +1075,7 @@ class Component extends LitElement {
 				<section id="header-menu" class="ml-1 mr-1 shadow-inner shadow-gray-800 rounded-md p-1 flex">
 					<div class="sticky left-0 w-fit flex space-x-4 z-50">
 						<div class="flex">
-							<drop-down
-								.contenthtmltemplate=${html`
-									<div class="shadow-md shadow-gray-800 p-1 rounded-md bg-white text-black flex flex-col min-w-[500px] max-w-[800px] max-h-[800px] min-h-[200px] overflow-auto space-y-1">
-										<div class="join w-full shadow-inner shadow-gray-800">
-											${(() => {
-												if (this._unlockedColumnStartIndex === 0) {
-													return nothing
-												}
-
-												return html`
-													<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._decreaseColumnUnlockedStartIndex}>
-														<iconify-icon icon="mdi:rewind" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-													</button>
-												`
-											})()}
-											<div class="join-item flex justify-center w-full min-h-full ">
-												<div class="p-1 min-w-[150px]  h-fit self-center text-center">${this._unlockedColumnStartIndex + 1}/${this._unlockedColumnEndIndex + 1} of ${this._unlockedColumnData2DFieldsIndex.length} columns</div>
-											</div>
-											${(() => {
-												if (this._unlockedColumnEndIndex === this._unlockedColumnData2DFieldsIndex.length - 1) {
-													return nothing
-												}
-
-												return html`
-													<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._increaseColumnUnlockedEndIndex}>
-														<iconify-icon icon="mdi:fast-forward" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-													</button>
-												`
-											})()}
-										</div>
-										<div class="join">
-											<input
-												class="join-item input w-full min-w-[250px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
-												type="search"
-												placeholder="search columns..."
-												@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-													this._rowNumberColumnMenuTextSearchFieldsQuery = e.currentTarget.value
-												}}
-												.value=${this._rowNumberColumnMenuTextSearchFieldsQuery}
-											/>
-											<div class="z-50 join-item flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-search-show-frozen-columns-only')} @mouseout=${() => (this._showHintID = '')}>
-												<button
-													class="join-item btn ${this._rowNumberColumnMenuShowLockedColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
-													@click=${() => (this._rowNumberColumnMenuShowLockedColumnsOnly = !this._rowNumberColumnMenuShowLockedColumnsOnly)}
-												>
-													<iconify-icon icon="mdi:lock" style="color:${this._rowNumberColumnMenuShowLockedColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-												</button>
-												${(() => {
-													if (this._showHintID === 'header-menu-search-show-frozen-columns-only') {
-														return html`
-															<div class="relative">
-																<div class="z-50 absolute top-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 bg-white text-black">show only frozen columns</div>
-															</div>
-														`
-													}
-
-													return nothing
-												})()}
-											</div>
-											<div class="z-50 join-item flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-search-show-hidden-columns-only')} @mouseout=${() => (this._showHintID = '')}>
-												<button
-													class="join-item btn ${this._rowNumberColumnMenuShowHiddenColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
-													@click=${() => (this._rowNumberColumnMenuShowHiddenColumnsOnly = !this._rowNumberColumnMenuShowHiddenColumnsOnly)}
-												>
-													<iconify-icon icon="mdi:eye-off" style="color:${this._rowNumberColumnMenuShowHiddenColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-												</button>
-												${(() => {
-													if (this._showHintID === 'header-menu-search-show-hidden-columns-only') {
-														return html`
-															<div class="relative">
-																<div class="z-50 absolute top-0 right-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 bg-white text-black">show only hidden columns</div>
-															</div>
-														`
-													}
-
-													return nothing
-												})()}
-											</div>
-										</div>
-										<virtual-flex-scroll
-											class="w-full h-full max-h-[30vh] shadow-inner shadow-gray-800 rounded-md p-1 flex flex-col"
-											.data=${[
-												...this._lockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2),
-												...this._unlockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2)
-											]}
-											.foreachrowrender=${(datum: number[], _: number) => {
-												return this._rowNumberColumnMenuFieldsHtmlTemplate(datum[0], datum[1])
-											}}
-										></virtual-flex-scroll>
-									</div>
-								`}
-							>
+							<drop-down>
 								<div slot="header" class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-view-columns')} @mouseout=${() => (this._showHintID = '')}>
 									<button
 										class="btn btn-ghost self-start w-fit h-fit min-h-fit p-1"
@@ -1196,6 +1104,94 @@ class Component extends LitElement {
 
 										return nothing
 									})()}
+								</div>
+								<div class="shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black flex flex-col min-w-[500px] max-w-[800px] max-h-[800px] min-h-[200px] overflow-auto space-y-1">
+									<div class="join w-full shadow-inner shadow-gray-800">
+										${(() => {
+											if (this._unlockedColumnStartIndex === 0) {
+												return nothing
+											}
+
+											return html`
+												<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._decreaseColumnUnlockedStartIndex}>
+													<iconify-icon icon="mdi:rewind" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+												</button>
+											`
+										})()}
+										<div class="join-item flex justify-center w-full min-h-full ">
+											<div class="p-1 min-w-[150px]  h-fit self-center text-center">${this._unlockedColumnStartIndex + 1}/${this._unlockedColumnEndIndex + 1} of ${this._unlockedColumnData2DFieldsIndex.length} columns</div>
+										</div>
+										${(() => {
+											if (this._unlockedColumnEndIndex === this._unlockedColumnData2DFieldsIndex.length - 1) {
+												return nothing
+											}
+
+											return html`
+												<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._increaseColumnUnlockedEndIndex}>
+													<iconify-icon icon="mdi:fast-forward" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+												</button>
+											`
+										})()}
+									</div>
+									<div class="join">
+										<input
+											class="join-item input w-full min-w-[250px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
+											type="search"
+											placeholder="search columns..."
+											@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+												this._rowNumberColumnMenuTextSearchFieldsQuery = e.currentTarget.value
+											}}
+											.value=${this._rowNumberColumnMenuTextSearchFieldsQuery}
+										/>
+										<div class="z-50 join-item flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-search-show-frozen-columns-only')} @mouseout=${() => (this._showHintID = '')}>
+											<button
+												class="join-item btn ${this._rowNumberColumnMenuShowLockedColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
+												@click=${() => (this._rowNumberColumnMenuShowLockedColumnsOnly = !this._rowNumberColumnMenuShowLockedColumnsOnly)}
+											>
+												<iconify-icon icon="mdi:lock" style="color:${this._rowNumberColumnMenuShowLockedColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+											</button>
+											${(() => {
+												if (this._showHintID === 'header-menu-search-show-frozen-columns-only') {
+													return html`
+														<div class="relative">
+															<div class="z-50 absolute top-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 bg-white text-black">show only frozen columns</div>
+														</div>
+													`
+												}
+
+												return nothing
+											})()}
+										</div>
+										<div class="z-50 join-item flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-search-show-hidden-columns-only')} @mouseout=${() => (this._showHintID = '')}>
+											<button
+												class="join-item btn ${this._rowNumberColumnMenuShowHiddenColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
+												@click=${() => (this._rowNumberColumnMenuShowHiddenColumnsOnly = !this._rowNumberColumnMenuShowHiddenColumnsOnly)}
+											>
+												<iconify-icon icon="mdi:eye-off" style="color:${this._rowNumberColumnMenuShowHiddenColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+											</button>
+											${(() => {
+												if (this._showHintID === 'header-menu-search-show-hidden-columns-only') {
+													return html`
+														<div class="relative">
+															<div class="z-50 absolute top-0 right-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 bg-white text-black">show only hidden columns</div>
+														</div>
+													`
+												}
+
+												return nothing
+											})()}
+										</div>
+									</div>
+									<virtual-flex-scroll
+										class="w-full h-full max-h-[30vh] shadow-inner shadow-gray-800 rounded-md p-1 flex flex-col"
+										.data=${[
+											...this._lockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2),
+											...this._unlockedColumnData2DFieldsIndex.map((dfIndex, cIndex) => (this._includeField(dfIndex) ? [cIndex, dfIndex] : [])).filter((v) => v.length === 2)
+										]}
+										.foreachrowrender=${(datum: number[], _: number) => {
+											return this._rowNumberColumnMenuFieldsHtmlTemplate(datum[0], datum[1])
+										}}
+									></virtual-flex-scroll>
 								</div>
 							</drop-down>
 							<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-view-json-output')} @mouseout=${() => (this._showHintID = '')}>
@@ -1478,11 +1474,11 @@ class Component extends LitElement {
 				}
 
 				return html`
-					<main class="relative grid w-full h-full min-h-fit min-w-fit rounded-md" style="grid-template-columns: repeat(${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}, minmax(min-content,500px));">
+					<main class="z-[1] relative grid w-full h-full min-h-fit min-w-fit rounded-md" style="grid-template-columns: repeat(${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}, minmax(min-content,500px));">
 						<header
 							id="column-header"
-							style="top: ${this._topHeaderHeight}px; grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;"
-							class="grid h-fit min-w-fit sticky left-0 right-0 shadow-sm text-sm font-bold z-40 shadow-gray-800 ${this.color === Theme.Color.PRIMARY
+							style="top: ${this._topHeaderHeight + this.basestickytop}px; grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;"
+							class="grid h-fit min-w-fit sticky left-0 right-0 shadow-sm text-sm font-bold z-[2] shadow-gray-800 ${this.color === Theme.Color.PRIMARY
 								? 'bg-primary text-primary-content'
 								: this.color === Theme.Color.SECONDARY
 									? 'bg-secondary text-secondary-content'
@@ -1491,7 +1487,7 @@ class Component extends LitElement {
 							<div
 								id="column-header-locked"
 								style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;"
-								class="grid sticky left-0 z-10 shadow-md ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content '}"
+								class="grid sticky left-0 z-[2] shadow-sm ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content '}"
 							>
 								<div class="w-full h-full min-h-full p-1 flex justify-evenly space-x-1">
 									<div class="h-full flex justify-center text-2xl w-[47px] font-bold">
@@ -1577,210 +1573,216 @@ class Component extends LitElement {
 							})()}
 							<div class="w-fit h-full flex flex-col justify-center pr-1">${this._columnEndHtmlTemplate(true)}</div>
 						</header>
-						<div id="row-render-tracker-start" class="grid bg-white shadow-md shadow-gray-800" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
-							<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this._columnHeaderHeight}px;" class="grid sticky left-0 bg-white shadow-md shadow-gray-800 z-10">
+						<main class="z-[1] grid bg-white shadow-sm shadow-gray-800" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
+							<div id="row-render-tracker-start" class="grid bg-white shadow-sm shadow-gray-800" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
+								<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px;" class="grid sticky left-0 bg-white shadow-sm shadow-gray-800 z-[2]">
+									${(() => {
+										let templates: TemplateResult<1>[] = []
+
+										for (let index = 0; index < this._lockedColumnData2DFieldsIndex.length + 1; index++) {
+											templates.push(html`
+												<div class="w-full min-w-full h-fit">
+													<div style="top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
+												</div>
+											`)
+										}
+
+										return templates
+									})()}
+								</div>
+								<div class="w-full h-full"></div>
 								${(() => {
 									let templates: TemplateResult<1>[] = []
 
-									for (let index = 0; index < this._lockedColumnData2DFieldsIndex.length + 1; index++) {
-										templates.push(html`
-											<div class="w-full min-w-full h-fit">
-												<div style="top: ${this._columnHeaderHeight}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
-											</div>
-										`)
-									}
-
-									return templates
-								})()}
-							</div>
-							<div class="w-full h-full"></div>
-							${(() => {
-								let templates: TemplateResult<1>[] = []
-
-								for (let index = this._unlockedColumnStartIndex; index <= this._unlockedColumnEndIndex; index++) {
-									if (typeof this._unlockedColumnData2DFieldsIndex[index] === 'undefined') {
-										continue
-									}
-									if (this._data2DFields[this._unlockedColumnData2DFieldsIndex[index]][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
-										templates.push(html` <div class="w-fit h-full"></div> `)
-									} else {
-										templates.push(html`
-											<div class="w-full min-w-full h-fit">
-												<div style="top: ${this._columnHeaderHeight}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
-											</div>
-										`)
-									}
-								}
-
-								return templates
-							})()}
-							<div class="w-full h-full"></div>
-						</div>
-						${cache(
-							(() => {
-								let templates: TemplateResult<1>[] = []
-
-								for (let rowIndex = this._rowStartIndex; rowIndex <= this._rowEndIndex; rowIndex++) {
-									if (typeof this._rowRenderTrackers[rowIndex] === 'undefined') {
-										this._rowRenderTrackers[rowIndex] = {
-											ContentIntersectionObserved: false,
-											ContentIntersectionRatio: 0,
-											ContentHasBeenInView: false
+									for (let index = this._unlockedColumnStartIndex; index <= this._unlockedColumnEndIndex; index++) {
+										if (typeof this._unlockedColumnData2DFieldsIndex[index] === 'undefined') {
+											continue
+										}
+										if (this._data2DFields[this._unlockedColumnData2DFieldsIndex[index]][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
+											templates.push(html` <div class="w-fit h-full"></div> `)
+										} else {
+											templates.push(html`
+												<div class="w-full min-w-full h-fit">
+													<div style="top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
+												</div>
+											`)
 										}
 									}
 
-									;(async () => {
-										await new Promise((resolve: (e: Element) => void) => {
-											if ((this.shadowRoot as ShadowRoot).querySelector(`#row-render-tracker-content-item-${rowIndex}`)) {
-												resolve((this.shadowRoot as ShadowRoot).querySelector(`#row-render-tracker-content-item-${rowIndex}`) as Element)
-												return
-											}
-
-											const observer = new MutationObserver(() => {
-												if ((this.shadowRoot as ShadowRoot).querySelector(`#row-render-tracker-content-item-${rowIndex}`)) {
-													resolve((this.shadowRoot as ShadowRoot).querySelector(`#row-render-tracker-content-item-${rowIndex}`) as Element)
-													observer.disconnect()
-												}
-											})
-
-											observer.observe(this.shadowRoot as ShadowRoot, {
-												childList: true,
-												subtree: true
-											})
-										})
-											.then((e) => {
-												if (typeof this._rowRenderTrackers[rowIndex] === 'undefined') {
-													return
-												}
-												if (!this._rowRenderTrackers[rowIndex].ContentIntersectionObserved) {
-													this._rowContentItemIntersectionObserver.observe(e)
-													this._rowRenderTrackers[rowIndex].ContentIntersectionObserved = true
-												}
-											})
-											.catch((err) => {
-												console.error('Observed item at index', rowIndex, 'failed', err)
-											})
-									})()
-
-									templates.push(html`
-										<div id="row-render-tracker-content-item-${rowIndex}" class="grid bg-white shadow-md shadow-gray-800" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
-											<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this._columnHeaderHeight}px;" class="grid sticky left-0 bg-white shadow-md shadow-gray-800 z-10">
-												<div class="w-full h-full min-h-full p-1 flex justify-evenly space-x-1">
-													<button
-														class="self-center btn btn-circle glass ${this.color === Theme.Color.PRIMARY ? 'btn-primary bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary bg-secondary text-secondary-content' : 'btn-accent bg-accent text-accent-content'}"
-														@click=${() => {
-															this._currentOpenDropdownID = this._currentOpenDropdownID === `row-${rowIndex}` ? '' : `row-${rowIndex}`
-														}}
-													>
-														${rowIndex + 1}
-													</button>
-													<input
-														class="self-center checkbox ${this.color === Theme.Color.PRIMARY ? 'checkbox-primary' : this.color === Theme.Color.SECONDARY ? 'checkbox-secondary' : 'checkbox-accent'}"
-														type="checkbox"
-														.checked=${rowIndex >= this._selectedrowminindex && rowIndex <= this._selectedrowmaxindex && this._selectedcolumnminindex === 0 && this._selectedcolumnmaxindex === this._data2DFields.length - 1}
-														@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-															if (e.currentTarget.checked) {
-																this._selectedcolumnminindex = 0
-																this._selectedcolumnmaxindex = this._data2DFields.length - 1
-																if (rowIndex < this._selectedrowminindex || this._selectedrowminindex === -1) {
-																	this._selectedrowminindex = rowIndex
-																}
-																if (rowIndex > this._selectedrowmaxindex || this._selectedrowmaxindex === -1) {
-																	this._selectedrowmaxindex = rowIndex
-																}
-															} else {
-																if (rowIndex === this._selectedrowminindex) {
-																	this._selectedrowminindex += 1
-																}
-
-																if (rowIndex === this._selectedrowmaxindex) {
-																	this._selectedrowmaxindex -= 1
-																}
-															}
-														}}
-													/>
-													<div class="min-h-full flex flex-col justify-center">
-														<div class="self-center w-fit h-fit">
-															<iconify-icon icon=${rowIndex >= this._selectedrowminindex && rowIndex <= this._selectedrowmaxindex ? 'mdi:square-medium' : 'mdi:square-medium-outline'} style="color:${this.color};" width=${Misc.IconifySize('32')} height=${Misc.IconifySize('32')}></iconify-icon>
-														</div>
-													</div>
-												</div>
-												${this._lockedColumnData2DFieldsIndex.map((columnIndex) => {
-													if (this._data2DFields[columnIndex][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
-														return html` <div class="w-fit h-full"></div> `
-													}
-
-													return html` ${this._rowColumnDataHtmlTemplate(rowIndex, columnIndex, 0, this._columnHeaderHeight + 2)} `
-												})}
-											</div>
-											<div class="w-fit h-full flex flex-col">
-												<div style="top: ${this._columnHeaderHeight}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky w-fit h-fit">${this._columnStartHtmlTemplate(false)}</div>
-											</div>
-											${(() => {
-												let templates: TemplateResult<1>[] = []
-
-												for (let columnIndex = this._unlockedColumnStartIndex; columnIndex <= this._unlockedColumnEndIndex; columnIndex++) {
-													if (typeof this._unlockedColumnData2DFieldsIndex[columnIndex] === 'undefined') {
-														continue
-													}
-													if (this._data2DFields[this._unlockedColumnData2DFieldsIndex[columnIndex]][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
-														templates.push(html` <div class="w-fit h-full"></div> `)
-													} else {
-														templates.push(html` ${this._rowColumnDataHtmlTemplate(rowIndex, this._unlockedColumnData2DFieldsIndex[columnIndex], this._columnHeaderLockedWidth + 2, this._columnHeaderHeight + 2)} `)
-													}
-												}
-
-												return templates
-											})()}
-											<div class="w-fit h-full flex flex-col">
-												<div style="top: ${this._columnHeaderHeight}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky w-fit h-fit">${this._columnEndHtmlTemplate(false)}</div>
-											</div>
-										</div>
-									`)
-								}
-
-								return templates
-							})()
-						)}
-						<div id="row-render-tracker-end" class="grid bg-white shadow-md shadow-gray-800" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
-							<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this._columnHeaderHeight}px;" class="grid sticky left-0 bg-white shadow-md shadow-gray-800 z-10">
-								${(() => {
+									return templates
+								})()}
+								<div class="w-full h-full"></div>
+							</div>
+							${cache(
+								(() => {
 									let templates: TemplateResult<1>[] = []
 
-									for (let index = 0; index < this._lockedColumnData2DFieldsIndex.length + 1; index++) {
+									for (let rowIndex = this._rowStartIndex; rowIndex <= this._rowEndIndex; rowIndex++) {
+										if (typeof this._rowRenderTrackers[rowIndex] === 'undefined') {
+											this._rowRenderTrackers[rowIndex] = {
+												ContentIntersectionObserved: false,
+												ContentIntersectionRatio: 0,
+												ContentHasBeenInView: false
+											}
+										}
+
+										;(async () => {
+											await new Promise((resolve: (e: Element) => void) => {
+												if ((this.shadowRoot as ShadowRoot).querySelector(`#row-render-tracker-content-item-${rowIndex}`)) {
+													resolve((this.shadowRoot as ShadowRoot).querySelector(`#row-render-tracker-content-item-${rowIndex}`) as Element)
+													return
+												}
+
+												const observer = new MutationObserver(() => {
+													if ((this.shadowRoot as ShadowRoot).querySelector(`#row-render-tracker-content-item-${rowIndex}`)) {
+														resolve((this.shadowRoot as ShadowRoot).querySelector(`#row-render-tracker-content-item-${rowIndex}`) as Element)
+														observer.disconnect()
+													}
+												})
+
+												observer.observe(this.shadowRoot as ShadowRoot, {
+													childList: true,
+													subtree: true
+												})
+											})
+												.then((e) => {
+													if (typeof this._rowRenderTrackers[rowIndex] === 'undefined') {
+														return
+													}
+													if (!this._rowRenderTrackers[rowIndex].ContentIntersectionObserved) {
+														this._rowContentItemIntersectionObserver.observe(e)
+														this._rowRenderTrackers[rowIndex].ContentIntersectionObserved = true
+													}
+												})
+												.catch((err) => {
+													console.error('Observed item at index', rowIndex, 'failed', err)
+												})
+										})()
+
 										templates.push(html`
-											<div class="w-full min-w-full h-full flex justify-center">
-												<div class="sticky left-0 w-fit">${this._rowEndRenderTrackerHtmlTemplate()}</div>
+											<div
+												id="row-render-tracker-content-item-${rowIndex}"
+												class="grid bg-white shadow-sm shadow-gray-800"
+												style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;"
+											>
+												<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px;" class="grid sticky left-0 bg-white shadow-sm shadow-gray-800 z-[2]">
+													<div class="w-full h-full min-h-full p-1 flex justify-evenly space-x-1">
+														<button
+															class="self-center btn btn-circle glass ${this.color === Theme.Color.PRIMARY ? 'btn-primary bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary bg-secondary text-secondary-content' : 'btn-accent bg-accent text-accent-content'}"
+															@click=${() => {
+																this._currentOpenDropdownID = this._currentOpenDropdownID === `row-${rowIndex}` ? '' : `row-${rowIndex}`
+															}}
+														>
+															${rowIndex + 1}
+														</button>
+														<input
+															class="self-center checkbox ${this.color === Theme.Color.PRIMARY ? 'checkbox-primary' : this.color === Theme.Color.SECONDARY ? 'checkbox-secondary' : 'checkbox-accent'}"
+															type="checkbox"
+															.checked=${rowIndex >= this._selectedrowminindex && rowIndex <= this._selectedrowmaxindex && this._selectedcolumnminindex === 0 && this._selectedcolumnmaxindex === this._data2DFields.length - 1}
+															@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+																if (e.currentTarget.checked) {
+																	this._selectedcolumnminindex = 0
+																	this._selectedcolumnmaxindex = this._data2DFields.length - 1
+																	if (rowIndex < this._selectedrowminindex || this._selectedrowminindex === -1) {
+																		this._selectedrowminindex = rowIndex
+																	}
+																	if (rowIndex > this._selectedrowmaxindex || this._selectedrowmaxindex === -1) {
+																		this._selectedrowmaxindex = rowIndex
+																	}
+																} else {
+																	if (rowIndex === this._selectedrowminindex) {
+																		this._selectedrowminindex += 1
+																	}
+
+																	if (rowIndex === this._selectedrowmaxindex) {
+																		this._selectedrowmaxindex -= 1
+																	}
+																}
+															}}
+														/>
+														<div class="min-h-full flex flex-col justify-center">
+															<div class="self-center w-fit h-fit">
+																<iconify-icon icon=${rowIndex >= this._selectedrowminindex && rowIndex <= this._selectedrowmaxindex ? 'mdi:square-medium' : 'mdi:square-medium-outline'} style="color:${this.color};" width=${Misc.IconifySize('32')} height=${Misc.IconifySize('32')}></iconify-icon>
+															</div>
+														</div>
+													</div>
+													${this._lockedColumnData2DFieldsIndex.map((columnIndex) => {
+														if (this._data2DFields[columnIndex][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
+															return html` <div class="w-fit h-full"></div> `
+														}
+
+														return html` ${this._rowColumnDataHtmlTemplate(rowIndex, columnIndex, 0, this._columnHeaderHeight + 2)} `
+													})}
+												</div>
+												<div class="w-fit h-full flex flex-col">
+													<div style="top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky w-fit h-fit">${this._columnStartHtmlTemplate(false)}</div>
+												</div>
+												${(() => {
+													let templates: TemplateResult<1>[] = []
+
+													for (let columnIndex = this._unlockedColumnStartIndex; columnIndex <= this._unlockedColumnEndIndex; columnIndex++) {
+														if (typeof this._unlockedColumnData2DFieldsIndex[columnIndex] === 'undefined') {
+															continue
+														}
+														if (this._data2DFields[this._unlockedColumnData2DFieldsIndex[columnIndex]][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
+															templates.push(html` <div class="w-fit h-full"></div> `)
+														} else {
+															templates.push(html` ${this._rowColumnDataHtmlTemplate(rowIndex, this._unlockedColumnData2DFieldsIndex[columnIndex], this._columnHeaderLockedWidth + 2, this._columnHeaderHeight + 2)} `)
+														}
+													}
+
+													return templates
+												})()}
+												<div class="w-fit h-full flex flex-col">
+													<div style="top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky w-fit h-fit">${this._columnEndHtmlTemplate(false)}</div>
+												</div>
 											</div>
 										`)
 									}
 
 									return templates
+								})()
+							)}
+							<div id="row-render-tracker-end" class="grid bg-white shadow-sm shadow-gray-800" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
+								<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px;" class="grid sticky left-0 bg-white shadow-sm shadow-gray-800 z-[2]">
+									${(() => {
+										let templates: TemplateResult<1>[] = []
+
+										for (let index = 0; index < this._lockedColumnData2DFieldsIndex.length + 1; index++) {
+											templates.push(html`
+												<div class="w-full min-w-full h-full flex justify-center">
+													<div class="sticky left-0 w-fit">${this._rowEndRenderTrackerHtmlTemplate()}</div>
+												</div>
+											`)
+										}
+
+										return templates
+									})()}
+								</div>
+								<div class="w-full h-full"></div>
+								${(() => {
+									let templates: TemplateResult<1>[] = []
+
+									for (let index = this._unlockedColumnStartIndex; index <= this._unlockedColumnEndIndex; index++) {
+										if (typeof this._unlockedColumnData2DFieldsIndex[index] === 'undefined') {
+											continue
+										}
+										if (this._data2DFields[this._unlockedColumnData2DFieldsIndex[index]][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
+											templates.push(html` <div class="w-fit h-full"></div> `)
+										} else {
+											templates.push(html`
+												<div class="w-full min-w-full h-full min-h-full flex justify-center">
+													<div style="left: ${this._columnHeaderLockedWidth}px;" class="sticky w-fit">${this._rowEndRenderTrackerHtmlTemplate()}</div>
+												</div>
+											`)
+										}
+									}
+
+									return templates
 								})()}
+								<div class="w-full h-full"></div>
 							</div>
-							<div class="w-full h-full"></div>
-							${(() => {
-								let templates: TemplateResult<1>[] = []
-
-								for (let index = this._unlockedColumnStartIndex; index <= this._unlockedColumnEndIndex; index++) {
-									if (typeof this._unlockedColumnData2DFieldsIndex[index] === 'undefined') {
-										continue
-									}
-									if (this._data2DFields[this._unlockedColumnData2DFieldsIndex[index]][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
-										templates.push(html` <div class="w-fit h-full"></div> `)
-									} else {
-										templates.push(html`
-											<div class="w-full min-w-full h-full min-h-full flex justify-center">
-												<div style="left: ${this._columnHeaderLockedWidth}px;" class="sticky w-fit">${this._rowEndRenderTrackerHtmlTemplate()}</div>
-											</div>
-										`)
-									}
-								}
-
-								return templates
-							})()}
-							<div class="w-full h-full"></div>
-						</div>
+						</main>
 					</main>
 				`
 			})()}

@@ -11,6 +11,7 @@ import '../../header/component'
 import '../table/component'
 import '$src/lib/components/vertical-flex-scroll/component'
 import '$src/lib/components/drop-down/component'
+import Json from '$src/lib/json'
 
 @customElement('metadata-model-datum-input-view-form')
 class Component extends LitElement {
@@ -28,11 +29,11 @@ class Component extends LitElement {
 	@property({ attribute: false }) setcopiedfieldgroupkey!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
 	@property({ attribute: false }) setcutfieldgroupdata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
 	@property({ attribute: false }) pastefieldgroupdata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
+	@property({ type: Number }) scrollelementheight!: number
+	@property({ type: Number }) basestickytop: number = 0
 
 	@state() private _totalNoOfRows: number = 1
-
-	@state() private _showDescription: string = ''
-
+	
 	private _getGroupName() {
 		if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
 			return this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
@@ -42,8 +43,6 @@ class Component extends LitElement {
 	}
 
 	@state() private _viewJsonOutput: boolean = false
-
-	@state() private _showRowMenuID: string = ''
 
 	@state() private _showMultipleEntryTopMenu: boolean = false
 	@state() private _showMultipleEntryBottomMenu: boolean = false
@@ -126,146 +125,14 @@ class Component extends LitElement {
 		`
 	}
 
+	@state() private _formHeaderHeightTracker: number[] = []
+
 	connectedCallback(): void {
 		super.connectedCallback()
 		const groupData = this.getdata(this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
 		if (Array.isArray(groupData) && (groupData as any[]).length > 1) {
 			this._totalNoOfRows = (groupData as any[]).length
 		}
-	}
-
-	private _headerHtmlTemplate(rowIndex: number) {
-		return html`
-			<header class="sticky top-0 z-[200] flex flex-col space-y-1 p-1 w-full rounded-t-md ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}">
-				<section class="flex justify-between">
-					<section class="flex space-x-1 h-fit self-center sticky left-0">
-						<drop-down
-							.showdropdowncontent=${this._showRowMenuID === `${rowIndex}`}
-							.contenthtmltemplate=${html`
-								<div class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
-									<button
-										class="btn btn-ghost p-1 w-full justify-start"
-										@click=${() => {
-											this.deletedata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}[${rowIndex}]`, this.arrayindexplaceholders)
-											if (this._totalNoOfRows - 1 >= 0) {
-												this._totalNoOfRows -= 1
-											}
-										}}
-									>
-										<div class="flex self-center">
-											<iconify-icon icon="mdi:delete-empty" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
-										</div>
-										<div class="self-center font-bold break-words">delete data for #${rowIndex + 1}</div>
-									</button>
-									<button
-										class="btn btn-ghost p-1 w-full justify-start"
-										@click=${() => {
-											this.setcopiedfieldgroupkey(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-										}}
-									>
-										<div class="flex self-center">
-											<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</div>
-										<div class="self-center font-bold">copy data</div>
-									</button>
-									<button
-										class="btn btn-ghost p-1 w-full justify-start"
-										@click=${() => {
-											this.setcutfieldgroupdata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
-										}}
-									>
-										<div class="flex self-center">
-											<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-										</div>
-										<div class="self-center font-bold">cut data</div>
-									</button>
-									${this._multipleEntryFormMenuHtmlTemplate()}
-								</div>
-							`}
-							@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
-								this._showRowMenuID = e.detail.value ? '' : `${rowIndex}`
-							}}
-						>
-							<button
-								slot="header"
-								class="btn btn-circle btn-sm btn-ghost self-start"
-								@click=${() => {
-									this._showRowMenuID = this._showRowMenuID === `${rowIndex}` ? '' : `${rowIndex}`
-								}}
-							>
-								<iconify-icon icon="mdi:dots-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-							</button>
-						</drop-down>
-						<div class="flex-[9] break-words text-md font-bold h-fit self-center">${this._getGroupName()} #${rowIndex + 1}</div>
-						${(() => {
-							if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
-								return html`
-									<button
-										class="ml-2 btn btn-circle btn-sm btn-ghost self-start"
-										@click=${() => {
-											if (this._showDescription === `${rowIndex}`) {
-												this._showDescription = ''
-												return
-											}
-											this._showDescription = `${rowIndex}`
-										}}
-									>
-										<iconify-icon icon="mdi:question-mark-circle" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-									</button>
-								`
-							}
-
-							return nothing
-						})()}
-					</section>
-					<div class="join sticky right-0">
-						${(() => {
-							const groupKey = `${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`
-							if (this.copiedcutfieldgroupkey.length > 0 && this.copiedcutfieldgroupkey === groupKey) {
-								return html`
-									<button
-										class="join-item btn btn-ghost p-1"
-										@click=${() => {
-											this.pastefieldgroupdata(groupKey, [...this.arrayindexplaceholders, rowIndex])
-										}}
-									>
-										<iconify-icon icon="mdi:content-paste" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-									</button>
-								`
-							} else {
-								return nothing
-							}
-						})()}
-						<button
-							class="join-item btn btn-ghost p-1"
-							@click=${() => {
-								if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number') {
-									if (this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] < 1) {
-										this._totalNoOfRows += 1
-									} else {
-										if (this._totalNoOfRows < this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]) {
-											this._totalNoOfRows += 1
-										}
-									}
-								} else {
-									this._totalNoOfRows += 1
-								}
-							}}
-							.disabled=${typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
-						>
-							<iconify-icon icon="mdi:plus-bold" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
-						</button>
-					</div>
-				</section>
-				${(() => {
-					if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0 && this._showDescription) {
-						return html` <div class="w-full overflow-auto max-h-[100px] flex flex-wrap text-sm">${this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION]}</div> `
-					}
-
-					return nothing
-				})()}
-			</header>
-		`
 	}
 
 	protected render(): unknown {
@@ -276,6 +143,7 @@ class Component extends LitElement {
 		if (this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 1) {
 			return html`
 				<metadata-model-datum-input-view-form-group-fields
+					class="z-[1]"
 					.scrollelement=${this.scrollelement}
 					.group=${this.group}
 					.arrayindexplaceholders=${[...this.arrayindexplaceholders, 0]}
@@ -288,6 +156,8 @@ class Component extends LitElement {
 					.setcopiedfieldgroupkey=${this.setcopiedfieldgroupkey}
 					.setcutfieldgroupdata=${this.setcutfieldgroupdata}
 					.pastefieldgroupdata=${this.pastefieldgroupdata}
+					.scrollelementheight=${this.scrollelementheight}
+					.basestickytop=${this.basestickytop}
 				></metadata-model-datum-input-view-form-group-fields>
 			`
 		}
@@ -296,7 +166,6 @@ class Component extends LitElement {
 			<header class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
 				<drop-down
 					.showdropdowncontent=${this._showMultipleEntryTopMenu}
-					.contenthtmltemplate=${html` <div class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `}
 					@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
 						this._showMultipleEntryTopMenu = e.detail.value
 					}}
@@ -312,9 +181,11 @@ class Component extends LitElement {
 							<iconify-icon icon="mdi:arrow-down" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
 						</div>
 					</button>
+					<div slot="content" class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-sm shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div>
 				</drop-down>
 			</header>
 			<virtual-flex-scroll
+				id="virtual-flex-scroll"
 				.data=${(() => {
 					let data: number[] = []
 
@@ -325,71 +196,80 @@ class Component extends LitElement {
 					return data
 				})()}
 				.foreachrowrender=${(datum: number, _: number) => {
-					if (this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE) {
-						if (this._viewJsonOutput) {
-							const jsonData = this.getdata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}[${datum}]`, this.arrayindexplaceholders)
-
-							return html`
-								<div class="flex flex-col min-w-fit min-h-fit mt-2 mb-2">
-									${this._headerHtmlTemplate(datum)}
-									<pre class="flex-1 bg-gray-700 text-white w-full h-fit max-h-[80vh] overflow-auto shadow-inner shadow-gray-800 p-1 rounded-b-md"><code>${JSON.stringify(jsonData, null, 4)}</code></pre>
-								</div>
-							`
-						}
-
-						return html`
-							<div class="min-w-fit min-h-fit mt-2 mb-2">
-								<metadata-model-datum-input-view-table
-									class="w-full h-fit"
-									.scrollelement=${this.scrollelement}
-									.group=${this.group}
-									.color=${this.color}
-									.arrayindexplaceholders=${this.arrayindexplaceholders}
-									.updatemetadatamodel=${this.updatemetadatamodel}
-									.getdata=${this.getdata}
-									.updatedata=${this.updatedata}
-									.deletedata=${this.deletedata}
-									.totalnoofrows=${20}
-									.headerhtmltemplate=${() => {
-										return this._headerHtmlTemplate(datum)
-									}}
-								></metadata-model-datum-input-view-table>
-							</div>
-						`
-					}
+					const newGroup = structuredClone(this.group)
+					newGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] = newGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] + ` #${datum + 1}`
 
 					return html`
 						<div class="mt-2 mb-2">
-							${this._headerHtmlTemplate(datum)}
+							<metadata-model-datum-input-header
+								class="sticky z-[2] ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
+								style="top: ${this.basestickytop}px;"
+								.group=${newGroup}
+								.viewjsonoutput=${this._viewJsonOutput}
+								.updateviewjsonoutput=${(newviewjsonoutput: boolean) => (this._viewJsonOutput = newviewjsonoutput)}
+								.updatemetadatamodel=${this.updatemetadatamodel}
+								.deletedata=${this.deletedata}
+								.color=${this.color}
+								.headerheightupdate=${(newheight: number) => {
+									this._formHeaderHeightTracker = structuredClone(Json.SetValueInObject(this._formHeaderHeightTracker, `$.${datum}`, newheight))
+								}}
+							>
+								<div slot="header-menu-additional-content" class="flex flex-col">${this._multipleEntryFormMenuHtmlTemplate()}</div>
+								<div slot="header-sticky-right-content">
+									${(() => {
+										const groupKey = `${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`
+										if (this.copiedcutfieldgroupkey.length > 0 && this.copiedcutfieldgroupkey === groupKey) {
+											return html`
+												<button
+													class="join-item btn btn-ghost p-1"
+													@click=${() => {
+														this.pastefieldgroupdata(groupKey, [...this.arrayindexplaceholders, datum])
+													}}
+												>
+													<iconify-icon icon="mdi:content-paste" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+												</button>
+											`
+										} else {
+											return nothing
+										}
+									})()}
+									<button
+										class="join-item btn btn-ghost p-1"
+										@click=${() => {
+											if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number') {
+												if (this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] < 1) {
+													this._totalNoOfRows += 1
+												} else {
+													if (this._totalNoOfRows < this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]) {
+														this._totalNoOfRows += 1
+													}
+												}
+											} else {
+												this._totalNoOfRows += 1
+											}
+										}}
+										.disabled=${typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= this.group[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
+									>
+										<iconify-icon icon="mdi:plus-bold" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+									</button>
+								</div>
+							</metadata-model-datum-input-header>
 							${(() => {
+								if (typeof this._formHeaderHeightTracker[datum] === 'undefined') {
+									return nothing
+								}
+
 								if (this._viewJsonOutput) {
 									const jsonData = this.getdata(`${this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY]}[${datum}]`, this.arrayindexplaceholders)
 
-									return html`<pre class="flex-1 bg-gray-700 text-white w-full h-fit max-h-[80vh] overflow-auto shadow-inner shadow-gray-800 p-1 rounded-b-md"><code>${JSON.stringify(jsonData, null, 4)}</code></pre>`
-								}
-
-								if (this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE) {
-									return html`
-										<metadata-model-datum-input-view-table
-											class="w-fit h-fit"
-											.scrollelement=${this.scrollelement}
-											.group=${this.group}
-											.arrayindexplaceholders=${this.arrayindexplaceholders}
-											.grouprowindex=${datum}
-											.color=${this.color}
-											.updatemetadatamodel=${this.updatemetadatamodel}
-											.getdata=${this.getdata}
-											.updatedata=${this.updatedata}
-											.deletedata=${this.deletedata}
-										></metadata-model-datum-input-view-table>
-									`
+									return html`<pre class="z-[1] flex-1 bg-gray-700 text-white w-full h-fit max-h-[80vh] overflow-auto shadow-inner shadow-gray-800 p-1"><code>${JSON.stringify(jsonData, null, 4)}</code></pre>`
 								}
 
 								return html`
 									<metadata-model-datum-input-view-form-group-fields
-										class="rounded-b-md p-2 shadow-inner shadow-gray-800"
+										class="z-[1] p-2 shadow-inner shadow-gray-800"
 										.scrollelement=${this.scrollelement}
-										.group=${this.group}
+										.group=${newGroup}
 										.arrayindexplaceholders=${[...this.arrayindexplaceholders, datum]}
 										.color=${this.color}
 										.updatemetadatamodel=${this.updatemetadatamodel}
@@ -400,6 +280,8 @@ class Component extends LitElement {
 										.setcopiedfieldgroupkey=${this.setcopiedfieldgroupkey}
 										.setcutfieldgroupdata=${this.setcutfieldgroupdata}
 										.pastefieldgroupdata=${this.pastefieldgroupdata}
+										.scrollelementheight=${this.scrollelementheight}
+										.basestickytop=${this.basestickytop + this._formHeaderHeightTracker[datum] ? this._formHeaderHeightTracker[datum] : 0}
 									></metadata-model-datum-input-view-form-group-fields>
 								`
 							})()}
@@ -413,7 +295,6 @@ class Component extends LitElement {
 			<footer class="divider h-fit text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'divider-primary' : this.color === Theme.Color.SECONDARY ? 'divider-secondary' : 'divider-accent'}">
 				<drop-down
 					.showdropdowncontent=${this._showMultipleEntryBottomMenu}
-					.contenthtmltemplate=${html` <div class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div> `}
 					@drop-down:showdropdowncontentupdate=${(e: CustomEvent) => {
 						this._showMultipleEntryBottomMenu = e.detail.value
 					}}
@@ -429,6 +310,7 @@ class Component extends LitElement {
 							<iconify-icon icon="mdi:arrow-up" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
 						</div>
 					</button>
+					<div slot="content" class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-sm shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div>
 				</drop-down>
 			</footer>
 		`
@@ -451,10 +333,14 @@ class ComponentGroupFields extends LitElement {
 	@property({ attribute: false }) setcopiedfieldgroupkey!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
 	@property({ attribute: false }) setcutfieldgroupdata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
 	@property({ attribute: false }) pastefieldgroupdata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
+	@property({ type: Number }) scrollelementheight!: number
+	@property({ type: Number }) basestickytop: number = 0
 
 	@state() private _totalNoOfColumns: number = 1
 
 	@state() private _viewJsonOutput: string = ''
+
+	@state() private _groupFieldHeaderHeight: number[] = []
 
 	private _groupFieldHtmlTemplate(groupFieldIndex: number) {
 		const fieldGroup = this.group[MetadataModel.FgProperties.GROUP_FIELDS][0][this.group[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS][groupFieldIndex]]
@@ -470,28 +356,8 @@ class ComponentGroupFields extends LitElement {
 		if (typeof fieldGroup === 'object' && !Array.isArray(fieldGroup)) {
 			if (Array.isArray(fieldGroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
 				if (fieldGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE) {
-					if (this._viewJsonOutput === fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]) {
-						const jsonData = this.getdata(fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
-
-						return html`
-							<div class="flex flex-col min-w-fit min-h-fit mt-4 mb-4">
-								<metadata-model-datum-input-header
-									class="sticky top-0 z-[200] rounded-t-md w-full ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
-									.color=${this.color}
-									.group=${fieldGroup}
-									.viewjsonoutput=${this._viewJsonOutput === fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]}
-									.updateviewjsonoutput=${(newValue: boolean) => (this._viewJsonOutput = newValue ? fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] : '')}
-									.arrayindexplaceholders=${this.arrayindexplaceholders}
-									.updatemetadatamodel=${this.updatemetadatamodel}
-									.deletedata=${this.deletedata}
-								></metadata-model-datum-input-header>
-								<pre class="flex-1 bg-gray-700 text-white w-full h-fit max-h-[80vh] overflow-auto shadow-inner shadow-gray-800 p-1 rounded-b-md"><code>${JSON.stringify(jsonData, null, 4)}</code></pre>
-							</div>
-						`
-					}
-
 					return html`
-						<div class="min-w-fit min-h-fit mt-4 mb-4">
+						<div class="z-[1] min-w-fit min-h-fit mt-4 mb-4">
 							<metadata-model-datum-input-view-table
 								class="w-full h-fit"
 								.scrollelement=${this.scrollelement}
@@ -502,7 +368,8 @@ class ComponentGroupFields extends LitElement {
 								.getdata=${this.getdata}
 								.updatedata=${this.updatedata}
 								.deletedata=${this.deletedata}
-								.totalnoofrows=${20}
+								.totalnoofrows=${1}
+								.basestickytop=${this.basestickytop}
 							></metadata-model-datum-input-view-table>
 						</div>
 					`
@@ -512,7 +379,8 @@ class ComponentGroupFields extends LitElement {
 					return html`
 						<div class="flex flex-col min-w-fit min-h-fit mt-4 mb-4">
 							<metadata-model-datum-input-header
-								class="sticky top-0 z-[200] rounded-t-md w-full ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
+								class="sticky z-[2] w-full ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
+								style="top: ${this.basestickytop}px;"
 								.group=${fieldGroup}
 								.color=${this.color}
 								.viewjsonoutput=${this._viewJsonOutput === fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]}
@@ -520,17 +388,20 @@ class ComponentGroupFields extends LitElement {
 								.arrayindexplaceholders=${this.arrayindexplaceholders}
 								.updatemetadatamodel=${this.updatemetadatamodel}
 								.deletedata=${this.deletedata}
+								.headerheightupdate=${(newheight: number) => {
+									this._groupFieldHeaderHeight = structuredClone(Json.SetValueInObject(this._groupFieldHeaderHeight, `$.${groupFieldIndex}`, newheight))
+								}}
 							></metadata-model-datum-input-header>
 							<main
-								class="${(this._viewJsonOutput !== fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] && !fieldGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW]) || fieldGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.FORM
-									? 'shadow-inner shadow-gray-800 rounded-b-md pl-2 pr-2 pb-2'
+								class="z-[1] ${(this._viewJsonOutput !== fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] && !fieldGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW]) || fieldGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.FORM
+									? 'shadow-inner shadow-gray-800 pl-2 pr-2 pb-2'
 									: ''}"
 							>
 								${(() => {
 									if (this._viewJsonOutput === fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]) {
 										const jsonData = this.getdata(fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
 
-										return html`<pre class="flex-1 bg-gray-700 text-white w-full h-fit max-h-[80vh] overflow-auto shadow-inner shadow-gray-800 p-1 rounded-b-md"><code>${JSON.stringify(jsonData, null, 4)}</code></pre>`
+										return html`<pre class="flex-1 bg-gray-700 text-white w-full h-fit max-h-[80vh] overflow-auto shadow-inner shadow-gray-800 p-1"><code>${JSON.stringify(jsonData, null, 4)}</code></pre>`
 									}
 
 									return html`
@@ -547,6 +418,8 @@ class ComponentGroupFields extends LitElement {
 											.setcopiedfieldgroupkey=${this.setcopiedfieldgroupkey}
 											.setcutfieldgroupdata=${this.setcutfieldgroupdata}
 											.pastefieldgroupdata=${this.pastefieldgroupdata}
+											.scrollelementheight=${this.scrollelementheight}
+											.basestickytop=${this.basestickytop + (this._groupFieldHeaderHeight[groupFieldIndex] ? this._groupFieldHeaderHeight[groupFieldIndex] : 0)}
 										></metadata-model-datum-input-view-form>
 									`
 								})()}
@@ -570,6 +443,8 @@ class ComponentGroupFields extends LitElement {
 						.setcopiedfieldgroupkey=${this.setcopiedfieldgroupkey}
 						.setcutfieldgroupdata=${this.setcutfieldgroupdata}
 						.pastefieldgroupdata=${this.pastefieldgroupdata}
+						.scrollelementheight=${this.scrollelementheight}
+						.basestickytop=${this.basestickytop}
 					></metadata-model-datum-input-view-form>
 				`
 			}
