@@ -199,7 +199,7 @@ class Component extends LitElement {
 					return keyed(
 						this._currentViewGroupKey,
 						html`
-							<section id="view-group-tree-scroll-element" class="flex flex-1 flex-col w-full h-fit overflow-auto pt-1 shadow-inner shadow-gray-800">
+							<section id="view-group-tree-scroll-element" class="flex flex-[9] flex-col w-full h-fit overflow-auto pt-1 shadow-inner shadow-gray-800">
 								${(() => {
 									;(async () => {
 										await new Promise((resolve: (e: Element) => void) => {

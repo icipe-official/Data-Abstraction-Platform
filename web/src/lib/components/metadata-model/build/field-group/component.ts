@@ -6,9 +6,9 @@ import Theme from '$src/lib/theme'
 import 'iconify-icon'
 import Misc from '$src/lib/miscellaneous'
 import MetadataModel from '$src/lib/metadata_model'
-import '../group-fields/component'
 import './create/component'
 import Json from '$src/lib/json'
+import 'src/lib/components/vertical-flex-scroll/component'
 
 @customElement('metadata-model-build-field-group')
 class Component extends LitElement {
@@ -43,13 +43,14 @@ class Component extends LitElement {
 
 	@state() private _showHintID: string = ''
 
+	@state() private _showGroupName: boolean = false
+	@state() private _showGroupKey: boolean = false
+
 	protected render(): unknown {
 		return html`
 			${(() => {
 				if (this._showCreateFieldGroup && typeof this.groupkey === 'string' && typeof this.createfieldgroup === 'function') {
-					return html`
-						<metadata-model-build-field-group-create style="grid-column: 1/3;" class="mb-1" .color=${this.color} .groupKey=${this.groupkey} .createfieldgroup=${this.createfieldgroup} .indexingroupreadorderoffields=${this.indexingroupreadorderoffields}></metadata-model-build-field-group-create>
-					`
+					return html` <metadata-model-build-field-group-create style="grid-column: 1/3;" .color=${this.color} .groupKey=${this.groupkey} .createfieldgroup=${this.createfieldgroup} .indexingroupreadorderoffields=${this.indexingroupreadorderoffields}></metadata-model-build-field-group-create> `
 				}
 
 				return nothing
@@ -58,22 +59,17 @@ class Component extends LitElement {
 				if (MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
 					return html`
 						<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-show-group-field-tree')} @mouseout=${() => (this._showHintID = '')}>
-							<button class="btn ${this.color === Theme.Color.ACCENT ? 'btn-primary' : this.color === Theme.Color.PRIMARY ? 'btn-secondary' : 'btn-accent'} min-h-[38px] h-[38px] w-[38px]" @click=${() => (this.showgroupfields = !this.showgroupfields)}>
-								<iconify-icon
-									icon=${this.showgroupfields ? 'mdi:eye' : 'mdi:eye-off'}
-									style="color:${this.color === Theme.Color.ACCENT ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
-									width=${Misc.IconifySize('18')}
-									height=${Misc.IconifySize('18')}
-								></iconify-icon>
+							<button class="btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[38px] h-[38px] w-[38px]" @click=${() => (this.showgroupfields = !this.showgroupfields)}>
+								<iconify-icon icon=${this.showgroupfields ? 'mdi:eye' : 'mdi:eye-off'} style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('18')} height=${Misc.IconifySize('18')}></iconify-icon>
 							</button>
 							${(() => {
 								if (this._showHintID === 'header-show-group-field-tree') {
 									return html`
 										<div class="relative">
 											<div
-												class="z-50 absolute top-0 self-center font-bold text-sm min-w-[150px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.ACCENT
+												class="z-50 absolute top-0 self-center font-bold text-sm min-w-[150px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
 													? 'bg-primary text-primary-content'
-													: this.color === Theme.Color.PRIMARY
+													: this.color === Theme.Color.SECONDARY
 														? 'bg-secondary text-secondary-content'
 														: 'bg-accent text-accent-content'}"
 											>
@@ -89,7 +85,7 @@ class Component extends LitElement {
 					`
 				}
 
-				return nothing
+				return html`<div class="w-fit h-full min-h-full"></div>`
 			})()}
 			<header class="flex" style=${!MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]) ? 'grid-column:1/3' : ''}>
 				<button
@@ -108,7 +104,7 @@ class Component extends LitElement {
 						return html`
 							<span class="join w-fit h-fit self-center pl-1">
 								<input
-									class="join-item input h-[38px] ${this.color === Theme.Color.ACCENT ? 'input-primary' : this.color === Theme.Color.PRIMARY ? 'input-secondary' : 'input-accent'}"
+									class="join-item input h-[38px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
 									type="search"
 									placeholder="Search ${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] ? this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] : (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()} fields/groups..."
 									.value=${this._searchFieldGroupsQuery}
@@ -136,7 +132,7 @@ class Component extends LitElement {
 										}
 									}}
 								/>
-								<button class="join-item btn ${this.color === Theme.Color.ACCENT ? 'btn-primary' : this.color === Theme.Color.PRIMARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${() => (this._showSearchFieldGroupBar = false)}>
+								<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${() => (this._showSearchFieldGroupBar = false)}>
 									<div class="flex flex-col justify-center">
 										<div class="flex self-center">
 											<iconify-icon icon="mdi:search" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
@@ -154,22 +150,17 @@ class Component extends LitElement {
 								if (typeof this.fieldgroup[MetadataModel.FgProperties.GROUP_FIELDS] === 'object' && typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
 									return html`
 										<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-search-group-fields')} @mouseout=${() => (this._showHintID = '')}>
-											<button class="join-item btn ${this.color === Theme.Color.ACCENT ? 'btn-primary' : this.color === Theme.Color.PRIMARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${() => (this._showSearchFieldGroupBar = true)}>
-												<iconify-icon
-													icon="mdi:search"
-													style="color:${this.color === Theme.Color.ACCENT ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
-													width=${Misc.IconifySize('20')}
-													height=${Misc.IconifySize('20')}
-												></iconify-icon>
+											<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${() => (this._showSearchFieldGroupBar = true)}>
+												<iconify-icon icon="mdi:search" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
 											</button>
 											${(() => {
 												if (this._showHintID === 'header-search-group-fields') {
 													return html`
 														<div class="relative">
 															<div
-																class="z-50 absolute top-0 self-center font-bold text-sm min-w-[150px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.ACCENT
+																class="z-50 absolute top-0 self-center font-bold text-sm min-w-[150px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
 																	? 'bg-primary text-primary-content'
-																	: this.color === Theme.Color.PRIMARY
+																	: this.color === Theme.Color.SECONDARY
 																		? 'bg-secondary text-secondary-content'
 																		: 'bg-accent text-accent-content'}"
 															>
@@ -454,24 +445,19 @@ class Component extends LitElement {
 												return html`
 													<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-paste-field-group')} @mouseout=${() => (this._showHintID = '')}>
 														<button
-															class="join-item btn ${this.color === Theme.Color.ACCENT ? 'btn-primary' : this.color === Theme.Color.PRIMARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2"
+															class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2"
 															@click=${() => this.pastefieldgroup!(this.groupkey as string, this.indexingroupreadorderoffields as number)}
 														>
-															<iconify-icon
-																icon="mdi:content-paste"
-																style="color:${this.color === Theme.Color.ACCENT ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
-																width=${Misc.IconifySize('20')}
-																height=${Misc.IconifySize('20')}
-															></iconify-icon>
+															<iconify-icon icon="mdi:content-paste" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
 														</button>
 														${(() => {
 															if (this._showHintID === 'header-paste-field-group') {
 																return html`
 																	<div class="relative">
 																		<div
-																			class="z-50 absolute top-0 self-center font-bold text-sm min-w-[150px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.ACCENT
+																			class="z-50 absolute top-0 self-center font-bold text-sm min-w-[150px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
 																				? 'bg-primary text-primary-content'
-																				: this.color === Theme.Color.PRIMARY
+																				: this.color === Theme.Color.SECONDARY
 																					? 'bg-secondary text-secondary-content'
 																					: 'bg-accent text-accent-content'}"
 																		>
@@ -499,7 +485,11 @@ class Component extends LitElement {
 				})()}
 			</header>
 				${(() => {
-					if (this._viewFieldGroupJson && MetadataModel.IsGroupFieldsValid(this.fieldgroup)) {
+					if (!this.showgroupfields) {
+						return nothing
+					}
+
+					if (this._viewFieldGroupJson) {
 						return html`
 							<section class="flex-1 w-full h-fit flex overflow-hidden pt-1 pb-1" style="grid-column:1/3">
 								<pre class="flex-1 bg-gray-700 text-white lg:max-w-[50vw] w-full h-fit max-h-[80vh] overflow-auto shadow-inner rounded-md shadow-gray-800 p-1"><code>${JSON.stringify(this.fieldgroup, null, 4)}</code></pre>
@@ -509,7 +499,7 @@ class Component extends LitElement {
 
 					return html`
 						<div class="h-full flex justify-center">
-							<div class="w-[6px] min-h-full h-full ${this.color === Theme.Color.ACCENT ? 'bg-primary' : this.color === Theme.Color.PRIMARY ? 'bg-secondary' : 'bg-accent'}"></div>
+							<div class="w-[6px] min-h-full h-full ${this.color === Theme.Color.PRIMARY ? 'bg-primary' : this.color === Theme.Color.SECONDARY ? 'bg-secondary' : 'bg-accent'}"></div>
 						</div>
 						${(() => {
 							if (this._showSearchFieldGroupBar && typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
@@ -548,31 +538,154 @@ class Component extends LitElement {
 								return html` <div class="self-center text-lg font-bold ${this.color === Theme.Color.ACCENT ? 'text-primary' : this.color === Theme.Color.PRIMARY ? 'text-secondary' : 'text-accent'}">...no results to show...</div> `
 							}
 
-							if (MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
-								return html`
-									<metadata-model-build-group-fields
-										class="pt-1 pb-1"
-										.scrollelement=${this.scrollelement}
-										.color=${Theme.GetNextColorA(this.color)}
-										.group=${this.fieldgroup}
-										.copiedfieldgroupkey=${this.copiedfieldgroupkey}
-										.cutfieldgroup=${this.cutfieldgroup}
-										.showgroupfields=${this.showgroupfields}
-										.deletefieldgroup=${this.deletefieldgroup}
-										.setcutfieldgroup=${this.setcutfieldgroup}
-										.setcopiedfieldgroupkey=${this.setcopiedfieldgroupkey}
-										.pastefieldgroup=${this.pastefieldgroup}
-										.createfieldgroup=${this.createfieldgroup}
-										.handleselectfieldgroup=${this.handleselectfieldgroup}
-										.reorderfieldgroup=${this.reorderfieldgroup}
-										.showhidegroupfields=${() => {
-											this.showgroupfields = !this.showgroupfields
-										}}
-									></metadata-model-build-group-fields>
-								`
-							}
+							return html`
+								<div class="flex flex-col">
+									${(() => {
+										if (MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
+											return html`
+													<virtual-flex-scroll
+														.scrollelement=${this.scrollelement}
+														.data=${this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]}
+														.foreachrowrender=${(datum: string, dIndex: number) => {
+															return html`
+																<metadata-model-build-field-group
+																	class="pt-1 pb-1"
+																	.scrollelement=${this.scrollelement}
+																	.color=${this.color}
+																	.fieldgroup=${this.fieldgroup[MetadataModel.FgProperties.GROUP_FIELDS][0][datum]}
+																	.copiedfieldgroupkey=${this.copiedfieldgroupkey}
+																	.cutfieldgroup=${this.cutfieldgroup}
+																	.indexingroupreadorderoffields=${dIndex}
+																	.lengthofgroupreadorderoffields=${(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS] as string[]).length}
+																	.groupkey=${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]}
+																	.deletefieldgroup=${this.deletefieldgroup}
+																	.setcutfieldgroup=${this.setcutfieldgroup}
+																	.setcopiedfieldgroupkey=${this.setcopiedfieldgroupkey}
+																	.pastefieldgroup=${this.pastefieldgroup}
+																	.createfieldgroup=${this.createfieldgroup}
+																	.handleselectfieldgroup=${this.handleselectfieldgroup}
+																	.reorderfieldgroup=${this.reorderfieldgroup}
+																	.showhidegroupfields=${() => {
+																		this.showgroupfields = !this.showgroupfields
+																	}}
+																></metadata-model-build-field-group>
+															`
+														}}
+														.enablescrollintoview=${false}
+													></virtual-flex-scroll>
+											`
+										}
 
-							return nothing
+										return nothing
+									})()}
+									${(() => {
+										if (!MetadataModel.IsFieldAField(this.fieldgroup)) {
+											return html`
+												<div class="flex flex-col pt-1 pb-1 space-y-1">
+													${(() => {
+														if (typeof this.createfieldgroup === 'function') {
+															return html` <metadata-model-build-field-group-create class="md:max-w-[600px]" .color=${this.color} .groupKey=${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]} .createfieldgroup=${this.createfieldgroup}></metadata-model-build-field-group-create> `
+														}
+
+														return nothing
+													})()}
+													${(() => {
+														if ((this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').length > 2 || this.copiedfieldgroupkey.length > 0 || this.cutfieldgroup) {
+															return html`
+																<footer
+																	class="flex flex-col min-w-fit h-fit"
+																	@mouseenter=${() => (this._showGroupName = true)}
+																	@mouseleave=${() => {
+																		this._showGroupName = false
+																		this._showGroupKey = false
+																	}}
+																>
+																	<div class="relative w-full max-w-[50%]">
+																		${(() => {
+																			if (this._showGroupName) {
+																				return html`
+																					<div
+																						class="absolute bottom-0 z-10 max-w-fit flex flex-col space-y-1 ${this.color === Theme.Color.PRIMARY
+																							? 'bg-primary text-primary-content'
+																							: this.color === Theme.Color.SECONDARY
+																								? 'bg-secondary text-secondary-content'
+																								: 'bg-accent text-accent-content'} p-1 rounded-md shadow-md shadow-gray-800 text-center w-full"
+																					>
+																						<div class="flex space-x-2">
+																							<div class="h-fit self-center font-bold text-lg">${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] || (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()}</div>
+																							<button class="btn btn-ghost w-fit h-fit p-0" @click=${() => (this._showGroupKey = !this._showGroupKey)}>
+																								<div class="flex flex-col justify-center">
+																									<div class="flex self-center">
+																										<iconify-icon icon="mdi:transit-connection-horizontal" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																										${(() => {
+																											if (this._showGroupKey === true) {
+																												return html`<iconify-icon icon="mdi:close-circle" style="color: ${Theme.Color.ERROR};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('15')}></iconify-icon>`
+																											} else {
+																												return html` <iconify-icon icon="mdi:question-mark" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('15')}></iconify-icon> `
+																											}
+																										})()}
+																									</div>
+																								</div>
+																							</button>
+																						</div>
+																						${(() => {
+																							if (this._showGroupKey) {
+																								return html` <div>${MetadataModel.FieldGroupKeyPath(this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string)}</div>`
+																							}
+
+																							return nothing
+																						})()}
+																					</div>
+																				`
+																			}
+
+																			return nothing
+																		})()}
+																	</div>
+																	<div class="join w-full md:max-w-[400px] h-fit">
+																		${(() => {
+																			if ((this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').length > 2) {
+																				return html`
+																					<button class="join-item btn min-h-[24px] h-fit p-1 flex flex-nowrap ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this.showhidegroupfields}>
+																						<span class="h-fit self-center">
+																							<iconify-icon icon=${this.showgroupfields ? 'mdi:eye' : 'mdi:eye-off'} style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																						</span>
+																						<span class="h-fit self-center ${this.color === Theme.Color.PRIMARY ? 'text-primary-content' : this.color === Theme.Color.SECONDARY ? 'text-secondary-content' : 'text-accent-content'} text-nowrap">${this.showgroupfields ? 'hide' : 'show'} content</span>
+																					</button>
+																				`
+																			}
+
+																			return nothing
+																		})()}
+																		${(() => {
+																			if ((this.copiedfieldgroupkey.length > 0 || this.cutfieldgroup) && typeof this.pastefieldgroup === 'function') {
+																				return html`
+																					<button
+																						class="join-item btn w-fit min-h-[24px] h-fit p-1 flex ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}"
+																						@click=${() => this.pastefieldgroup!(this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], -1)}
+																					>
+																						<span class="h-fit self-center"><iconify-icon icon="mdi:content-paste" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon></span>
+																					</button>
+																				`
+																			}
+
+																			return nothing
+																		})()}
+																	</div>
+																</footer>
+															`
+														}
+
+														return nothing
+													})()}
+												</div>
+											`
+										}
+
+										return nothing
+									})()}
+								</div>
+							`
 						})()}
 					`
 				})()}

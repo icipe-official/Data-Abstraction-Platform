@@ -74,7 +74,7 @@ class Component extends LitElement {
 						`
 					}
 
-					return nothing
+					return html`<div class="w-fit h-full min-h-full"></div>`
 				})()}
 				<header class="flex" style=${!MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]) ? 'grid-column:1/3' : ''}>
 					<div class="h-fit self-center text-xl ml-1">
@@ -147,6 +147,37 @@ class Component extends LitElement {
 																			: 'bg-accent text-accent-content'}"
 																>
 																	Search group fields
+																</div>
+															</div>
+														`
+													}
+
+													return nothing
+												})()}
+											</div>
+										`
+									}
+									return nothing
+								})()}
+								${(() => {
+									if ((this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').length > 3 && typeof this.showhidegroupfields === 'function') {
+										return html`
+											<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-hide-current-field-group')} @mouseout=${() => (this._showHintID = '')}>
+												<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${this.showhidegroupfields}>
+													<iconify-icon icon="mdi:arrow-collapse-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
+												</button>
+												${(() => {
+													if (this._showHintID === 'header-hide-current-field-group') {
+														return html`
+															<div class="relative">
+																<div
+																	class="z-50 absolute top-0 self-center font-bold text-sm min-w-[150px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
+																		? 'bg-primary text-primary-content'
+																		: this.color === Theme.Color.SECONDARY
+																			? 'bg-secondary text-secondary-content'
+																			: 'bg-accent text-accent-content'}"
+																>
+																	Collapse/hide parent group
 																</div>
 															</div>
 														`
@@ -233,64 +264,75 @@ class Component extends LitElement {
 						`
 					})()}
 				</header>
-				<div class="min-h-full flex justify-center">
-					<div class="w-[6px] min-h-full h-full ${this.color === Theme.Color.PRIMARY ? 'bg-primary' : this.color === Theme.Color.SECONDARY ? 'bg-secondary' : 'bg-accent'}"></div>
-				</div>
 				${(() => {
-					if (this._showSearchFieldGroupBar === `header-search-group-bar-${dIndex}` && typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
-						if (this._fieldsGroupsKeysSearchResults.length > 0) {
-							return html`
-								<div class="flex flex-col">
-									${this._fieldsGroupsKeysSearchResults.map((fgKey) => {
-										const fieldgroup = Json.GetValueInObject(this.fieldgroup, fgKey.replace(this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], '$').replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]'))
-										if (MetadataModel.IsGroupFieldsValid(fieldgroup)) {
-											return html`
-												<metadata-model-datum-input-tree class="pt-1 pb-1" .scrollelement=${this.scrollelement} .color=${Theme.GetNextColorA(this.color)} .fieldgroup=${fieldgroup} .updatemetadatamodel=${this.updatemetadatamodel} .showgroupfields=${false}></metadata-model-datum-input-tree>
-											`
-										}
-
-										return html` <div class="self-center text-error font-bold w-full">Field/Group<strong>${fgKey}</strong> does not exist</div> `
-									})}
-								</div>
-							`
-						}
-
-						return html` <div class="self-center text-lg font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">...no results to show...</div> `
-					}
-
-					if (!this.showgroupfields) {
+					if (!MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
 						return nothing
 					}
 
-					if (MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
-						return html`
-							<virtual-flex-scroll
-								.scrollelement=${this.scrollelement}
-								.data=${this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]}
-								.foreachrowrender=${(datum: string, _: number) => {
-									if (MetadataModel.IsGroupFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_FIELDS][0][datum])) {
-										return html`
-											<metadata-model-datum-input-tree
-												class="pt-1 pb-1"
-												.scrollelement=${this.scrollelement}
-												.color=${MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_FIELDS][0][datum][MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]) ? Theme.GetNextColorA(this.color) : this.color}
-												.fieldgroup=${this.fieldgroup[MetadataModel.FgProperties.GROUP_FIELDS][0][datum]}
-												.updatemetadatamodel=${this.updatemetadatamodel}
-												.arrayindexplaceholders=${[...this.arrayindexplaceholders, dIndex]}
-												.getdata=${this.getdata}
-												.setcurrentgroupcontext=${this.setcurrentgroupcontext}
-											></metadata-model-datum-input-tree>
-										`
-									}
+					return html`
+						<div class="min-h-full flex justify-center">
+							<div class="w-[6px] min-h-full h-full ${this.color === Theme.Color.PRIMARY ? 'bg-primary' : this.color === Theme.Color.SECONDARY ? 'bg-secondary' : 'bg-accent'}"></div>
+						</div>
+						${(() => {
+							if (this._showSearchFieldGroupBar === `header-search-group-bar-${dIndex}` && typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
+								if (this._fieldsGroupsKeysSearchResults.length > 0) {
+									return html`
+										<div class="flex flex-col">
+											${this._fieldsGroupsKeysSearchResults.map((fgKey) => {
+												const fieldgroup = Json.GetValueInObject(this.fieldgroup, fgKey.replace(this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], '$').replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]'))
+												if (MetadataModel.IsGroupFieldsValid(fieldgroup)) {
+													return html`
+														<metadata-model-datum-input-tree class="pt-1 pb-1" .scrollelement=${this.scrollelement} .color=${Theme.GetNextColorA(this.color)} .fieldgroup=${fieldgroup} .updatemetadatamodel=${this.updatemetadatamodel} .showgroupfields=${false}></metadata-model-datum-input-tree>
+													`
+												}
 
-									return html`<div class="font-bold text-error self-center text-lg">Field Group is not valid</div>`
-								}}
-								.enablescrollintoview=${false}
-							></virtual-flex-scroll>
-						`
-					}
+												return html` <div class="self-center text-error font-bold w-full">Field/Group<strong>${fgKey}</strong> does not exist</div> `
+											})}
+										</div>
+									`
+								}
 
-					return nothing
+								return html` <div class="self-center text-lg font-bold ${this.color === Theme.Color.ACCENT ? 'text-primary' : this.color === Theme.Color.PRIMARY ? 'text-secondary' : 'text-accent'}">...no results to show...</div> `
+							}
+
+							if (!this.showgroupfields) {
+								return nothing
+							}
+
+							if (MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
+								return html`
+									<virtual-flex-scroll
+										.scrollelement=${this.scrollelement}
+										.data=${this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]}
+										.foreachrowrender=${(datum: string, _: number) => {
+											if (MetadataModel.IsGroupFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_FIELDS][0][datum])) {
+												return html`
+													<metadata-model-datum-input-tree
+														class="pt-1 pb-1"
+														.scrollelement=${this.scrollelement}
+														.color=${this.color}
+														.fieldgroup=${this.fieldgroup[MetadataModel.FgProperties.GROUP_FIELDS][0][datum]}
+														.updatemetadatamodel=${this.updatemetadatamodel}
+														.arrayindexplaceholders=${[...this.arrayindexplaceholders, dIndex]}
+														.getdata=${this.getdata}
+														.setcurrentgroupcontext=${this.setcurrentgroupcontext}
+														.showhidegroupfields=${() => {
+															this.showgroupfields = !this.showgroupfields
+														}}
+													></metadata-model-datum-input-tree>
+												`
+											}
+
+											return html`<div class="font-bold text-error self-center text-lg">Field Group is not valid</div>`
+										}}
+										.enablescrollintoview=${false}
+									></virtual-flex-scroll>
+								`
+							}
+
+							return nothing
+						})()}
+					`
 				})()}
 			`
 		}

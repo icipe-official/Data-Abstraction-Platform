@@ -44,7 +44,7 @@ class Component extends LitElement {
 		return html`
 			<section class="flex justify-between w-full">
 				<div class="flex sticky left-0 w-fit">
-					<drop-down .showdropdowncontent=${this._showMenu} @drop-down:showdropdowncontentupdate=${(e: CustomEvent) => (this._showMenu = e.detail.value)}>
+					<drop-down class="h-fit self-center" .showdropdowncontent=${this._showMenu} @drop-down:showdropdowncontentupdate=${(e: CustomEvent) => (this._showMenu = e.detail.value)}>
 						<button slot="header" class="btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showMenu = !this._showMenu)}>
 							<iconify-icon
 								icon="mdi:dots-vertical"

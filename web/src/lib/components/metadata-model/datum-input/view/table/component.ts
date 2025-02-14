@@ -509,7 +509,7 @@ class Component extends LitElement {
 
 	private _decreaseColumnUnlockedStartIndex() {
 		this._unlockedColumnStartIndex = this._unlockedColumnStartIndex - this._totalNoOfColumns >= 0 ? this._unlockedColumnStartIndex - this._totalNoOfColumns : 0
-		this._unlockedColumnEndIndex = this._unlockedColumnStartIndex + this._totalNoOfColumns
+		this._unlockedColumnEndIndex = this._unlockedColumnStartIndex + this._totalNoOfColumns > this._unlockedColumnData2DFieldsIndex.length - 1 ? this._unlockedColumnData2DFieldsIndex.length - 1 : this._unlockedColumnStartIndex + this._totalNoOfColumns
 		;(async (newEndIndex: number) => {
 			await new Promise((resolve: (e: Element) => void) => {
 				if ((this.shadowRoot as ShadowRoot).querySelector(`#unlocked-column-${newEndIndex}`)) {
@@ -587,7 +587,7 @@ class Component extends LitElement {
 
 	private _increaseColumnUnlockedEndIndex() {
 		this._unlockedColumnEndIndex = this._unlockedColumnEndIndex + this._totalNoOfColumns < this._unlockedColumnData2DFieldsIndex.length ? this._unlockedColumnEndIndex + this._totalNoOfColumns : this._unlockedColumnData2DFieldsIndex.length - 1
-		this._unlockedColumnStartIndex = this._unlockedColumnEndIndex - this._totalNoOfColumns
+		this._unlockedColumnStartIndex = this._unlockedColumnEndIndex - this._totalNoOfColumns > 0 ? this._unlockedColumnEndIndex - this._totalNoOfColumns : 0
 		;(async (newStartIndex: number) => {
 			await new Promise((resolve: (e: Element) => void) => {
 				if ((this.shadowRoot as ShadowRoot).querySelector(`#unlocked-column-${newStartIndex}`)) {

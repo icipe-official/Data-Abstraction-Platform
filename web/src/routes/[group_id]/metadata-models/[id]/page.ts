@@ -8,7 +8,9 @@ import 'iconify-icon'
 import '$src/lib/components/metadata-model/build/component'
 import '$src/lib/components/metadata-model/datum-input/component'
 import '$src/lib/components/metadata-model/view/table/component'
+import '$src/lib/components/metadata-model/view/query-panel/component'
 import Log from '$src/lib/log'
+import Theme from '$src/lib/theme'
 
 enum Tab {
 	PROPERTIES = 'PROPERTIES',
@@ -19,7 +21,7 @@ enum Tab {
 enum ViewTab {
 	DATUM_INPUT = 'DATUM_INPUT',
 	TABLE = 'TABLE',
-	FILTER = 'FILTER'
+	QUERY_PANEL = 'QUERY_PANEL'
 }
 
 @customElement('metadata-model-page')
@@ -50,12 +52,14 @@ class Page extends LitElement {
 	@state() private _datuminputsamplemetadatamodel: any = structuredClone(this._data)
 	@state() private _datuminputsampledata: any = {}
 
+	@state() private _colorTheme: Theme.Color = Theme.Color.PRIMARY
+
 	private _viewHtmlTemplate() {
 		return html`
 			<header role="tablist" class="tabs tabs-bordered">
 				<button role="tab" class="tab${this._currentViewTab === ViewTab.DATUM_INPUT ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.DATUM_INPUT)}>Datum Input</button>
 				<button role="tab" class="tab${this._currentViewTab === ViewTab.TABLE ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.TABLE)}>Table</button>
-				<button disabled role="tab" class="tab${this._currentViewTab === ViewTab.FILTER ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.FILTER)}>Filter</button>
+				<button role="tab" class="tab${this._currentViewTab === ViewTab.QUERY_PANEL ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.QUERY_PANEL)}>Query Panel</button>
 			</header>
 			<main class="flex-[9] h-full w-full overflow-hidden flex">
 				${(() => {
@@ -66,6 +70,7 @@ class Page extends LitElement {
 									class="flex-1"
 									.metadatamodel=${this._datuminputsamplemetadatamodel}
 									.data=${this._datuminputsampledata}
+									.startcolor=${this._colorTheme}
 									@metadata-model-datum-input:updatedata=${(e: CustomEvent) => {
 										this._datuminputsampledata = structuredClone(e.detail.value)
 									}}
@@ -75,7 +80,21 @@ class Page extends LitElement {
 								></metadata-model-datum-input>
 							`
 						case ViewTab.TABLE:
-							return html` <div class="border-[1px] border-gray-400 flex-1 h-fit max-h-full max-w-full flex overflow-hidden"><metadata-model-view-table .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${[this._datuminputsampledata]}></metadata-model-view-table></div> `
+							return html`
+								<div class="border-[1px] border-gray-400 flex-1 h-fit max-h-full max-w-full flex overflow-hidden">
+									<metadata-model-view-table .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${[this._datuminputsampledata]} .color=${Theme.Color.SECONDARY}></metadata-model-view-table>
+								</div>
+							`
+						case ViewTab.QUERY_PANEL:
+							return html`
+								<metadata-model-view-query-panel
+									.metadatamodel=${this._datuminputsamplemetadatamodel}
+									.startcolor=${this._colorTheme}
+									@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
+										this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
+									}}
+								></metadata-model-view-query-panel>
+							`
 						default:
 							return html`<div class="text-error font-bold">Tab not implemented</div>`
 					}
@@ -164,12 +183,26 @@ class Page extends LitElement {
 												>
 													Download metadata model
 												</button>
+												<div class="join join-vertical">
+													<div class="join-item p-1 bg-primary text-primary-content">Color Theme</div>
+													<select
+														class="join-item select select-primary w-full"
+														@change=${(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) => {
+															this._colorTheme = e.currentTarget.value as Theme.Color
+														}}
+													>
+														<option value="${Theme.Color.PRIMARY}" .selected=${this._colorTheme === Theme.Color.PRIMARY}>Primary</option>
+														<option value="${Theme.Color.SECONDARY}" .selected=${this._colorTheme === Theme.Color.SECONDARY}>Secondary</option>
+														<option value="${Theme.Color.ACCENT}" .selected=${this._colorTheme === Theme.Color.ACCENT}>Accent</option>
+													</select>
+												</div>
 											`
 										case Tab.BUILD:
 											return html`
 												<metadata-model-build
 													class="flex-[9] flex flex-col rounded-md bg-gray-100 shadow-inner shadow-gray-800 p-1"
 													.metadatamodel=${this._data}
+													.startcolor=${this._colorTheme}
 													@metadata-model-build:updatemetadatamodel=${(e: CustomEvent) => {
 														this._data = structuredClone(e.detail.value)
 														this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)

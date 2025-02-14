@@ -15,7 +15,7 @@ class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
 
 	@property({ type: Object }) metadatamodel: any = MetadataModel.EmptyMetadataModel()
-	@property({ type: String }) startcolor: Theme.Color = Theme.Color.ACCENT
+	@property({ type: String }) startcolor: Theme.Color = Theme.Color.PRIMARY
 	@property({ type: Number }) noofselectoptionsineachtracker: number = 20
 
 	@state() private _cutfieldgroup: any

@@ -1,4 +1,4 @@
-import { LitElement, PropertyValues, TemplateResult, html, nothing, unsafeCSS } from 'lit'
+import { LitElement, TemplateResult, html, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import '$src/lib/components/error-section/component'
 import 'iconify-icon'
@@ -39,7 +39,7 @@ class Component extends LitElement {
 	@property() value: string | number | null = null
 	/** Supported formats: yyyy-mm-dd hh:mm, yyyy-mm-dd, yyyy-mm, hh:mm, yyyy, mm */
 	@property() datetimeinputformat: string = 'yyyy-mm-dd hh:mm'
-	@property() color: Theme.Color | undefined
+	@property() color: Theme.Color = Theme.Color.PRIMARY
 	@property({ type: Boolean }) headersbottom: boolean = false
 	@property({ type: Boolean }) disabled: boolean = false
 	@property({ type: Boolean }) roundedborder: boolean = true
@@ -603,7 +603,7 @@ class Component extends LitElement {
 						return tabs.length > 0 ? tabs : nothing
 					})()}
 				</header>
-				<div slot="content" class="mt-1 rounded-lg bg-white shadow-md shadow-gray-800 p-1 w-full top-0 overflow-auto flex flex-col space-y-1">
+				<div slot="content" class="rounded-md bg-white shadow-md shadow-gray-800 p-1 w-full overflow-auto flex flex-col space-y-1">
 					<header role="tablist" class="tabs tabs-bordered">
 						${(() => {
 							let tabs: TemplateResult<1>[] = []
@@ -686,7 +686,7 @@ class Component extends LitElement {
 														this._generateYearsToDisplay(false)
 													}}
 												>
-													<iconify-icon icon="mdi:chevron-triple-left" style="color: ${typeof this.color === 'undefined' ? 'white' : Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+													<div class="text-xl font-bold" syle="color: ${Theme.GetColorContent(this.color)};"><<<</div>
 												</button>
 												<button
 													class="rounded-bl-none rounded-tl-none rounded-br-lg rounded-tr-lg btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : this.color === Theme.Color.ACCENT ? 'btn-accent' : 'bg-black text-white'} flex-1 h-fit"
@@ -695,7 +695,7 @@ class Component extends LitElement {
 														this._generateYearsToDisplay(true)
 													}}
 												>
-													<iconify-icon icon="mdi:chevron-triple-right" style="color: ${typeof this.color === 'undefined' ? 'white' : Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+													<div class="text-xl font-bold" syle="color: ${Theme.GetColorContent(this.color)};">>>></div>
 												</button>
 											</div>
 											<div class="grid grid-cols-6 rounded-lg">
