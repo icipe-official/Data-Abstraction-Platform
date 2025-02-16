@@ -8,6 +8,7 @@ import Misc from '$src/lib/miscellaneous'
 import Json from '$src/lib/json'
 import MetadataModel from '$src/lib/metadata_model'
 import './field-group/component'
+import './field-group/query-condition/component'
 import Log from '$src/lib/log'
 
 @customElement('metadata-model-view-query-panel')
@@ -26,7 +27,8 @@ class Component extends LitElement {
 
 	@state() private _showHintID: string = ''
 
-	@state() private _viewFieldGroupQueryCondition: boolean = false
+	@state() private _selectedFieldGroupKey: string = ''
+	@state() private _selectedFieldGroupQueryConditionIndex: number = -1
 
 	@state() private _scrollelement: Element | undefined = undefined
 
@@ -152,7 +154,7 @@ class Component extends LitElement {
 											if (this._expandTabSection || this._pinTabs) {
 												return html`
 													<button
-														class="btn btn-ghost h-fit min-h-fit"
+														class="btn btn-ghost h-fit min-h-fit w-fit min-w-fit p-1"
 														@click=${(e: Event) => {
 															e.stopPropagation()
 															this.queryconditions = structuredClone(Json.DeleteValueInObject(this.queryconditions, `$.${index}`))
@@ -196,6 +198,36 @@ class Component extends LitElement {
 					</button>
 				</aside>
 				<main class="flex-[9.5] flex flex-col overflow-hidden">
+					${(() => {
+						if (this._selectedFieldGroupKey.length > 0 && this._selectedFieldGroupQueryConditionIndex > -1) {
+							const fieldGroup = Json.GetValueInObject(this.metadatamodel, this._selectedFieldGroupKey.replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]'))
+
+							return html`
+								<section class="flex flex-[9] flex-col w-full h-fit overflow-hidden">
+									<header class="flex justify-between p-1 ${this.startcolor === Theme.Color.PRIMARY ? 'text-primary' : this.startcolor === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+										<div class="h-fit self-center">${MetadataModel.GetFieldGroupName(fieldGroup)}</div>
+										<button
+											class="btn btn-ghost h-fit min-h-fit w-fit min-w-fit p-1"
+											@click=${() => {
+												this._selectedFieldGroupKey = ''
+												this._selectedFieldGroupQueryConditionIndex = -1
+											}}
+										>
+											<iconify-icon icon="mdi:close-thick" style="color: ${this.startcolor};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										</button>
+									</header>
+									<metadata-model-view-query-panel-field-group-query-condition
+										class="flex-[9]"
+										.color=${this.startcolor}
+										.fieldgroup=${fieldGroup}
+										.updatemetadatamodel=${this._updatemetadatamodel}
+										></metadata-model-view-query-panel-field-group-query-condition>
+								</section>
+							`
+						}
+
+						return nothing
+					})()}
 					<section id="scroll-element" class="flex-1 overflow-auto p-1">
 						${(() => {
 							if (typeof this._scrollelement === 'undefined') {
@@ -213,6 +245,12 @@ class Component extends LitElement {
 									.fieldgroup=${this.metadatamodel}
 									.queryconditionindex=${this._currentTabIndex}
 									.updatemetadatamodel=${this._updatemetadatamodel}
+									.handleselectfieldgroup=${(fieldGroupKey: string, queryconditionindex: number) => {
+										this._selectedFieldGroupKey = fieldGroupKey
+										this._selectedFieldGroupQueryConditionIndex = queryconditionindex
+									}}
+									.handlegetfieldgroupqueryconditions=${(fieldGroupKey: string, queryconditionindex: number) => {}}
+									.handledeletefieldgroupqueryconditions=${(fieldGroupKey: string, queryconditionindex: number) => {}}
 								></metadata-model-view-query-panel-field-group>
 							`
 						})()}

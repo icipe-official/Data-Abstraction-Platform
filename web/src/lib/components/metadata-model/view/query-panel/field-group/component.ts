@@ -17,6 +17,8 @@ class Component extends LitElement {
 	@property({ type: Boolean }) showgroupfields: boolean = true
 	@property({ type: Number }) queryconditionindex!: number
 	@property({ attribute: false }) handleselectfieldgroup!: (fieldGroupKey: string, queryconditionindex: number) => void
+	@property({ attribute: false }) handlegetfieldgroupqueryconditions!: (fieldGroupKey: string, queryconditionindex: number) => any
+	@property({ attribute: false }) handledeletefieldgroupqueryconditions!: (fieldGroupKey: string, queryconditionindex: number) => any
 	@property({ attribute: false }) updatemetadatamodel!: (fieldGroup: any) => void
 	@property({ attribute: false }) showhidegroupfields?: () => void
 
@@ -62,7 +64,7 @@ class Component extends LitElement {
 				return html`<div class="w-fit h-full min-h-full"></div>`
 			})()}
 			<header class="flex" style=${!MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]) ? 'grid-column:1/3' : ''}>
-				<div class="h-fit self-center text-xl ml-1">${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] ? this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] : (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()}</div>
+				<button class="h-fit self-center text-xl ml-1 link link-hover" @click=${() => this.handleselectfieldgroup(this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.queryconditionindex)}>${MetadataModel.GetFieldGroupName(this.fieldgroup)}</button>
 				${(() => {
 					if (this._showSearchFieldGroupBar === 'header-search-group-bar') {
 						return html`
@@ -70,7 +72,7 @@ class Component extends LitElement {
 								<input
 									class="join-item input h-[38px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
 									type="search"
-									placeholder="Search ${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] ? this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] : (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()} fields/groups..."
+									placeholder="Search ${(MetadataModel.GetFieldGroupName(this.fieldgroup), 'fields/groups')}..."
 									.value=${this._searchFieldGroupsQuery}
 									@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 										this._fieldsGroupsKeysSearchResults = []
@@ -206,6 +208,69 @@ class Component extends LitElement {
 									return nothing
 								})()}
 							</div>
+							<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-skip-database-extraction-field-group')} @mouseout=${() => (this._showHintID = '')}>
+								<button
+									class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[38px] h-[38px] w-[38px]"
+									@click=${() => {
+										if (this.fieldgroup[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION]) {
+											delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION]
+										} else {
+											this.fieldgroup[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] = true
+										}
+										this.updatemetadatamodel(this.fieldgroup)
+									}}
+								>
+									<iconify-icon icon=${this.fieldgroup[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] ? 'mdi:database-remove' : 'mdi:database-check'} style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('18')} height=${Misc.IconifySize('18')}></iconify-icon>
+								</button>
+								${(() => {
+									if (this._showHintID === 'header-skip-database-extraction-field-group') {
+										return html`
+											<div class="relative">
+												<div
+													class="z-50 absolute top-0 self-center font-bold text-sm min-w-[150px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
+														? 'bg-primary text-primary-content'
+														: this.color === Theme.Color.SECONDARY
+															? 'bg-secondary text-secondary-content'
+															: 'bg-accent text-accent-content'}"
+												>
+													${this.fieldgroup[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] ? 'Unskip' : 'Skip'} field/group database search extraction
+												</div>
+											</div>
+										`
+									}
+
+									return nothing
+								})()}
+							</div>
+							<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-remove-field-group-query-condition')} @mouseout=${() => (this._showHintID = '')}>
+								<button
+									class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[38px] h-[38px] w-[38px]"
+									@click=${() => {
+										this.handlegetfieldgroupqueryconditions(this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.queryconditionindex)
+									}}
+								>
+									<iconify-icon icon="mdi:filter-remove" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('18')} height=${Misc.IconifySize('18')}></iconify-icon>
+								</button>
+								${(() => {
+									if (this._showHintID === 'header-remove-field-group-query-condition') {
+										return html`
+											<div class="relative">
+												<div
+													class="z-50 absolute top-0 self-center font-bold text-sm min-w-[150px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
+														? 'bg-primary text-primary-content'
+														: this.color === Theme.Color.SECONDARY
+															? 'bg-secondary text-secondary-content'
+															: 'bg-accent text-accent-content'}"
+												>
+													Remove field/group query condtions
+												</div>
+											</div>
+										`
+									}
+
+									return nothing
+								})()}
+							</div>
 						</span>
 					`
 				})()}
@@ -235,6 +300,8 @@ class Component extends LitElement {
 														.updatemetadatamodel=${this.updatemetadatamodel}
 														.queryconditionindex=${this.queryconditionindex}
 														.handleselectfieldgroup=${this.handleselectfieldgroup}
+														.handlegetfieldgroupqueryconditions=${this.handlegetfieldgroupqueryconditions}
+														.handledeletefieldgroupqueryconditions=${this.handledeletefieldgroupqueryconditions}
 														.showgroupfields=${false}
 													></metadata-model-view-query-panel-field-group>
 												`
@@ -269,6 +336,8 @@ class Component extends LitElement {
 													.updatemetadatamodel=${this.updatemetadatamodel}
 													.queryconditionindex=${this.queryconditionindex}
 													.handleselectfieldgroup=${this.handleselectfieldgroup}
+													.handlegetfieldgroupqueryconditions=${this.handlegetfieldgroupqueryconditions}
+													.handledeletefieldgroupqueryconditions=${this.handledeletefieldgroupqueryconditions}
 													.showhidegroupfields=${() => {
 														this.showgroupfields = !this.showgroupfields
 													}}

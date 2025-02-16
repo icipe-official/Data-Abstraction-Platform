@@ -77,10 +77,7 @@ class Component extends LitElement {
 					return html`<div class="w-fit h-full min-h-full"></div>`
 				})()}
 				<header class="flex" style=${!MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]) ? 'grid-column:1/3' : ''}>
-					<div class="h-fit self-center text-xl ml-1">
-						${typeof this.getdata === 'function' && typeof this.setcurrentgroupcontext === 'function' ? `(${dIndex + 1}) ` : ''}
-						${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] ? this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] : (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()}
-					</div>
+					<div class="h-fit self-center text-xl ml-1">${typeof this.getdata === 'function' && typeof this.setcurrentgroupcontext === 'function' ? `(${dIndex + 1}) ` : ''} ${MetadataModel.GetFieldGroupName(this.fieldgroup)}</div>
 					${(() => {
 						if (this._showSearchFieldGroupBar === `header-search-group-bar-${dIndex}`) {
 							return html`
@@ -88,7 +85,7 @@ class Component extends LitElement {
 									<input
 										class="join-item input h-[38px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
 										type="search"
-										placeholder="Search ${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] ? this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] : (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()} fields/groups..."
+										placeholder="Search ${MetadataModel.GetFieldGroupName(this.fieldgroup, 'fields/groups')}..."
 										.value=${this._searchFieldGroupsQuery}
 										@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 											this._fieldsGroupsKeysSearchResults = []

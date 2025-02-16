@@ -97,7 +97,7 @@ class Component extends LitElement {
 					}}
 					.disabled=${typeof this.handleselectfieldgroup !== 'function'}
 				>
-					${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] ? this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] : (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()}
+					${MetadataModel.GetFieldGroupName(this.fieldgroup)}
 				</button>
 				${(() => {
 					if (this._showSearchFieldGroupBar) {
@@ -106,7 +106,7 @@ class Component extends LitElement {
 								<input
 									class="join-item input h-[38px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
 									type="search"
-									placeholder="Search ${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] ? this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] : (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()} fields/groups..."
+									placeholder="Search ${(MetadataModel.GetFieldGroupName(this.fieldgroup), 'fields/groups')}..."
 									.value=${this._searchFieldGroupsQuery}
 									@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 										this._fieldsGroupsKeysSearchResults = []
@@ -543,36 +543,36 @@ class Component extends LitElement {
 									${(() => {
 										if (MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
 											return html`
-													<virtual-flex-scroll
-														.scrollelement=${this.scrollelement}
-														.data=${this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]}
-														.foreachrowrender=${(datum: string, dIndex: number) => {
-															return html`
-																<metadata-model-build-field-group
-																	class="pt-1 pb-1"
-																	.scrollelement=${this.scrollelement}
-																	.color=${this.color}
-																	.fieldgroup=${this.fieldgroup[MetadataModel.FgProperties.GROUP_FIELDS][0][datum]}
-																	.copiedfieldgroupkey=${this.copiedfieldgroupkey}
-																	.cutfieldgroup=${this.cutfieldgroup}
-																	.indexingroupreadorderoffields=${dIndex}
-																	.lengthofgroupreadorderoffields=${(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS] as string[]).length}
-																	.groupkey=${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]}
-																	.deletefieldgroup=${this.deletefieldgroup}
-																	.setcutfieldgroup=${this.setcutfieldgroup}
-																	.setcopiedfieldgroupkey=${this.setcopiedfieldgroupkey}
-																	.pastefieldgroup=${this.pastefieldgroup}
-																	.createfieldgroup=${this.createfieldgroup}
-																	.handleselectfieldgroup=${this.handleselectfieldgroup}
-																	.reorderfieldgroup=${this.reorderfieldgroup}
-																	.showhidegroupfields=${() => {
-																		this.showgroupfields = !this.showgroupfields
-																	}}
-																></metadata-model-build-field-group>
-															`
-														}}
-														.enablescrollintoview=${false}
-													></virtual-flex-scroll>
+												<virtual-flex-scroll
+													.scrollelement=${this.scrollelement}
+													.data=${this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]}
+													.foreachrowrender=${(datum: string, dIndex: number) => {
+														return html`
+															<metadata-model-build-field-group
+																class="pt-1 pb-1"
+																.scrollelement=${this.scrollelement}
+																.color=${this.color}
+																.fieldgroup=${this.fieldgroup[MetadataModel.FgProperties.GROUP_FIELDS][0][datum]}
+																.copiedfieldgroupkey=${this.copiedfieldgroupkey}
+																.cutfieldgroup=${this.cutfieldgroup}
+																.indexingroupreadorderoffields=${dIndex}
+																.lengthofgroupreadorderoffields=${(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS] as string[]).length}
+																.groupkey=${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]}
+																.deletefieldgroup=${this.deletefieldgroup}
+																.setcutfieldgroup=${this.setcutfieldgroup}
+																.setcopiedfieldgroupkey=${this.setcopiedfieldgroupkey}
+																.pastefieldgroup=${this.pastefieldgroup}
+																.createfieldgroup=${this.createfieldgroup}
+																.handleselectfieldgroup=${this.handleselectfieldgroup}
+																.reorderfieldgroup=${this.reorderfieldgroup}
+																.showhidegroupfields=${() => {
+																	this.showgroupfields = !this.showgroupfields
+																}}
+															></metadata-model-build-field-group>
+														`
+													}}
+													.enablescrollintoview=${false}
+												></virtual-flex-scroll>
 											`
 										}
 
@@ -612,7 +612,7 @@ class Component extends LitElement {
 																								: 'bg-accent text-accent-content'} p-1 rounded-md shadow-md shadow-gray-800 text-center w-full"
 																					>
 																						<div class="flex space-x-2">
-																							<div class="h-fit self-center font-bold text-lg">${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] || (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()}</div>
+																							<div class="h-fit self-center font-bold text-lg">${MetadataModel.GetFieldGroupName(this.fieldgroup)}</div>
 																							<button class="btn btn-ghost w-fit h-fit p-0" @click=${() => (this._showGroupKey = !this._showGroupKey)}>
 																								<div class="flex flex-col justify-center">
 																									<div class="flex self-center">

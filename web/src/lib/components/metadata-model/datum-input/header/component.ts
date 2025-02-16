@@ -143,15 +143,7 @@ class Component extends LitElement {
 							</button>
 						</div>
 					</drop-down>
-					<span class="self-center sticky">
-						${(() => {
-							if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
-								return this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
-							}
-
-							return 'Data Entry'
-						})()}
-					</span>
+					<span class="self-center sticky"> ${MetadataModel.GetFieldGroupName(this.group, 'Data Entry')} </span>
 					${(() => {
 						if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
 							return html`

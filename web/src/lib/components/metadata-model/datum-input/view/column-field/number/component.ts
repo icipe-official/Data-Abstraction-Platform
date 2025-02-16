@@ -18,7 +18,7 @@ class Component extends LitElement {
 
 	protected render(): unknown {
 		if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
-			const fieldGroupName = this.field[MetadataModel.FgProperties.FIELD_GROUP_NAME] || this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY].split('.').pop()
+			const fieldGroupName = MetadataModel.GetFieldGroupName(this.field)
 			return html`
 				<input
 					class="flex-1 w-full min-w-[200px] input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
@@ -44,9 +44,8 @@ class Component extends LitElement {
 					}}
 				/>
 			`
-		} else {
-			return html`<div class="text-error">...field key is not valid...</div>`
 		}
+		return html`<div class="text-error">...field key is not valid...</div>`
 	}
 }
 

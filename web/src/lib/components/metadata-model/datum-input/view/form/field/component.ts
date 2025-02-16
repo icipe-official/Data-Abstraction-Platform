@@ -171,19 +171,7 @@ class Component extends LitElement {
 			</drop-down>
 			<header class="flex flex-col">
 				<div class="flex space-x-1 h-full">
-					<div class="w-full flex h-fit self-center">
-						${(() => {
-							if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.field[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
-								return this.field[MetadataModel.FgProperties.FIELD_GROUP_NAME]
-							} else {
-								if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
-									return html`${(this.field[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).split('.').pop()}`
-								} else {
-									return html`<div class="text-error h-fit">...field key is not valid...</div>`
-								}
-							}
-						})()}
-					</div>
+					<div class="w-full flex h-fit self-center">${MetadataModel.GetFieldGroupName(this.field)}</div>
 					${(() => {
 						if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.field[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
 							return html`

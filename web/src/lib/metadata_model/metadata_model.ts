@@ -18,18 +18,25 @@ export interface ISearchResults {
 }
 
 export interface IQueryCondition {
-	$QC_LABEL?: string
-	$FG_PROPERTY?: IMetadataModel
-	$FG_FILTER_CONDITION?: IFilterCondition[][]
-	$D_SORT_BY_ASC?: { [key: string]: boolean }
-	$D_SORT_BY_DESC?: { [key: string]: boolean }
-	$D_DISTINCT?: boolean
+	[QcProperties.FG_PROPERTY]?: IMetadataModel
+	[QcProperties.FG_FILTER_CONDITION]?: IFilterCondition[][]
+	[QcProperties.D_SORT_BY_ASC]?: string[]
+	[QcProperties.D_SORT_BY_DESC]?: string[]
+	[QcProperties.D_FULL_TEXT_SEARCH_QUERY]?: string
+}
+
+export enum QcProperties {
+	FG_PROPERTY = '$FG_PROPERTY',
+	FG_FILTER_CONDITION = '$FG_FILTER_CONDITION',
+	D_SORT_BY_ASC = '$D_SORT_BY_ASC',
+	D_SORT_BY_DESC = '$D_SORT_BY_DESC',
+	D_FULL_TEXT_SEARCH_QUERY = '$D_FULL_TEXT_SEARCH_QUERY'
 }
 
 export interface IFilterCondition {
 	$FILTER_NEGATE?: boolean
 	$FILTER_CONDITION?: FilterCondition
-	$FILTER_VALUE?: any[]
+	$FILTER_VALUE?: any[] | any
 }
 
 export enum FilterCondition {
@@ -90,6 +97,7 @@ export interface IMetadataModel {
 	[FgProperties.GROUP_FIELDS]?: { [key: string]: IMetadataModel }[]
 
 	[FgProperties.DATABASE_TABLE_COLLECTION_NAME]?: string
+	[FgProperties.DATABASE_TABLE_COLLECTION_INDEX]?: number
 	[FgProperties.DATABASE_FIELD_COLUMN_NAME]?: string
 	[FgProperties.DATABASE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX]?: boolean
 	[FgProperties.DATABASE_SKIP_DATA_EXTRACTION]?: boolean
@@ -192,6 +200,7 @@ export enum FgProperties {
 	GROUP_READ_ORDER_OF_FIELDS = '$GROUP_READ_ORDER_OF_FIELDS',
 	GROUP_FIELDS = '$GROUP_FIELDS',
 	DATABASE_SKIP_DATA_EXTRACTION = '$DATABASE_SKIP_DATA_EXTRACTION',
+	DATABASE_TABLE_COLLECTION_INDEX = '$DATABASE_TABLE_COLLECTION_INDEX',
 	DATABASE_TABLE_COLLECTION_NAME = '$DATABASE_TABLE_COLLECTION_NAME',
 	DATABASE_FIELD_COLUMN_NAME = '$DATABASE_FIELD_COLUMN_NAME',
 	DATUM_INPUT_VIEW = '$DATUM_INPUT_VIEW',
@@ -304,5 +313,15 @@ export const IsFieldGroupKeyValid = (fgKey: any) => typeof fgKey === 'string'
 export const IsGroupReadOrderOfFieldsValid = (groofv: any) => typeof groofv === 'object' && Array.isArray(groofv)
 export const IsFieldAField = (fg: any) => typeof fg[FgProperties.FIELD_DATATYPE] === 'string' && typeof fg[FgProperties.FIELD_UI] === 'string'
 export const Is2DFieldViewPositionValid = (fg: any) => typeof fg[FgProperties.FIELD_2D_VIEW_POSITION] === 'object' && !Array.isArray(fg[FgProperties.FIELD_2D_VIEW_POSITION]) && typeof fg[FgProperties.FIELD_2D_VIEW_POSITION][Field2dPositionProperties.FIELD_GROUP_KEY] === 'string'
+export function GetFieldGroupName(fg: any, defaultValue: string = '#unnamed') {
+	if (fg[FgProperties.FIELD_GROUP_NAME]) {
+		return fg[FgProperties.FIELD_GROUP_NAME]
+	}
+	if (typeof fg[FgProperties.FIELD_GROUP_KEY] === 'string') {
+		return (fg[FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()
+	}
+
+	return defaultValue
+}
 
 export type Error = any[]

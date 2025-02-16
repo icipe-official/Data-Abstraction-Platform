@@ -274,7 +274,7 @@ class Component extends LitElement {
 																				: 'bg-accent text-accent-content'
 																		: ''}"
 																>
-																	${index + 1}-${datum[MetadataModel.FgProperties.FIELD_GROUP_NAME]}
+																	${index + 1}-${MetadataModel.GetFieldGroupName(datum)}
 																</div>
 															`
 														}
@@ -293,7 +293,7 @@ class Component extends LitElement {
 																	}
 																}}
 															>
-																${index + 1}-${datum[MetadataModel.FgProperties.FIELD_GROUP_NAME]}
+																${index + 1}-${MetadataModel.GetFieldGroupName(datum)}
 															</button>
 														`
 													}}
@@ -355,7 +355,7 @@ class Component extends LitElement {
 																					: 'bg-accent text-accent-content'
 																			: ''}"
 																	>
-																		${index + 1}-${datum[MetadataModel.FgProperties.FIELD_GROUP_NAME]}
+																		${index + 1}-${MetadataModel.GetFieldGroupName(datum)}
 																	</div>
 																`
 															}}

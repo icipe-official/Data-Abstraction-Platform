@@ -16,6 +16,7 @@ class Component extends LitElement {
 	@property({ attribute: false }) getdata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => any
 	@property({ attribute: false }) updatedata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[], value: any) => void
 	@property({ attribute: false }) deletedata!: (fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => void
+
 	protected render(): unknown {
 		if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
 			if (typeof this.field[MetadataModel.FgProperties.FIELD_DATETIME_FORMAT] === 'string') {
@@ -45,5 +46,3 @@ declare global {
 		'metadata-model-datum-input-column-field-date-time': Component
 	}
 }
-
-// rounded-md ${this.color === Theme.Color.PRIMARY ? 'bg-primary' : this.color === Theme.Color.SECONDARY ? 'bg-secondary' : 'bg-accent'}"

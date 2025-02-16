@@ -20,7 +20,7 @@ class Component extends LitElement {
 
 	protected render(): unknown {
 		if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
-			const fieldGroupName = this.field[MetadataModel.FgProperties.FIELD_GROUP_NAME] || this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY].split('.').pop()
+			const fieldGroupName = MetadataModel.GetFieldGroupName(this.field)
 			if (Array.isArray(this.field[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS])) {
 				return html`
 					<multi-select

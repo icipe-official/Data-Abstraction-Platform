@@ -90,7 +90,7 @@ class Component extends LitElement {
 										${(() => {
 											if (typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 'number' || rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] !== 1) {
 												if (typeof rowField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] !== 'number') {
-													rowField[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${rowField[MetadataModel.FgProperties.FIELD_GROUP_NAME]} #${rowIndex + 1}`
+													rowField[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${MetadataModel.GetFieldGroupName(rowField)} #${rowIndex + 1}`
 													return html` <div class="font-bold text-lg h-full self-start">${rowIndex + 1}</div> `
 												}
 											}

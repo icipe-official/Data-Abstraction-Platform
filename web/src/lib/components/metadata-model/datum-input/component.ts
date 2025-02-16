@@ -31,7 +31,7 @@ class Component extends LitElement {
 	@state() private _viewjsonoutput: boolean = false
 
 	@state() private _viewGroupTree: boolean = false
-	@state() private _viewGroupTreeScrollElement!: Element
+	@state() private _viewGroupTreeScrollElement: Element | undefined
 
 	@state() private _currentViewGroupKey: string = '$'
 	@state() private _currentgrouparrayindexplaceholders: number[] = []
@@ -196,71 +196,70 @@ class Component extends LitElement {
 			})()}
 			${(() => {
 				if (this._viewGroupTree) {
-					return keyed(
-						this._currentViewGroupKey,
-						html`
-							<section id="view-group-tree-scroll-element" class="flex flex-[9] flex-col w-full h-fit overflow-auto pt-1 shadow-inner shadow-gray-800">
-								${(() => {
-									;(async () => {
-										await new Promise((resolve: (e: Element) => void) => {
+					return html`
+						<section id="view-group-tree-scroll-element" class="flex flex-[9] flex-col w-full h-fit overflow-auto pt-1 shadow-inner shadow-gray-800">
+							${(() => {
+								;(async () => {
+									await new Promise((resolve: (e: Element) => void) => {
+										if ((this.shadowRoot as ShadowRoot).querySelector(`#view-group-tree-scroll-element`)) {
+											resolve((this.shadowRoot as ShadowRoot).querySelector(`#view-group-tree-scroll-element`) as Element)
+											return
+										}
+
+										const observer = new MutationObserver(() => {
 											if ((this.shadowRoot as ShadowRoot).querySelector(`#view-group-tree-scroll-element`)) {
 												resolve((this.shadowRoot as ShadowRoot).querySelector(`#view-group-tree-scroll-element`) as Element)
-												return
+												observer.disconnect()
 											}
-
-											const observer = new MutationObserver(() => {
-												if ((this.shadowRoot as ShadowRoot).querySelector(`#view-group-tree-scroll-element`)) {
-													resolve((this.shadowRoot as ShadowRoot).querySelector(`#view-group-tree-scroll-element`) as Element)
-													observer.disconnect()
-												}
-											})
-
-											observer.observe(this.shadowRoot as ShadowRoot, {
-												childList: true,
-												subtree: true
-											})
 										})
-											.then((e) => {
-												this._viewGroupTreeScrollElement = e
-											})
-											.catch((err) => {
-												console.error('Get view-group-tree-scroll-element failed', err)
-											})
-									})()
 
-									if (typeof this._viewGroupTreeScrollElement === 'undefined') {
-										return html`
-											<div class="flex-1 w-full h-full flex justify-center">
-												<span class="loading loading-spinner loading-md self-center ${this.startcolor === Theme.Color.PRIMARY ? 'text-primary' : this.startcolor === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}"></span>
-											</div>
-										`
-									}
+										observer.observe(this.shadowRoot as ShadowRoot, {
+											childList: true,
+											subtree: true
+										})
+									})
+										.then((e) => {
+											this._viewGroupTreeScrollElement = e
+										})
+										.catch((err) => {
+											console.error('Get view-group-tree-scroll-element failed', err)
+										})
+								})()
 
+								if (typeof this._viewGroupTreeScrollElement === 'undefined') {
 									return html`
-										<div class="flex-[9]">
-											<metadata-model-datum-input-tree
-												class="min-h-fit min-w-fit"
-												.scrollelement=${this._viewGroupTreeScrollElement}
-												.color=${this.startcolor}
-												.fieldgroup=${this.metadatamodel}
-												.getdata=${this._getdata}
-												.updatemetadatamodel=${this._updatemetadatamodel}
-												.setcurrentgroupcontext=${(fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => {
-													this._currentViewGroupKey = fieldGroupKey
-													this._currentgrouparrayindexplaceholders = structuredClone(arrayPlaceholderIndexes)
-												}}
-											></metadata-model-datum-input-tree>
+										<div class="flex-1 w-full h-full flex justify-center">
+											<span class="loading loading-spinner loading-md self-center ${this.startcolor === Theme.Color.PRIMARY ? 'text-primary' : this.startcolor === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}"></span>
 										</div>
 									`
-								})()}
+								}
 
-								<button class="btn btn-ghost glass btn-square rounded-none min-w-fit w-full sticky bottom-0 left-0 right-0 self-center" @click=${() => (this._viewGroupTree = false)}>
-									<iconify-icon icon="mdi:chevron-up" style="color: black;" width=${Misc.IconifySize('100')} height=${Misc.IconifySize('20')}></iconify-icon>
-								</button>
-							</section>
-						`
-					)
+								return html`
+									<div class="flex-[9]">
+										<metadata-model-datum-input-tree
+											class="min-h-fit min-w-fit"
+											.scrollelement=${this._viewGroupTreeScrollElement}
+											.color=${this.startcolor}
+											.fieldgroup=${this.metadatamodel}
+											.getdata=${this._getdata}
+											.updatemetadatamodel=${this._updatemetadatamodel}
+											.setcurrentgroupcontext=${(fieldGroupKey: string, arrayPlaceholderIndexes: number[]) => {
+												this._currentViewGroupKey = fieldGroupKey
+												this._currentgrouparrayindexplaceholders = structuredClone(arrayPlaceholderIndexes)
+											}}
+										></metadata-model-datum-input-tree>
+									</div>
+								`
+							})()}
+
+							<button class="btn btn-ghost glass btn-square rounded-none min-w-fit w-full sticky bottom-0 left-0 right-0 self-center" @click=${() => (this._viewGroupTree = false)}>
+								<iconify-icon icon="mdi:chevron-up" style="color: black;" width=${Misc.IconifySize('100')} height=${Misc.IconifySize('20')}></iconify-icon>
+							</button>
+						</section>
+					`
 				}
+
+				this._viewGroupTreeScrollElement = undefined
 
 				return nothing
 			})()}

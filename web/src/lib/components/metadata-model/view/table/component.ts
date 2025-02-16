@@ -182,7 +182,7 @@ class Component extends LitElement {
 									>
 										<iconify-icon icon="mdi:dots-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 									</button>
-									<div class="self-center">${columnIndex + 1} - ${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME]}</div>
+									<div class="self-center">${columnIndex + 1} - ${MetadataModel.GetFieldGroupName(fieldGroup)}</div>
 									${(() => {
 										if (typeof fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
 											const dropdownColumnID = `${columnId}-${MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION}`
@@ -319,7 +319,7 @@ class Component extends LitElement {
 												>
 													#
 												</div>
-												<div class="p-1">${this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_GROUP_NAME]}</div>
+												<div class="p-1">${MetadataModel.GetFieldGroupName(this._dataFields[columnIndex])}</div>
 											</header>
 											<main style="grid-column:1/3; grid-template-columns: subgrid;" class="grid text-xs">
 												${(rowdata as any[]).map((rd, index) => {
@@ -713,7 +713,7 @@ class Component extends LitElement {
 		return html`
 			<div class="flex space-x-1">
 				<div class="self-center h-fit w-fit font-bold">${columnIndex + 1} (${dfIndex + 1})</div>
-				<div class="self-center h-fit w-fit">${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME]}</div>
+				<div class="self-center h-fit w-fit">${MetadataModel.GetFieldGroupName(fieldGroup)}</div>
 				<div class="join">
 					<div class="flex flex-col" @mouseover=${() => (this._showHintID = `column-header-menu-freeze-unfreeze-column-${columnIndex}-${dfIndex}`)} @mouseout=${() => (this._showHintID = '')}>
 						<button
@@ -1360,7 +1360,7 @@ class Component extends LitElement {
 																		continue
 																	}
 																	columnHeaderIndexes.push(cIndex)
-																	dataToParse[0].push(this._dataFields[cIndex][MetadataModel.FgProperties.FIELD_GROUP_NAME])
+																	dataToParse[0].push(MetadataModel.GetFieldGroupName(this._dataFields[cIndex]))
 																}
 
 																this._objectTo2DArray.ResetArray2D()

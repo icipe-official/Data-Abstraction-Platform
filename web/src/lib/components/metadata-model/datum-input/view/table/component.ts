@@ -313,7 +313,7 @@ class Component extends LitElement {
 								>
 									<iconify-icon icon="mdi:dots-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 								</button>
-								<div class="self-center">${columnIndex + 1} - ${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME]}</div>
+								<div class="self-center">${columnIndex + 1} - ${MetadataModel.GetFieldGroupName(fieldGroup)}</div>
 							</div>
 							<div slot="content" class="min-w-[120px] shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black w-full flex flex-col">
 								<button
@@ -772,7 +772,7 @@ class Component extends LitElement {
 		return html`
 			<div class="flex space-x-1">
 				<div class="self-center h-fit w-fit font-bold">${columnIndex + 1} (${dfIndex + 1})</div>
-				<div class="self-center h-fit w-fit">${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME]}</div>
+				<div class="self-center h-fit w-fit">${MetadataModel.GetFieldGroupName(fieldGroup)}</div>
 				<div class="join">
 					<div class="flex flex-col" @mouseover=${() => (this._showHintID = `column-header-menu-freeze-unfreeze-column-${columnIndex}-${dfIndex}`)} @mouseout=${() => (this._showHintID = '')}>
 						<button
@@ -1023,15 +1023,7 @@ class Component extends LitElement {
 			>
 				<section class="h-fit w-full flex justify-between p-1">
 					<div class="flex sticky left-0 w-fit">
-						<span class="self-center sticky">
-							${(() => {
-								if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
-									return this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
-								}
-
-								return 'Data Entry'
-							})()}
-						</span>
+						<span class="self-center sticky"> ${MetadataModel.GetFieldGroupName(this.group)} </span>
 						${(() => {
 							if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
 								return html`
@@ -1398,7 +1390,7 @@ class Component extends LitElement {
 													continue
 												}
 												columnHeaderIndexes.push(cIndex)
-												dataToParse[0].push(this._data2DFields[cIndex][MetadataModel.FgProperties.FIELD_GROUP_NAME])
+												dataToParse[0].push(MetadataModel.GetFieldGroupName(this._data2DFields[cIndex]))
 											}
 											for (let rIndex = this._selectedrowminindex; rIndex <= this._selectedrowmaxindex; rIndex++) {
 												if (rIndex > this._data2DArray.length - 1) {

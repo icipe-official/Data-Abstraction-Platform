@@ -34,14 +34,6 @@ class Component extends LitElement {
 
 	@state() private _totalNoOfRows: number = 1
 
-	private _getGroupName() {
-		if (typeof this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] === 'string' && (this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME] as string).length > 0) {
-			return this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
-		}
-
-		return 'Data Field'
-	}
-
 	@state() private _viewJsonOutput: boolean = false
 
 	@state() private _showMultipleEntryTopMenu: boolean = false
@@ -70,7 +62,7 @@ class Component extends LitElement {
 					<div class="flex self-center">
 						<iconify-icon icon="mdi:plus-bold" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('30')}></iconify-icon>
 					</div>
-					<div class="self-center font-bold">Add new ${this._getGroupName()}</div>
+					<div class="self-center font-bold">Add new ${MetadataModel.GetFieldGroupName(this.group)}</div>
 				</div>
 			</button>
 			<button
@@ -102,7 +94,7 @@ class Component extends LitElement {
 					<div class="flex self-center">
 						<iconify-icon icon="mdi:delete-empty" style="color: black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('30')}></iconify-icon>
 					</div>
-					<div class="self-center font-bold">Delete all ${this._getGroupName()}</div>
+					<div class="self-center font-bold">Delete all ${MetadataModel.GetFieldGroupName(this.group)}</div>
 				</div>
 			</button>
 			<button class="btn btn-ghost p-1 w-full justify-start" @click=${() => (this._viewJsonOutput = !this._viewJsonOutput)}>
@@ -175,7 +167,7 @@ class Component extends LitElement {
 						class="btn h-fit min-h-fit w-fit min-w-fit flex ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}"
 						@click=${() => (this._showMultipleEntryTopMenu = !this._showMultipleEntryTopMenu)}
 					>
-						<div class="self-center">Start of ${this._getGroupName()}</div>
+						<div class="self-center">Start of ${MetadataModel.GetFieldGroupName(this.group)}</div>
 						<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
 						<div class="self-center w-fit h-fit">
 							<iconify-icon icon="mdi:arrow-down" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
@@ -203,13 +195,13 @@ class Component extends LitElement {
 								style="top: ${this.basestickytop}px;"
 								.group=${(() => {
 									const newGroup = structuredClone(this.group)
-									newGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${newGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME]} #${datum + 1}`
+									newGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${MetadataModel.GetFieldGroupName(newGroup)} #${datum + 1}`
 									return structuredClone(newGroup)
 								})()}
 								.viewjsonoutput=${this._viewJsonOutput}
 								.updateviewjsonoutput=${(newviewjsonoutput: boolean) => (this._viewJsonOutput = newviewjsonoutput)}
 								.updatemetadatamodel=${(fieldGroup: any) => {
-									fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] = this._getGroupName()
+									fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_NAME] = this.group[MetadataModel.FgProperties.FIELD_GROUP_NAME]
 									this.updatemetadatamodel(fieldGroup)
 								}}
 								.deletedata=${() => {
@@ -310,7 +302,7 @@ class Component extends LitElement {
 						class="btn h-fit min-h-fit w-fit min-w-fit flex ${this.color === Theme.Color.PRIMARY ? 'btn-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary text-secondary-content' : 'btn-accent text-accent-content'}"
 						@click=${() => (this._showMultipleEntryBottomMenu = !this._showMultipleEntryBottomMenu)}
 					>
-						<div class="self-center">End of ${this._getGroupName()}</div>
+						<div class="self-center">End of ${MetadataModel.GetFieldGroupName(this.group)}</div>
 						<div class="self-center rounded-md shadow-inner ${this.color === Theme.Color.PRIMARY ? 'shadow-primary-content' : this.color === Theme.Color.SECONDARY ? 'shadow-secondary-content' : 'shadow-accent-content'} p-2">${this._totalNoOfRows}</div>
 						<div class="self-center w-fit h-fit">
 							<iconify-icon icon="mdi:arrow-up" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>

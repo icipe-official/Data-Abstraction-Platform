@@ -22,8 +22,7 @@ class Component extends LitElement {
 			return html`
 				${(() => {
 					if (this.includeplaceholdertext) {
-						const fieldGroupName = this.field[MetadataModel.FgProperties.FIELD_GROUP_NAME] || this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY].split('.').pop()
-						return html`<div class="h-fit self-start text-lg font-bold">${this.field[MetadataModel.FgProperties.FIELD_PLACEHOLDER] || `Check if ${fieldGroupName}`}</div>`
+						return html`<div class="h-fit self-start text-lg font-bold">${this.field[MetadataModel.FgProperties.FIELD_PLACEHOLDER] || `Check if ${MetadataModel.GetFieldGroupName(this.field)}`}</div>`
 					}
 
 					return nothing

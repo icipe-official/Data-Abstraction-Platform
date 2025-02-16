@@ -26,7 +26,7 @@ class Component extends LitElement {
 
 	protected render(): unknown {
 		if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY] === 'string') {
-			const fieldGroupName = this.field[MetadataModel.FgProperties.FIELD_GROUP_NAME] || this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY].split('.').pop()
+			const fieldGroupName = MetadataModel.GetFieldGroupName(this.field)
 			switch (this.field[MetadataModel.FgProperties.FIELD_UI] as MetadataModel.FieldUi) {
 				case MetadataModel.FieldUi.TEXT:
 					return html`
@@ -50,9 +50,9 @@ class Component extends LitElement {
 				default:
 					return html`<div class="text-error">...field ui is not supported...</div>`
 			}
-		} else {
-			return html`<div class="text-error">...field key is not valid...</div>`
 		}
+
+		return html`<div class="text-error">...field key is not valid...</div>`
 	}
 }
 
