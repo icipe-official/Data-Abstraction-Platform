@@ -52,7 +52,7 @@ class Component extends LitElement {
 					class="h-fit w-full min-w-[300px] overflow-y-auto max-h-[200px] overflow-x-hidden flex flex-wrap input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : this.color === Theme.Color.ACCENT ? 'input-accent' : ''} ${this
 						.addinputborder
 						? `border-2 ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : this.color === Theme.Color.ACCENT ? 'border-accent' : 'border-black'}`
-						: ''} ${this.borderrounded ? ' rounded-md' : ''}"
+						: ''} ${this.borderrounded ? ' rounded-md' : 'rounded-none'}"
 				>
 					${(() => {
 						if (Array.isArray(this.selectedoptions) && (this.selectedoptions.length > 1 || this.multiselect)) {

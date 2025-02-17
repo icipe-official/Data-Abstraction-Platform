@@ -10,7 +10,7 @@ export interface IDatabaseColumnFields {
 	fields: { [key: string]: IMetadataModel }
 }
 
-export type QueryConditions = { [key: string]: IQueryCondition } | string
+export type QueryConditions = { [key: string]: IQueryCondition }
 
 export interface ISearchResults {
 	metadata_model?: IMetadataModel
@@ -20,8 +20,7 @@ export interface ISearchResults {
 export interface IQueryCondition {
 	[QcProperties.FG_PROPERTY]?: IMetadataModel
 	[QcProperties.FG_FILTER_CONDITION]?: IFilterCondition[][]
-	[QcProperties.D_SORT_BY_ASC]?: string[]
-	[QcProperties.D_SORT_BY_DESC]?: string[]
+	[QcProperties.D_SORT_BY_ASC]?: boolean
 	[QcProperties.D_FULL_TEXT_SEARCH_QUERY]?: string
 }
 
@@ -29,25 +28,40 @@ export enum QcProperties {
 	FG_PROPERTY = '$FG_PROPERTY',
 	FG_FILTER_CONDITION = '$FG_FILTER_CONDITION',
 	D_SORT_BY_ASC = '$D_SORT_BY_ASC',
-	D_SORT_BY_DESC = '$D_SORT_BY_DESC',
 	D_FULL_TEXT_SEARCH_QUERY = '$D_FULL_TEXT_SEARCH_QUERY'
 }
 
 export interface IFilterCondition {
-	$FILTER_NEGATE?: boolean
-	$FILTER_CONDITION?: FilterCondition
-	$FILTER_VALUE?: any[] | any
+	[FConditionProperties.FILTER_NEGATE]?: boolean
+	[FConditionProperties.FILTER_CONDITION]?: FilterCondition
+	[FConditionProperties.FILTER_VALUE]?: any[] | any
+}
+
+export enum FEqualToValue {
+	FILTER_NEGATE = '$FILTER_NEGATE',
+	FILTER_CONDITION = '$FILTER_CONDITION',
+	FILTER_VALUE = '$FILTER_VALUE'
+}
+
+export interface IFConditionFilterEqualToValue {
+	[FSelectProperties.TYPE]?: FSelectType
+	[FSelectProperties.VALUE]?: any
+}
+
+export enum FConditionProperties {
+	FILTER_NEGATE = '$FILTER_NEGATE',
+	FILTER_CONDITION = '$FILTER_CONDITION',
+	FILTER_VALUE = '$FILTER_VALUE'
 }
 
 export enum FilterCondition {
-	GROUP_CONTAINING_GROUP_FIELDS = 'FILTER_G_CONTAINING_GROUP_FIELDS',
-	FIELD_CONTAINING_VALUE = 'FILTER_F_CONTAINING_VALUE',
 	FIELD_GROUP_NO_OF_ENTRIES_GREATER_THAN = 'FILTER_FG_NO_OF_ENTRIES_GREATER_THAN',
 	FIELD_GROUP_NO_OF_ENTRIES_LESS_THAN = 'FILTER_FG_NO_OF_ENTRIES_LESS_THAN',
 	FIELD_GROUP_NO_OF_ENTRIES_EQUAL_TO = 'FILTER_FG_NO_OF_ENTRIES_EQUAL_TO',
-	FIELD_FULL_TEXT_SEARCH = 'FILTER_F_FULL_TEXT_SEARCH',
-	FIELD_GREATER_THAN = 'FILTER_F_GREATER_THAN',
-	FIELD_LESS_THAN = 'FILTER_F_LESS_THAN',
+	FIELD_NUMBER_GREATER_THAN = 'FILTER_F_NUMBER_GREATER_THAN',
+	FIELD_NUMBER_LESS_THAN = 'FILTER_F_NUMBER_LESS_THAN',
+	FIELD_TIMESTAMP_GREATER_THAN = 'FILTER_F_TIMESTAMP_GREATER_THAN',
+	FIELD_TIMESTAMP_LESS_THAN = 'FILTER_F_TIMESTAMP_LESS_THAN',
 	FIELD_EQUAL_TO = 'FILTER_F_EQUAL_TO',
 	FIELD_TEXT_BEGINS_WITH = 'FILTER_F_TEXT_BEGINS_WITH',
 	FIELD_TEXT_ENDS_WITH = 'FILTER_F_TEXT_ENDS_WITH',
@@ -90,14 +104,14 @@ export interface IMetadataModel {
 	[FgProperties.FIELD_CHECKBOX_VALUES_USE_IN_VIEW]?: boolean
 	[FgProperties.FIELD_CHECKBOX_VALUES_USE_IN_STORAGE]?: boolean
 	[FgProperties.FIELD_GROUP_VIEW_DISABLE]?: boolean
-	[FgProperties.FIELD_GROUP_FILTER_DISABLE]?: boolean
+	[FgProperties.FIELD_GROUP_QUERY_CONDITIONS_EDIT_DISABLE]?: boolean
 	[FgProperties.GROUP_EXTRACT_AS_SINGLE_FIELD]?: boolean
 
 	[FgProperties.GROUP_READ_ORDER_OF_FIELDS]?: string[]
 	[FgProperties.GROUP_FIELDS]?: { [key: string]: IMetadataModel }[]
 
 	[FgProperties.DATABASE_TABLE_COLLECTION_NAME]?: string
-	[FgProperties.DATABASE_TABLE_COLLECTION_INDEX]?: number
+	[FgProperties.DATABASE_TABLE_COLLECTION_UID]?: string
 	[FgProperties.DATABASE_FIELD_COLUMN_NAME]?: string
 	[FgProperties.DATABASE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX]?: boolean
 	[FgProperties.DATABASE_SKIP_DATA_EXTRACTION]?: boolean
@@ -157,13 +171,8 @@ export enum FieldCheckboxValueProperties {
 	VALUE = '$VALUE'
 }
 
-export enum FCheckboxValueType {
-	NUMBER = 'number',
-	TEXT = 'text'
-}
-
 export interface IFieldCheckboxValue {
-	[FieldCheckboxValueProperties.TYPE]?: FCheckboxValueType
+	[FieldCheckboxValueProperties.TYPE]?: FieldType
 	[FieldCheckboxValueProperties.VALUE]?: any
 }
 
@@ -195,12 +204,12 @@ export enum FgProperties {
 	FIELD_CHECKBOX_VALUES_USE_IN_VIEW = '$FIELD_CHECKBOX_VALUES_USE_IN_VIEW',
 	FIELD_CHECKBOX_VALUES_USE_IN_STORAGE = '$FIELD_CHECKBOX_VALUES_USE_IN_STORAGE',
 	FIELD_GROUP_VIEW_DISABLE = '$FIELD_GROUP_VIEW_DISABLE',
-	FIELD_GROUP_FILTER_DISABLE = '$FIELD_GROUP_FILTER_DISABLE',
+	FIELD_GROUP_QUERY_CONDITIONS_EDIT_DISABLE = '$FIELD_GROUP_QUERY_CONDITIONS_EDIT_DISABLE',
 	GROUP_EXTRACT_AS_SINGLE_FIELD = '$GROUP_EXTRACT_AS_SINGLE_FIELD',
 	GROUP_READ_ORDER_OF_FIELDS = '$GROUP_READ_ORDER_OF_FIELDS',
 	GROUP_FIELDS = '$GROUP_FIELDS',
 	DATABASE_SKIP_DATA_EXTRACTION = '$DATABASE_SKIP_DATA_EXTRACTION',
-	DATABASE_TABLE_COLLECTION_INDEX = '$DATABASE_TABLE_COLLECTION_INDEX',
+	DATABASE_TABLE_COLLECTION_UID = '$DATABASE_TABLE_COLLECTION_UID',
 	DATABASE_TABLE_COLLECTION_NAME = '$DATABASE_TABLE_COLLECTION_NAME',
 	DATABASE_FIELD_COLUMN_NAME = '$DATABASE_FIELD_COLUMN_NAME',
 	DATUM_INPUT_VIEW = '$DATUM_INPUT_VIEW',

@@ -271,6 +271,7 @@ class Component extends LitElement {
 						class="flex-1 overflow-auto h-fit ${(!this._viewjsonoutput && !currentMetadataModelGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW]) || currentMetadataModelGroup[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.FORM
 							? ' shadow-inner shadow-gray-800 pl-2 pr-2 pb-2'
 							: ''}"
+						style="${this._viewGroupTree ? 'opacity: 0.7;background-color: rgba(0, 0, 0, 0.25);' : ''}"
 					>
 						${(() => {
 							if (typeof this._scrollelement === 'undefined') {

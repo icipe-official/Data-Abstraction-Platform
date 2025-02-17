@@ -27,7 +27,7 @@ class Component extends LitElement {
 						.datetimeinputformat=${this.field[MetadataModel.FgProperties.FIELD_DATETIME_FORMAT] || MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}
 						.value=${this.getdata(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, this.arrayindexplaceholders) || ''}
 						@calendar-time:datetimeupdate=${(e: CustomEvent) => {
-							if (e.detail.value.length > 0) {
+							if (e.detail.value) {
 								this.updatedata(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, this.arrayindexplaceholders, e.detail.value)
 							} else {
 								this.deletedata(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, this.arrayindexplaceholders)

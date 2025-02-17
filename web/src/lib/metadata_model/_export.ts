@@ -9,8 +9,10 @@ export { Extract2DFields, RemoveSkipped2DFields, Reposition2DFields, Reorder2DFi
 export { ConvertObjectsTo2DArray } from './convert_objects_to_2d'
 export { Convert2DArrayToObjects } from './convert_2darray_to_objects'
 
-export type { IDatabaseColumnFields, QueryConditions, ISearchResults, IQueryCondition, IFilterCondition, IMetadataModel, ISelectOption, IFieldCheckboxValue, I2DFieldViewPosition, I2DFields, RepositionFields, Error } from './metadata_model'
+export type { IDatabaseColumnFields, QueryConditions, ISearchResults, IQueryCondition, IFilterCondition, IMetadataModel, ISelectOption, IFieldCheckboxValue, I2DFieldViewPosition, I2DFields, RepositionFields, IFConditionFilterEqualToValue, Error } from './metadata_model'
 export {
+	QcProperties,
+	FConditionProperties,
 	FgProperties,
 	DView,
 	FilterCondition,
@@ -21,7 +23,6 @@ export {
 	FSelectProperties,
 	FSelectType,
 	FieldCheckboxValueProperties,
-	FCheckboxValueType,
 	Field2dPositionProperties,
 	EmptyMetadataModel,
 	ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH,

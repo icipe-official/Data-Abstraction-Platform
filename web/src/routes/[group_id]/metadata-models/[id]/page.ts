@@ -51,6 +51,7 @@ class Page extends LitElement {
 
 	@state() private _datuminputsamplemetadatamodel: any = structuredClone(this._data)
 	@state() private _datuminputsampledata: any = {}
+	@state() private _datumeinputqueryconditions: any[] = []
 
 	@state() private _colorTheme: Theme.Color = Theme.Color.PRIMARY
 
@@ -89,9 +90,13 @@ class Page extends LitElement {
 							return html`
 								<metadata-model-view-query-panel
 									.metadatamodel=${this._datuminputsamplemetadatamodel}
+									.queryconditions=${this._datumeinputqueryconditions}
 									.startcolor=${this._colorTheme}
 									@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
 										this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
+									}}
+									@metadata-model-view-query-panel:updatequeryconditions=${(e: CustomEvent) => {
+										this._datumeinputqueryconditions = structuredClone(e.detail.value)
 									}}
 								></metadata-model-view-query-panel>
 							`

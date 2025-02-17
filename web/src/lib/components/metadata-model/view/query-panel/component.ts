@@ -17,9 +17,15 @@ class Component extends LitElement {
 
 	@property({ type: Object }) metadatamodel: any = {}
 	@property({ type: String }) startcolor: Theme.Color = Theme.Color.PRIMARY
-	@property({ type: Array }) queryconditions: any[] = [{}]
+	@property({ type: Array }) queryconditions: MetadataModel.QueryConditions[] = [{}]
 
 	@state() private _currentTabIndex: number = 0
+	private _updateCurrentTabIndex(v: number) {
+		this._currentTabIndex = v
+		if (this._selectedFieldGroupQueryConditionIndex > -1) {
+			this._selectedFieldGroupQueryConditionIndex = this._currentTabIndex
+		}
+	}
 
 	@state() private _expandTabSection: boolean = false
 
@@ -49,6 +55,64 @@ class Component extends LitElement {
 			)
 		} catch (e) {
 			Log.Log(Log.Level.ERROR, this.localName, e, fieldGroup)
+		}
+	}
+
+	private _getquerycondition = (queryconditionindex: number, fieldGroupKey?: string) => {
+		if (typeof this.queryconditions[queryconditionindex] === 'object') {
+			if (typeof fieldGroupKey === 'string' && fieldGroupKey.length > 0) {
+				fieldGroupKey = this._getQueryConditionFgKey(fieldGroupKey)
+				if (typeof this.queryconditions[queryconditionindex][fieldGroupKey] === 'undefined') {
+					return {}
+				}
+				return structuredClone(this.queryconditions[queryconditionindex][fieldGroupKey])
+			}
+
+			return structuredClone(this.queryconditions[queryconditionindex])
+		}
+
+		return {}
+	}
+
+	private _deletequeryconditions = (queryconditionindex: number, fieldGroupKey?: string) => {
+		if (typeof this.queryconditions[queryconditionindex] === 'object') {
+			if (typeof fieldGroupKey === 'string' && fieldGroupKey.length > 0) {
+				fieldGroupKey = this._getQueryConditionFgKey(fieldGroupKey)
+				if (typeof this.queryconditions[queryconditionindex][fieldGroupKey] === 'undefined') {
+					return
+				}
+				delete this.queryconditions[queryconditionindex][fieldGroupKey]
+			} else {
+				this.queryconditions = Json.DeleteValueInObject(this.queryconditions, `$.${queryconditionindex}`)
+			}
+			this.queryconditions = structuredClone(this.queryconditions)
+			this.dispatchEvent(
+				new CustomEvent('metadata-model-view-query-panel:deletequerycondition', {
+					detail: {
+						queryconditionindex,
+						fieldGroupKey
+					}
+				})
+			)
+			this.dispatchEvent(
+				new CustomEvent('metadata-model-view-query-panel:updatequeryconditions', {
+					detail: {
+						value: this.queryconditions
+					}
+				})
+			)
+			if (this.queryconditions.length === 0) {
+				this.queryconditions = [{}]
+			}
+		}
+	}
+
+	private _getQueryConditionFgKey = (fieldGroupKey: string) => fieldGroupKey.replace(MetadataModel.GROUP_FIELDS_PATH_REGEX_SEARCH, '').replace(new RegExp(MetadataModel.GROUP_FIELDS_REGEX_SEARCH, 'g'), '')
+
+	connectedCallback(): void {
+		super.connectedCallback()
+		if (!Array.isArray(this.queryconditions) || this.queryconditions.length === 0) {
+			this.queryconditions = [{}]
 		}
 	}
 
@@ -85,7 +149,7 @@ class Component extends LitElement {
 						class="btn ${this.startcolor === Theme.Color.PRIMARY ? 'btn-primary' : this.startcolor === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} h-fit min-h-fit"
 						@click=${() => {
 							this.queryconditions = [{}]
-							this._currentTabIndex = 0
+							this._updateCurrentTabIndex(0)
 						}}
 						@mouseover=${() => (this._showHintID = 'tabs-remove')}
 						@mouseout=${() => (this._showHintID = '')}
@@ -137,7 +201,9 @@ class Component extends LitElement {
 												? 'btn-secondary'
 												: 'btn-accent'
 										: ''}"
-									@click=${() => (this._currentTabIndex = index)}
+									@click=${() => {
+										this._updateCurrentTabIndex(index)
+									}}
 								>
 									<div class="flex justify-between ${this._expandTabSection || this._pinTabs ? 'w-full' : 'w-fit'}">
 										<div class="flex space-x-2">
@@ -157,13 +223,9 @@ class Component extends LitElement {
 														class="btn btn-ghost h-fit min-h-fit w-fit min-w-fit p-1"
 														@click=${(e: Event) => {
 															e.stopPropagation()
-															this.queryconditions = structuredClone(Json.DeleteValueInObject(this.queryconditions, `$.${index}`))
-															if (this.queryconditions.length === 0) {
-																this.queryconditions = [{}]
-															}
-
+															this._deletequeryconditions(index)
 															if (this._currentTabIndex > this.queryconditions.length - 1) {
-																this._currentTabIndex = this.queryconditions.length - 1
+																this._updateCurrentTabIndex(this.queryconditions.length - 1)
 															}
 														}}
 													>
@@ -184,7 +246,7 @@ class Component extends LitElement {
 						class="btn flex justify-start btn-ghost h-fit min-h-fit"
 						@click=${() => {
 							this.queryconditions = [...this.queryconditions, {}]
-							this._currentTabIndex = this.queryconditions.length - 1
+							this._updateCurrentTabIndex(this.queryconditions.length - 1)
 						}}
 					>
 						<iconify-icon icon="mdi:tab-add" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
@@ -201,10 +263,9 @@ class Component extends LitElement {
 					${(() => {
 						if (this._selectedFieldGroupKey.length > 0 && this._selectedFieldGroupQueryConditionIndex > -1) {
 							const fieldGroup = Json.GetValueInObject(this.metadatamodel, this._selectedFieldGroupKey.replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]'))
-
 							return html`
-								<section class="flex flex-[9] flex-col w-full h-fit overflow-hidden">
-									<header class="flex justify-between p-1 ${this.startcolor === Theme.Color.PRIMARY ? 'text-primary' : this.startcolor === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+								<section class="flex flex-[9] flex-col w-full h-fit overflow-hidden shadow-inner shadow-gray-800">
+									<header class="flex justify-between p-1 shadow-sm shadow-gray-800 ${this.startcolor === Theme.Color.PRIMARY ? 'text-primary' : this.startcolor === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 										<div class="h-fit self-center">${MetadataModel.GetFieldGroupName(fieldGroup)}</div>
 										<button
 											class="btn btn-ghost h-fit min-h-fit w-fit min-w-fit p-1"
@@ -219,16 +280,35 @@ class Component extends LitElement {
 									<metadata-model-view-query-panel-field-group-query-condition
 										class="flex-[9]"
 										.color=${this.startcolor}
+										.querycondition=${this._getquerycondition(this._selectedFieldGroupQueryConditionIndex, this._selectedFieldGroupKey)}
 										.fieldgroup=${fieldGroup}
 										.updatemetadatamodel=${this._updatemetadatamodel}
-										></metadata-model-view-query-panel-field-group-query-condition>
+										.handleupdatefieldgroupquerycondition=${(fieldGroupKey: string, querycondition: MetadataModel.IQueryCondition) => {
+											fieldGroupKey = this._getQueryConditionFgKey(fieldGroupKey)
+											if (Object.keys(querycondition).length > 0) {
+												if (typeof this.queryconditions[this._selectedFieldGroupQueryConditionIndex] === 'undefined') {
+													this.queryconditions[this._selectedFieldGroupQueryConditionIndex] = {}
+												}
+												this.queryconditions[this._selectedFieldGroupQueryConditionIndex][fieldGroupKey] = structuredClone(querycondition)
+												this.dispatchEvent(
+													new CustomEvent('metadata-model-view-query-panel:updatequeryconditions', {
+														detail: {
+															value: this.queryconditions
+														}
+													})
+												)
+											} else {
+												this._deletequeryconditions(this._selectedFieldGroupQueryConditionIndex, this._selectedFieldGroupKey)
+											}
+										}}
+									></metadata-model-view-query-panel-field-group-query-condition>
 								</section>
 							`
 						}
 
 						return nothing
 					})()}
-					<section id="scroll-element" class="flex-1 overflow-auto p-1">
+					<section id="scroll-element" class="flex-1 overflow-auto p-1" style="${this._selectedFieldGroupKey.length > 0 && this._selectedFieldGroupQueryConditionIndex > -1 ? 'opacity: 0.7;background-color: rgba(0, 0, 0, 0.25);' : ''}">
 						${(() => {
 							if (typeof this._scrollelement === 'undefined') {
 								return html`
@@ -245,12 +325,30 @@ class Component extends LitElement {
 									.fieldgroup=${this.metadatamodel}
 									.queryconditionindex=${this._currentTabIndex}
 									.updatemetadatamodel=${this._updatemetadatamodel}
-									.handleselectfieldgroup=${(fieldGroupKey: string, queryconditionindex: number) => {
+									.handleselectfieldgroup=${(queryconditionindex: number, fieldGroupKey: string) => {
 										this._selectedFieldGroupKey = fieldGroupKey
 										this._selectedFieldGroupQueryConditionIndex = queryconditionindex
 									}}
-									.handlegetfieldgroupqueryconditions=${(fieldGroupKey: string, queryconditionindex: number) => {}}
-									.handledeletefieldgroupqueryconditions=${(fieldGroupKey: string, queryconditionindex: number) => {}}
+									.handlegetfieldgroupquerycondition=${this._getquerycondition}
+									.handledeletefieldgroupquerycondition=${this._deletequeryconditions}
+									.handleupdatefieldgroupquerycondition=${(queryconditionindex: number, fieldGroupKey: string, querycondition: MetadataModel.IQueryCondition) => {
+										fieldGroupKey = this._getQueryConditionFgKey(fieldGroupKey)
+										if (Object.keys(querycondition).length > 0) {
+											if (typeof this.queryconditions[queryconditionindex] === 'undefined') {
+												this.queryconditions[queryconditionindex] = {}
+											}
+											this.queryconditions[queryconditionindex][fieldGroupKey] = structuredClone(querycondition)
+											this.dispatchEvent(
+												new CustomEvent('metadata-model-view-query-panel:updatequeryconditions', {
+													detail: {
+														value: this.queryconditions
+													}
+												})
+											)
+										} else {
+											this._deletequeryconditions(queryconditionindex, fieldGroupKey)
+										}
+									}}
 								></metadata-model-view-query-panel-field-group>
 							`
 						})()}

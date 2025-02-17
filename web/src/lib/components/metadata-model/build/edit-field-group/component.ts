@@ -527,7 +527,7 @@ class Component extends LitElement {
 										</div>
 										<div class="join max-md:join-vertical">
 											<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
-												<span class="h-fit self-center break-words word-wrap">Field Group view max columns in separate columns</span>
+												<span class="h-fit self-center break-words">Field Group view max columns in separate columns</span>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-max-values-in-separate-columns')} @mouseout=${() => (this._showHintID = '')}>
 													<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
 												</div>
@@ -552,55 +552,47 @@ class Component extends LitElement {
 											/>
 										</div>
 									</section>
-									${(() => {
-										if (typeof this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS] === 'undefined') {
-											return html`
-												<section class="flex flex-col space-y-1">
-													<div class="relative w-full h-0">
-														${(() => {
-															if (this._showHintID === 'fg-view-values-in-separate-columns-header-format') {
-																return html`
-																	<div
-																		class="z-20 absolute bottom-0 w-full min-w-[250px] h-fit ${this.color === Theme.Color.PRIMARY
-																			? 'bg-primary text-primary-content'
-																			: this.color === Theme.Color.SECONDARY
-																				? 'bg-secondary text-secondary-content'
-																				: 'bg-accent text-accent-content'} p-1 shadow-md shadow-gray-800 rounded-md"
-																	>
-																		Field view header format (replaces [*] with column/row index)
-																	</div>
-																`
-															}
-															return nothing
-														})()}
-													</div>
-													<div class="join max-md:join-vertical">
-														<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
-															<span class="h-fit self-center break-words word-wrap">Field view header format</span>
-															<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns-header-format')} @mouseout=${() => (this._showHintID = '')}>
-																<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
-															</div>
-														</span>
-														<input
-															class="flex-1 join-item input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
-															type="text"
-															placeholder="Enter view header format..."
-															.value=${this.fieldgroup[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT] || ''}
-															@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																if (e.currentTarget.value.length > 0) {
-																	this.fieldgroup[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT] = e.currentTarget.value
-																} else {
-																	delete this.fieldgroup[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT]
-																}
-															}}
-														/>
-													</div>
-												</section>
-											`
-										} else {
-											return nothing
-										}
-									})()}
+									<section class="flex flex-col space-y-1">
+										<div class="relative w-full h-0">
+											${(() => {
+												if (this._showHintID === 'fg-view-values-in-separate-columns-header-format') {
+													return html`
+														<div
+															class="z-20 absolute bottom-0 w-full min-w-[250px] h-fit ${this.color === Theme.Color.PRIMARY
+																? 'bg-primary text-primary-content'
+																: this.color === Theme.Color.SECONDARY
+																	? 'bg-secondary text-secondary-content'
+																	: 'bg-accent text-accent-content'} p-1 shadow-md shadow-gray-800 rounded-md"
+														>
+															Field view header format (replaces [*] with column/row index)
+														</div>
+													`
+												}
+												return nothing
+											})()}
+										</div>
+										<div class="join max-md:join-vertical">
+											<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+												<span class="h-fit self-center break-words">Field view header format</span>
+												<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns-header-format')} @mouseout=${() => (this._showHintID = '')}>
+													<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+												</div>
+											</span>
+											<input
+												class="flex-1 join-item input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
+												type="text"
+												placeholder="Enter view header format..."
+												.value=${this.fieldgroup[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT] || ''}
+												@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+													if (e.currentTarget.value.length > 0) {
+														this.fieldgroup[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT] = e.currentTarget.value
+													} else {
+														delete this.fieldgroup[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT]
+													}
+												}}
+											/>
+										</div>
+									</section>
 									<div class="divider h-fit"></div>
 									${(() => {
 										if (typeof this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS] === 'object') {
@@ -686,9 +678,8 @@ class Component extends LitElement {
 													</div>
 												</section>
 											`
-										} else {
-											return nothing
 										}
+										return nothing
 									})()}
 									<section class="flex flex-col space-y-1">
 										<div class="relative w-full h-0">
@@ -702,7 +693,7 @@ class Component extends LitElement {
 																	? 'bg-secondary text-secondary-content'
 																	: 'bg-accent text-accent-content'} p-1 shadow-md shadow-gray-800 rounded-md"
 														>
-															Disable filter options when displaying the filter panel.
+															Disable some query conditions options such as database collection name, field/group primary key status etc. when displaying the query condition panel.
 														</div>
 													`
 												}
@@ -719,12 +710,12 @@ class Component extends LitElement {
 											<input
 												class="self-center checkbox ${this.color === Theme.Color.PRIMARY ? 'checkbox-primary' : this.color === Theme.Color.SECONDARY ? 'checkbox-secondary' : 'checkbox-accent'}"
 												type="checkbox"
-												.checked=${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_FILTER_DISABLE] || false}
+												.checked=${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_QUERY_CONDITIONS_EDIT_DISABLE] || false}
 												@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 													if (e.currentTarget.checked) {
-														this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_FILTER_DISABLE] = true
+														this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_QUERY_CONDITIONS_EDIT_DISABLE] = true
 													} else {
-														delete this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_FILTER_DISABLE]
+														delete this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_QUERY_CONDITIONS_EDIT_DISABLE]
 													}
 												}}
 											/>
@@ -746,6 +737,47 @@ class Component extends LitElement {
 					${(() => {
 						if (this._showDatabaseProperties) {
 							return html`
+								<section class="flex flex-col space-y-1">
+									<div class="relative w-full h-0">
+										${(() => {
+											if (this._showHintID === 'd-table-collection-uid') {
+												return html`
+													<div
+														class="z-20 absolute bottom-0 w-full min-w-[250px] h-fit ${this.color === Theme.Color.PRIMARY
+															? 'bg-primary text-primary-content'
+															: this.color === Theme.Color.SECONDARY
+																? 'bg-secondary text-secondary-content'
+																: 'bg-accent text-accent-content'} p-1 shadow-md shadow-gray-800 rounded-md"
+													>
+														May be relevant in identifying columns/fields that belong to a particular table/collection in a nested join.
+													</div>
+												`
+											}
+											return nothing
+										})()}
+									</div>
+									<div class="join max-md:join-vertical">
+										<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+											<span class="h-fit self-center break-words">Database table/collection unique id</span>
+											<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-table-collection-uid')} @mouseout=${() => (this._showHintID = '')}>
+												<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+											</div>
+										</span>
+										<input
+											class="flex-1 join-item input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
+											type="text"
+											placeholder="Enter table/collection unique id..."
+											.value=${this.fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID] || ''}
+											@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+												if (e.currentTarget.value.length > 0) {
+													this.fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID] = e.currentTarget.value
+												} else {
+													delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID]
+												}
+											}}
+										/>
+									</div>
+								</section>
 								${(() => {
 									if (typeof this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS] === 'object') {
 										return html`
@@ -770,7 +802,7 @@ class Component extends LitElement {
 												</div>
 												<div class="join max-md:join-vertical">
 													<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
-														<span class="h-fit self-center break-words word-wrap">Database Table/Collection name</span>
+														<span class="h-fit self-center break-words">Database Table/Collection name</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-group-table-collection-name')} @mouseout=${() => (this._showHintID = '')}>
 															<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
 														</div>
@@ -814,7 +846,7 @@ class Component extends LitElement {
 											</div>
 											<div class="join max-md:join-vertical">
 												<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
-													<span class="h-fit self-center break-words word-wrap">Database column/field name</span>
+													<span class="h-fit self-center break-words">Database column/field name</span>
 													<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-field-column-name')} @mouseout=${() => (this._showHintID = '')}>
 														<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
 													</div>
@@ -916,7 +948,7 @@ class Component extends LitElement {
 												</div>
 												<div class="join max-md:join-vertical">
 													<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
-														<span class="h-fit self-center break-words word-wrap">Field input placeholder</span>
+														<span class="h-fit self-center break-words">Field input placeholder</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'f-input-placeholder')} @mouseout=${() => (this._showHintID = '')}>
 															<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
 														</div>
@@ -1356,7 +1388,7 @@ class Component extends LitElement {
 															</div>
 															<div class="join join-vertical">
 																<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
-																	<span class="h-fit self-center break-words word-wrap">Field checkbox value if true</span>
+																	<span class="h-fit self-center break-words">Field checkbox value if true</span>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'f-checkbox-value-if-true')} @mouseout=${() => (this._showHintID = '')}>
 																		<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
 																	</div>
@@ -1380,16 +1412,16 @@ class Component extends LitElement {
 																		Choose value data type...
 																	</option>
 																	<option
-																		value="${MetadataModel.FCheckboxValueType.NUMBER}"
+																		value="${MetadataModel.FieldType.NUMBER}"
 																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE] === 'object' &&
-																		this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FCheckboxValueType.NUMBER}
+																		this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.NUMBER}
 																	>
 																		Number
 																	</option>
 																	<option
-																		value="${MetadataModel.FCheckboxValueType.TEXT}"
+																		value="${MetadataModel.FieldType.TEXT}"
 																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE] === 'object' &&
-																		this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FCheckboxValueType.TEXT}
+																		this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.TEXT}
 																	>
 																		Text
 																	</option>
@@ -1399,12 +1431,12 @@ class Component extends LitElement {
 																		return html`
 																			<input
 																				class="flex-[2] join-item input min-h-[48px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
-																				type=${this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FCheckboxValueType.NUMBER ? 'number' : 'text'}
+																				type=${this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.NUMBER ? 'number' : 'text'}
 																				placeholder="Enter value..."
 																				.value=${this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE] || ''}
 																				@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																					if (e.currentTarget.value.length > 0) {
-																						if (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FCheckboxValueType.NUMBER) {
+																						if (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.NUMBER) {
 																							if (!Number.isNaN(e.currentTarget)) {
 																								this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE}.${MetadataModel.FieldCheckboxValueProperties.VALUE}`, Number(e.currentTarget.value))
 																							} else {
@@ -1447,7 +1479,7 @@ class Component extends LitElement {
 															</div>
 															<div class="join join-vertical">
 																<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
-																	<span class="h-fit self-center break-words word-wrap">Field checkbox value if false</span>
+																	<span class="h-fit self-center break-words">Field checkbox value if false</span>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'f-checkbox-value-if-false')} @mouseout=${() => (this._showHintID = '')}>
 																		<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
 																	</div>
@@ -1471,16 +1503,16 @@ class Component extends LitElement {
 																		Choose value data type...
 																	</option>
 																	<option
-																		value="${MetadataModel.FCheckboxValueType.NUMBER}"
+																		value="${MetadataModel.FieldType.NUMBER}"
 																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE] === 'object' &&
-																		this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FCheckboxValueType.NUMBER}
+																		this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.NUMBER}
 																	>
 																		Number
 																	</option>
 																	<option
-																		value="${MetadataModel.FCheckboxValueType.TEXT}"
+																		value="${MetadataModel.FieldType.TEXT}"
 																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE] === 'object' &&
-																		this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FCheckboxValueType.TEXT}
+																		this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.TEXT}
 																	>
 																		Text
 																	</option>
@@ -1490,12 +1522,12 @@ class Component extends LitElement {
 																		return html`
 																			<input
 																				class="flex-[2] join-item input min-h-[48px] ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
-																				type=${this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FCheckboxValueType.NUMBER ? 'number' : 'text'}
+																				type=${this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.NUMBER ? 'number' : 'text'}
 																				placeholder="Enter value..."
 																				.value=${this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE] || ''}
 																				@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																					if (e.currentTarget.value.length > 0) {
-																						if (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FCheckboxValueType.NUMBER) {
+																						if (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.NUMBER) {
 																							if (!Number.isNaN(e.currentTarget)) {
 																								this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE}.${MetadataModel.FieldCheckboxValueProperties.VALUE}`, Number(e.currentTarget.value))
 																							} else {

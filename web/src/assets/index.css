@@ -37,6 +37,10 @@
 	@apply my-0;
 }
 
+.tab {
+	@apply min-h-fit;
+}
+
 /* 
 ::-webkit-scrollbar {
 	@apply w-[10px] h-[10px];
