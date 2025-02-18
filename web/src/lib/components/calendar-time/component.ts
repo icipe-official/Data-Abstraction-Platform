@@ -1,12 +1,10 @@
 import { LitElement, TemplateResult, html, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import '$src/lib/components/error-section/component'
-import 'iconify-icon'
 import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
 import Log from '$src/lib/log'
-import Misc from '$src/lib/miscellaneous'
 import '$src/lib/components/drop-down/component'
 
 type DateTime = number | null
@@ -590,7 +588,8 @@ class Component extends LitElement {
 														)
 													}}
 												>
-													<iconify-icon icon="mdi:delete" style="color: black;" width=${Misc.IconifySize('23')} height=${Misc.IconifySize('23')}></iconify-icon>
+													<!--mdi:delete source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24"><path fill="black" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 												</button>
 											`
 										} else {
@@ -686,7 +685,13 @@ class Component extends LitElement {
 														this._generateYearsToDisplay(false)
 													}}
 												>
-													<div class="text-xl font-bold" syle="color: ${Theme.GetColorContent(this.color)};"><<<</div>
+													<!--mdi:chevron-triple-left source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path
+															fill="${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT}"
+															d="M9.42 7.41L4.83 12l4.59 4.59L8 18l-6-6l6-6zm6 0L10.83 12l4.59 4.59L14 18l-6-6l6-6zm6 0L16.83 12l4.59 4.59L20 18l-6-6l6-6z"
+														/>
+													</svg>
 												</button>
 												<button
 													class="rounded-bl-none rounded-tl-none rounded-br-lg rounded-tr-lg btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : this.color === Theme.Color.ACCENT ? 'btn-accent' : 'bg-black text-white'} flex-1 h-fit"
@@ -695,7 +700,13 @@ class Component extends LitElement {
 														this._generateYearsToDisplay(true)
 													}}
 												>
-													<div class="text-xl font-bold" syle="color: ${Theme.GetColorContent(this.color)};">>>></div>
+													<!--mdi:chevron-triple-right source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path
+															fill="${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT}"
+															d="M14.58 16.59L19.17 12l-4.59-4.59L16 6l6 6l-6 6zm-6 0L13.17 12L8.58 7.41L10 6l6 6l-6 6zm-6 0L7.17 12L2.58 7.41L4 6l6 6l-6 6z"
+														/>
+													</svg>
 												</button>
 											</div>
 											<div class="grid grid-cols-6 rounded-lg">
@@ -975,12 +986,13 @@ class Component extends LitElement {
 													@click=${() => this._handleDateTimeInput(null, null, null, `${this._hour !== null ? this._hour + 1 : 1}`, null)}
 													.disabled=${this.disabled}
 												>
-													<iconify-icon
-														icon="mdi:chevron-up"
-														style="color: ${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT};"
-														width=${Misc.IconifySize()}
-														height=${Misc.IconifySize()}
-													></iconify-icon>
+													<!--mdi:chevron-up source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path
+															fill="${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT}"
+															d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6l-6 6z"
+														/>
+													</svg>
 												</button>
 												<div class="w-full text-2xl text-center p-1 border-2">${this._hour ? this._getDateTimeUnitsString(this._hour) : 'hh'}</div>
 												<button
@@ -991,12 +1003,13 @@ class Component extends LitElement {
 													@click=${() => this._handleDateTimeInput(null, null, null, `${this._hour !== null ? this._hour - 1 : -1}`, null)}
 													.disabled=${this.disabled}
 												>
-													<iconify-icon
-														icon="mdi:chevron-down"
-														style="color: ${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT};"
-														width=${Misc.IconifySize()}
-														height=${Misc.IconifySize()}
-													></iconify-icon>
+													<!--mdi:chevron-down source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path
+															fill="${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT}"
+															d="M7.41 8.58L12 13.17l4.59-4.59L18 10l-6 6l-6-6z"
+														/>
+													</svg>
 												</button>
 											</div>
 											<div class="flex-1 flex flex-col">
@@ -1008,12 +1021,13 @@ class Component extends LitElement {
 													@click=${() => this._handleDateTimeInput(null, null, null, null, `${this._minute !== null ? this._minute + 1 : 1}`)}
 													.disabled=${this.disabled}
 												>
-													<iconify-icon
-														icon="mdi:chevron-up"
-														style="color: ${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT};"
-														width=${Misc.IconifySize()}
-														height=${Misc.IconifySize()}
-													></iconify-icon>
+													<!--mdi:chevron-up source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path
+															fill="${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT}"
+															d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6l-6 6z"
+														/>
+													</svg>
 												</button>
 												<div class="w-full text-2xl text-center p-1 border-2">${this._minute ? this._getDateTimeUnitsString(this._minute) : 'mm'}</div>
 												<button
@@ -1024,12 +1038,13 @@ class Component extends LitElement {
 													@click=${() => this._handleDateTimeInput(null, null, null, null, `${this._minute !== null ? this._minute - 1 : -1}`)}
 													.disabled=${this.disabled}
 												>
-													<iconify-icon
-														icon="mdi:chevron-down"
-														style="color: ${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT};"
-														width=${Misc.IconifySize()}
-														height=${Misc.IconifySize()}
-													></iconify-icon>
+													<!--mdi:chevron-down source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path
+															fill="${typeof this.color === 'undefined' ? 'black' : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.ACCENT_CONTENT : Theme.Color.PRIMARY_CONTENT}"
+															d="M7.41 8.58L12 13.17l4.59-4.59L18 10l-6 6l-6-6z"
+														/>
+													</svg>
 												</button>
 											</div>
 										</div>

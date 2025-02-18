@@ -9,8 +9,6 @@ import '../../column-field/checkbox/component'
 import '../../column-field/date-time/component'
 import '../../column-field/select/component'
 import MetadataModel from '$src/lib/metadata_model'
-import Misc from '$src/lib/miscellaneous'
-import 'iconify-icon'
 import '$src/lib/components/drop-down/component'
 
 @customElement('metadata-model-datum-input-table-column')
@@ -59,14 +57,19 @@ class Component extends LitElement {
 				<div style="left: ${this.stickyleft}px; top: ${this.stickytop}px;" class="flex min-w-fit w-fit h-fit">
 					<div class="w-fit h-full">
 						<button class="w-fit h-fit" @click=${() => this.updateselectedrowcolumnindex(this.arrayindexplaceholders[0], this.arrayindexplaceholders[1])}>
-							<iconify-icon
-								icon=${this.arrayindexplaceholders[0] >= this.selectedrowminindex && this.arrayindexplaceholders[0] <= this.selectedrowmaxindex && this.arrayindexplaceholders[1] >= this.selectedcolumnminindex && this.arrayindexplaceholders[1] <= this.selectedcolumnmaxindex
-									? 'mdi:square-medium'
-									: 'mdi:square-medium-outline'}
-								style="color:${this.color};"
-								width=${Misc.IconifySize('18')}
-								height=${Misc.IconifySize('18')}
-							></iconify-icon>
+							${(() => {
+								if (this.arrayindexplaceholders[0] >= this.selectedrowminindex && this.arrayindexplaceholders[0] <= this.selectedrowmaxindex && this.arrayindexplaceholders[1] >= this.selectedcolumnminindex && this.arrayindexplaceholders[1] <= this.selectedcolumnmaxindex) {
+									return html`
+										<!--mdi:square-medium source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="${this.color}" d="M16 8H8v8h8z" /></svg>
+									`
+								}
+
+								return html`
+									<!--mdi:square-medium-outline source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="${this.color}" d="M14 10v4h-4v-4zm2-2H8v8h8z" /></svg>
+								`
+							})()}
 						</button>
 					</div>
 					<div class="flex flex-col space-y-1">
@@ -173,7 +176,10 @@ class Component extends LitElement {
 													this._showRowMenuIndex = this._showRowMenuIndex === `${rowIndex}` ? '' : `${rowIndex}`
 												}}
 											>
-												<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+												<!--mdi:dots-vertical source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="black" d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2" />
+												</svg>
 											</button>
 											<div slot="content" class="flex flex-col w-full bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
 												${(() => {
@@ -197,7 +203,8 @@ class Component extends LitElement {
 																.disabled=${typeof rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= rowField[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
 															>
 																<div class="flex self-center">
-																	<iconify-icon icon="mdi:plus" style="color:black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('28')}></iconify-icon>
+																	<!--mdi:plus source: https://icon-sets.iconify.design-->
+																	<svg xmlns="http://www.w3.org/2000/svg" width="28" height="18" viewBox="0 0 24 24"><path fill="black" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z" /></svg>
 																</div>
 																<div class="self-center font-bold">Add field data</div>
 															</button>
@@ -217,7 +224,8 @@ class Component extends LitElement {
 													}}
 												>
 													<div class="flex self-center">
-														<iconify-icon icon="mdi:delete" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+														<!--mdi:delete source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 													</div>
 													<div class="self-center font-bold">Delete field data</div>
 												</button>

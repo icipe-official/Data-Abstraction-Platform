@@ -4,9 +4,9 @@ import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import MetadataModel from '$src/lib/metadata_model'
 import Theme from '$src/lib/theme'
+import Misc from '$src/lib/miscellaneous'
 import Json from '$src/lib/json'
 import Log from '$src/lib/log'
-import Misc from '$src/lib/miscellaneous'
 import './field-group/component'
 import './edit-field-group/component'
 
@@ -184,8 +184,7 @@ class Component extends LitElement {
 											this._createUpdateMetadataModel(`${destinationGroupKey.replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]')}.${MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS}`, destinationGroupReadOrderOfFields)
 											this._createUpdateMetadataModel(`${destinationGroupKey.replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]')}.${MetadataModel.FgProperties.GROUP_FIELDS}`, destinationGroupFields)
 										} else {
-											pasteFieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] =
-												`${destinationGroupKey}.${MetadataModel.FgProperties.GROUP_FIELDS}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}.${(pasteFieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()}`
+											pasteFieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] = `${destinationGroupKey}.${MetadataModel.FgProperties.GROUP_FIELDS}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}.${(pasteFieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop()}`
 											if (!(destinationGroupReadOrderOfFields as string[]).includes((pasteFieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop() as string)) {
 												if (objectIndexInGroupReadOrderOfFields >= 0) {
 													;(destinationGroupReadOrderOfFields as any[]).splice(objectIndexInGroupReadOrderOfFields, 0, (pasteFieldGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split('.').pop())
@@ -279,7 +278,10 @@ class Component extends LitElement {
 					<header class="sticky flex justify-between items-center p-2 shadow-gray-800 shadow-sm top-0 left-0 right-0">
 						<div class="h-fit w-fit flex space-x-1 ${this._selectedFieldGroupColor === Theme.Color.PRIMARY ? 'text-primary' : this._selectedFieldGroupColor === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Edit Field/Group</div>
 						<button class="btn btn-circle btn-ghost flex justify-center" @click=${() => (this._selectedFieldGroupPath = '')}>
-							<iconify-icon icon="mdi:close-circle" style="color:${this._selectedFieldGroupColor};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+							<!--mdi:close-circle source: https://icon-sets.iconify.design-->
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 24 24">
+								<path fill="${this._selectedFieldGroupColor}" d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
+							</svg>
 						</button>
 					</header>
 					${(() => {

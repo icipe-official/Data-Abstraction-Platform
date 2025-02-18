@@ -3,7 +3,6 @@ import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import Log from '$src/lib/log'
-import 'iconify-icon'
 import Misc from '$src/lib/miscellaneous'
 
 interface RenderTracker {
@@ -411,7 +410,12 @@ class Component extends LitElement {
 							`
 						}
 
-						return html` <button @click=${this._handleClickDecrementStartIndex}><iconify-icon icon="mdi:chevron-double-left" style="color: black;" width=${Misc.IconifySize('18')} height=${Misc.IconifySize('18')}></iconify-icon></button> `
+						return html`
+							<button @click=${this._handleClickDecrementStartIndex}>
+								<!--mdi:chevron-double-left source: https://icon-sets.iconify.design-->
+								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="black" d="M18.41 7.41L17 6l-6 6l6 6l1.41-1.41L13.83 12zm-6 0L11 6l-6 6l6 6l1.41-1.41L7.83 12z" /></svg>
+							</button>
+						`
 					}
 
 					return nothing
@@ -518,7 +522,12 @@ class Component extends LitElement {
 							`
 						}
 
-						return html` <button @click=${this._handleClickIncrementEndIndex}><iconify-icon icon="mdi:chevron-double-right" style="color: black;" width=${Misc.IconifySize('18')} height=${Misc.IconifySize('18')}></iconify-icon></button> `
+						return html`
+							<button @click=${this._handleClickIncrementEndIndex}>
+								<!--mdi:chevron-double-right source: https://icon-sets.iconify.design-->
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M5.59 7.41L7 6l6 6l-6 6l-1.41-1.41L10.17 12zm6 0L13 6l6 6l-6 6l-1.41-1.41L16.17 12z" /></svg>
+							</button>
+						`
 					}
 
 					return nothing

@@ -4,7 +4,6 @@ import indexCss from '$src/assets/index.css?inline'
 import Theme from '$src/lib/theme'
 import MetadataModel from '$src/lib/metadata_model'
 import Json from '$src/lib/json'
-import Misc from '$src/lib/miscellaneous'
 import './column/component'
 import { cache } from 'lit/directives/cache.js'
 import { keyed } from 'lit/directives/keyed.js'
@@ -311,7 +310,10 @@ class Component extends LitElement {
 										this._currentOpenDropdownID = this._currentOpenDropdownID === columnId ? '' : columnId
 									}}
 								>
-									<iconify-icon icon="mdi:dots-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+									<!--mdi:dots-vertical source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+										<path fill="${Theme.GetColorContent(this.color)}" d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2" />
+									</svg>
 								</button>
 								<div class="self-center">${columnIndex + 1} - ${MetadataModel.GetFieldGroupName(fieldGroup)}</div>
 							</div>
@@ -330,7 +332,23 @@ class Component extends LitElement {
 									}}
 								>
 									<div class="w-fit h-fit self-center">
-										<iconify-icon icon=${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'mdi:lock-open-variant' : 'mdi:lock'} style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										${(() => {
+											if (fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]) {
+												return html`
+													<!--mdi:lock-open-variant source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="black" d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
+													</svg>
+												`
+											}
+
+											return html`
+												<!--mdi:lock source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="black" d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
+												</svg>
+											`
+										})()}
 									</div>
 									<div class="w-fit h-fit self-center">${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'unfreeze' : 'freeze'} column</div>
 								</button>
@@ -343,7 +361,13 @@ class Component extends LitElement {
 									}}
 								>
 									<div class="w-fit h-fit self-center">
-										<iconify-icon icon="mdi:eye-off" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+											<path
+												fill="black"
+												d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+											/>
+										</svg>
 									</div>
 									<div class="w-fit h-fit self-center">hide column</div>
 								</button>
@@ -502,7 +526,8 @@ class Component extends LitElement {
 
 		return html`
 			<button class="btn btn-md btn-ghost" @click=${this._decreaseColumnUnlockedStartIndex}>
-				<iconify-icon icon="mdi:rewind" style="color:${inHeader ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+				<!--mdi:rewind source: https://icon-sets.iconify.design-->
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${inHeader ? Theme.GetColorContent(this.color) : this.color}" d="m11.5 12l8.5 6V6m-9 12V6l-8.5 6z" /></svg>
 			</button>
 		`
 	}
@@ -565,7 +590,8 @@ class Component extends LitElement {
 						this._rowEndAddContentTimeout = window.setTimeout(() => this._rowAddContentAtStartPosition(this._rowStartIndex), 500)
 					}}
 				>
-					<iconify-icon icon="mdi:chevron-double-up" style="color: black;" width=${Misc.IconifySize('18')} height=${Misc.IconifySize('18')}></iconify-icon>
+					<!--mdi:chevron-double-up source: https://icon-sets.iconify.design-->
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="black" d="M7.41 18.41L6 17l6-6l6 6l-1.41 1.41L12 13.83zm0-6L6 11l6-6l6 6l-1.41 1.41L12 7.83z" /></svg>
 				</button>
 			`
 		}
@@ -580,7 +606,8 @@ class Component extends LitElement {
 
 		return html`
 			<button class="btn btn-md btn-ghost" @click=${this._increaseColumnUnlockedEndIndex}>
-				<iconify-icon icon="mdi:fast-forward" style="color:${inHeader ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+				<!--mdi:fast-forward source: https://icon-sets.iconify.design-->
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${inHeader ? Theme.GetColorContent(this.color) : this.color}" d="M13 6v12l8.5-6M4 18l8.5-6L4 6z" /></svg>
 			</button>
 		`
 	}
@@ -645,7 +672,8 @@ class Component extends LitElement {
 					this._rowEndAddContentTimeout = window.setTimeout(() => this._rowAddContentAtEndPosition(this._rowEndIndex), 500)
 				}}
 			>
-				<iconify-icon icon="mdi:chevron-double-down" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+				<!--mdi:chevron-double-down source: https://icon-sets.iconify.design-->
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M16.59 5.59L18 7l-6 6l-6-6l1.41-1.41L12 10.17zm0 6L18 13l-6 6l-6-6l1.41-1.41L12 16.17z" /></svg>
 			</button>
 		`
 	}
@@ -787,7 +815,23 @@ class Component extends LitElement {
 								this._columnData2DFieldsLockStateChanged = true
 							}}
 						>
-							<iconify-icon icon=${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'mdi:lock' : 'mdi:lock-open-variant'} style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+							${(() => {
+								if (!fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]) {
+									return html`
+										<!--mdi:lock-open-variant source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<path fill="black" d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
+										</svg>
+									`
+								}
+
+								return html`
+									<!--mdi:lock source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+										<path fill="black" d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
+									</svg>
+								`
+							})()}
 						</button>
 						${(() => {
 							if (this._showHintID === `column-header-menu-freeze-unfreeze-column-${columnIndex}-${dfIndex}`) {
@@ -812,7 +856,26 @@ class Component extends LitElement {
 								this._columnData2DFieldsLockStateChanged = true
 							}}
 						>
-							<iconify-icon icon=${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] ? 'mdi:eye-off' : 'mdi:eye'} style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+							${(() => {
+								if (!fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
+									return html`
+										<!--mdi:eye source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<path fill="${this.color}" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5" />
+										</svg>
+									`
+								}
+
+								return html`
+									<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+										<path
+											fill="${this.color}"
+											d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+										/>
+									</svg>
+								`
+							})()}
 						</button>
 						${(() => {
 							if (this._showHintID === `column-header-menu-show-hide-column-${columnIndex}-${dfIndex}`) {
@@ -838,7 +901,10 @@ class Component extends LitElement {
 										this._unlockedColumnEndIndex = this._unlockedColumnStartIndex + this._totalNoOfColumns < this._unlockedColumnData2DFieldsIndex.length - 1 ? this._unlockedColumnStartIndex + this._totalNoOfColumns : this._unlockedColumnData2DFieldsIndex.length - 1
 									}}
 								>
-									<iconify-icon icon="mdi:jump" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+									<!--mdi:jump source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+										<path fill="black" d="M12 14a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m11.46-5.14l-1.59 6.89L15 14.16l3.8-2.38A7.97 7.97 0 0 0 12 8c-3.95 0-7.23 2.86-7.88 6.63l-1.97-.35C2.96 9.58 7.06 6 12 6c3.58 0 6.73 1.89 8.5 4.72z" />
+									</svg>
 								</button>
 								${(() => {
 									if (this._showHintID === `column-header-menu-jump-to-column-${columnIndex}-${dfIndex}`) {
@@ -1029,7 +1095,13 @@ class Component extends LitElement {
 								return html`
 									<drop-down .showdropdowncontent=${this._showDescription} @drop-down:showdropdowncontentupdate=${(e: CustomEvent) => (this._showDescription = e.detail.value)}>
 										<button slot="header" class="ml-2 btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showDescription = !this._showDescription)}>
-											<iconify-icon icon="mdi:question-mark-circle" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+											<!--mdi:question-mark-circle source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+												<path
+													fill="${Theme.GetColorContent(this.color)}"
+													d="m15.07 11.25l-.9.92C13.45 12.89 13 13.5 13 15h-2v-.5c0-1.11.45-2.11 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41a2 2 0 0 0-2-2a2 2 0 0 0-2 2H8a4 4 0 0 1 4-4a4 4 0 0 1 4 4a3.2 3.2 0 0 1-.93 2.25M13 19h-2v-2h2M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10c0-5.53-4.5-10-10-10"
+												/>
+											</svg>
 										</button>
 										<div
 											slot="content"
@@ -1064,7 +1136,8 @@ class Component extends LitElement {
 											this._currentOpenDropdownID = this._currentOpenDropdownID === 'header-menu-view-columns' ? '' : 'header-menu-view-columns'
 										}}
 									>
-										<iconify-icon icon="mdi:format-columns" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										<!--mdi:format-columns source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="M3 3h8v2H3zm10 0h8v2h-8zM3 7h8v2H3zm10 0h8v2h-8zM3 11h8v2H3zm10 0h8v2h-8zM3 15h8v2H3zm10 0h8v2h-8zM3 19h8v2H3zm10 0h8v2h-8z" /></svg>
 									</button>
 									${(() => {
 										if (this._showHintID === 'header-menu-view-columns') {
@@ -1095,7 +1168,8 @@ class Component extends LitElement {
 
 											return html`
 												<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._decreaseColumnUnlockedStartIndex}>
-													<iconify-icon icon="mdi:rewind" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+													<!--mdi:rewind source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="m11.5 12l8.5 6V6m-9 12V6l-8.5 6z" /></svg>
 												</button>
 											`
 										})()}
@@ -1109,7 +1183,8 @@ class Component extends LitElement {
 
 											return html`
 												<button class="join-item btn btn-md h-full ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}" @click=${this._increaseColumnUnlockedEndIndex}>
-													<iconify-icon icon="mdi:fast-forward" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+													<!--mdi:fast-forward source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="M7.41 18.41L6 17l6-6l6 6l-1.41 1.41L12 13.83zm0-6L6 11l6-6l6 6l-1.41 1.41L12 7.83z" /></svg>
 												</button>
 											`
 										})()}
@@ -1129,7 +1204,13 @@ class Component extends LitElement {
 												class="join-item btn ${this._rowNumberColumnMenuShowLockedColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
 												@click=${() => (this._rowNumberColumnMenuShowLockedColumnsOnly = !this._rowNumberColumnMenuShowLockedColumnsOnly)}
 											>
-												<iconify-icon icon="mdi:lock" style="color:${this._rowNumberColumnMenuShowLockedColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+												<!--mdi:lock source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path
+														fill="${this._rowNumberColumnMenuShowLockedColumnsOnly ? Theme.GetColorContent(this.color) : this.color}"
+														d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3"
+													/>
+												</svg>
 											</button>
 											${(() => {
 												if (this._showHintID === 'header-menu-search-show-frozen-columns-only') {
@@ -1148,7 +1229,13 @@ class Component extends LitElement {
 												class="join-item btn ${this._rowNumberColumnMenuShowHiddenColumnsOnly ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'}"
 												@click=${() => (this._rowNumberColumnMenuShowHiddenColumnsOnly = !this._rowNumberColumnMenuShowHiddenColumnsOnly)}
 											>
-												<iconify-icon icon="mdi:eye-off" style="color:${this._rowNumberColumnMenuShowHiddenColumnsOnly ? Theme.GetColorContent(this.color) : this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+												<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path
+														fill="${this._rowNumberColumnMenuShowHiddenColumnsOnly ? Theme.GetColorContent(this.color) : this.color}"
+														d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+													/>
+												</svg>
 											</button>
 											${(() => {
 												if (this._showHintID === 'header-menu-search-show-hidden-columns-only') {
@@ -1184,13 +1271,23 @@ class Component extends LitElement {
 								>
 									<div class="flex flex-col justify-center">
 										<div class="flex self-center">
-											<iconify-icon icon="mdi:code-json" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+											<!--mdi:code-json source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+												<path
+													fill="${Theme.GetColorContent(this.color)}"
+													d="M5 3h2v2H5v5a2 2 0 0 1-2 2a2 2 0 0 1 2 2v5h2v2H5c-1.07-.27-2-.9-2-2v-4a2 2 0 0 0-2-2H0v-2h1a2 2 0 0 0 2-2V5a2 2 0 0 1 2-2m14 0a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h1v2h-1a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-2v-2h2v-5a2 2 0 0 1 2-2a2 2 0 0 1-2-2V5h-2V3zm-7 12a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m-4 0a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m8 0a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1"
+												/>
+											</svg>
 											${(() => {
 												if (this._viewJsonOutput) {
-													return html` <iconify-icon icon="mdi:close-circle" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('10')} height=${Misc.IconifySize('10')}></iconify-icon> `
-												} else {
-													return nothing
+													return html`
+														<!--mdi:close-circle source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24">
+															<path fill="${Theme.GetColorContent(this.color)}" d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
+														</svg>
+													`
 												}
+												return nothing
 											})()}
 										</div>
 									</div>
@@ -1225,7 +1322,23 @@ class Component extends LitElement {
 										this.updatemetadatamodel(this.group)
 									}}
 								>
-									<iconify-icon icon=${this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE ? 'mdi:form' : 'mdi:table-large'} style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+									${(() => {
+										if (this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE) {
+											return html`
+												<!--mdi:form source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24">
+													<path fill="${Theme.GetColorContent(this.color)}" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2M7 7h2v2H7zm0 4h2v2H7zm0 4h2v2H7zm10 2h-6v-2h6zm0-4h-6v-2h6zm0-4h-6V7h6z" />
+												</svg>
+											`
+										}
+
+										return html`
+											<!--mdi:table-large source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24">
+												<path fill="${Theme.GetColorContent(this.color)}" d="M4 3h16a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m0 4v3h4V7zm6 0v3h4V7zm10 3V7h-4v3zM4 12v3h4v-3zm0 8h4v-3H4zm6-8v3h4v-3zm0 8h4v-3h-4zm10 0v-3h-4v3zm0-8h-4v3h4z" />
+											</svg>
+										`
+									})()}
 								</button>
 								${(() => {
 									if (this._showHintID === 'header-menu-switch-data-input-view') {
@@ -1253,7 +1366,8 @@ class Component extends LitElement {
 										this.deletedata(this.group[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
 									}}
 								>
-									<iconify-icon icon="mdi:delete-empty" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+									<!--mdi:delete-empty source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="30" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="m20.37 8.91l-1 1.73l-12.13-7l1-1.73l3.04 1.75l1.36-.37l4.33 2.5l.37 1.37zM6 19V7h5.07L18 11v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2" /></svg>
 								</button>
 								${(() => {
 									if (this._showHintID === 'header-menu-delete-data') {
@@ -1285,8 +1399,15 @@ class Component extends LitElement {
 								>
 									<div class="flex flex-col justify-center">
 										<div class="flex self-center">
-											<iconify-icon icon="mdi:content-copy" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-											<iconify-icon icon="mdi:select" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('15')}></iconify-icon>
+											<!--mdi:content-copy source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z" /></svg>
+											<!--mdi:select source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 24 24">
+												<path
+													fill="${Theme.GetColorContent(this.color)}"
+													d="M4 3h1v2H3V4a1 1 0 0 1 1-1m16 0a1 1 0 0 1 1 1v1h-2V3zm-5 2V3h2v2zm-4 0V3h2v2zM7 5V3h2v2zm14 15a1 1 0 0 1-1 1h-1v-2h2zm-6 1v-2h2v2zm-4 0v-2h2v2zm-4 0v-2h2v2zm-3 0a1 1 0 0 1-1-1v-1h2v2zm-1-6h2v2H3zm18 0v2h-2v-2zM3 11h2v2H3zm18 0v2h-2v-2zM3 7h2v2H3zm18 0v2h-2V7z"
+												/>
+											</svg>
 										</div>
 									</div>
 								</button>
@@ -1301,7 +1422,7 @@ class Component extends LitElement {
 														: 'bg-accent text-accent-content'}"
 											>
 												<span>select any column </span>
-												'<iconify-icon icon="mdi:square-medium-outline" style="color:${this.color};" width=${Misc.IconifySize('18')} height=${Misc.IconifySize('18')}></iconify-icon>'
+												'<!--mdi:square-medium-outline source: https://icon-sets.iconify.design--><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="${this.color}" d="M14 10v4h-4v-4zm2-2H8v8h8z" /></svg>'
 												<span> to paste the data</span>
 											</div>
 										</div> `
@@ -1355,8 +1476,15 @@ class Component extends LitElement {
 								>
 									<div class="flex flex-col justify-center">
 										<div class="flex self-center">
-											<iconify-icon icon="mdi:delete" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-											<iconify-icon icon="mdi:select" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('15')}></iconify-icon>
+											<!--mdi:delete source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
+											<!--mdi:select source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 24 24">
+												<path
+													fill="${Theme.GetColorContent(this.color)}"
+													d="M4 3h1v2H3V4a1 1 0 0 1 1-1m16 0a1 1 0 0 1 1 1v1h-2V3zm-5 2V3h2v2zm-4 0V3h2v2zM7 5V3h2v2zm14 15a1 1 0 0 1-1 1h-1v-2h2zm-6 1v-2h2v2zm-4 0v-2h2v2zm-4 0v-2h2v2zm-3 0a1 1 0 0 1-1-1v-1h2v2zm-1-6h2v2H3zm18 0v2h-2v-2zM3 11h2v2H3zm18 0v2h-2v-2zM3 7h2v2H3zm18 0v2h-2V7z"
+												/>
+											</svg>
 										</div>
 									</div>
 								</button>
@@ -1420,8 +1548,28 @@ class Component extends LitElement {
 								>
 									<div class="flex flex-col justify-center">
 										<div class="flex self-center">
-											<iconify-icon icon="foundation:page-export-csv" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
-											<iconify-icon icon="mdi:select" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('15')}></iconify-icon>
+											<!--foundation:page-export-csv source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 100 100">
+												<path
+													fill="${Theme.GetColorContent(this.color)}"
+													d="M94.284 65.553L75.825 52.411a1.25 1.25 0 0 0-1.312-.093c-.424.218-.684.694-.685 1.173l.009 6.221H57.231c-.706 0-1.391.497-1.391 1.204v11.442c0 .707.685 1.194 1.391 1.194h16.774v6.27c0 .478.184.917.609 1.136s.853.182 1.242-.097l18.432-13.228c.335-.239.477-.626.477-1.038v-.002c0-.414-.144-.8-.481-1.04"
+												/>
+												<path
+													fill="${Theme.GetColorContent(this.color)}"
+													d="M64.06 78.553h-6.49a1.73 1.73 0 0 0-1.73 1.73h-.007v3.01H15.191V36.16h17.723a1.73 1.73 0 0 0 1.73-1.73V16.707h21.188v36.356h.011a1.73 1.73 0 0 0 1.726 1.691h6.49c.943 0 1.705-.754 1.726-1.691h.004V12.5h-.005V8.48a1.73 1.73 0 0 0-1.73-1.73h-32.87L5.235 32.7v58.819c0 .956.774 1.73 1.73 1.73h57.089a1.73 1.73 0 0 0 1.73-1.73v-2.448h.005v-8.79a1.73 1.73 0 0 0-1.729-1.728"
+												/>
+												<path
+													fill="${Theme.GetColorContent(this.color)}"
+													d="M26.18 64.173c.831 0 1.55.623 1.786 1.342l2.408-1.121c-.553-1.273-1.771-2.685-4.193-2.685c-2.893 0-5.079 1.924-5.079 4.775c0 2.837 2.187 4.774 5.079 4.774c2.422 0 3.654-1.467 4.193-2.699l-2.408-1.107c-.235.719-.955 1.342-1.786 1.342c-1.342 0-2.242-1.024-2.242-2.311s.899-2.31 2.242-2.31m9.476 4.734a4.3 4.3 0 0 1-2.976-1.19l-1.453 2.076c.982.886 2.325 1.467 4.291 1.467c2.477 0 3.986-1.176 3.986-3.211c0-3.432-5.135-2.685-5.135-3.557c0-.235.152-.415.706-.415c.872 0 1.91.304 2.712.913l1.495-1.979c-1.052-.858-2.408-1.287-3.917-1.287c-2.533 0-3.833 1.495-3.833 3.059c0 3.64 5.148 2.74 5.148 3.626c0 .359-.498.498-1.024.498m7.615-7.045h-3.169l3.404 9.231h3.516l3.404-9.231h-3.169l-1.993 6.214z"
+												/>
+											</svg>
+											<!--mdi:select source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 24 24">
+												<path
+													fill="${Theme.GetColorContent(this.color)}"
+													d="M4 3h1v2H3V4a1 1 0 0 1 1-1m16 0a1 1 0 0 1 1 1v1h-2V3zm-5 2V3h2v2zm-4 0V3h2v2zM7 5V3h2v2zm14 15a1 1 0 0 1-1 1h-1v-2h2zm-6 1v-2h2v2zm-4 0v-2h2v2zm-4 0v-2h2v2zm-3 0a1 1 0 0 1-1-1v-1h2v2zm-1-6h2v2H3zm18 0v2h-2v-2zM3 11h2v2H3zm18 0v2h-2v-2zM3 7h2v2H3zm18 0v2h-2V7z"
+												/>
+											</svg>
 										</div>
 									</div>
 								</button>
@@ -1517,7 +1665,24 @@ class Component extends LitElement {
 												this._resetSelectedFields()
 											}}
 										>
-											<iconify-icon icon=${this._selectedrowminindex > -1 && this._selectedrowmaxindex > -1 ? 'mdi:selection-remove' : 'mdi:square-outline'} style="color:${Theme.GetNextColorA(this.color)};" width=${Misc.IconifySize('32')} height=${Misc.IconifySize('32')}></iconify-icon>
+											${(() => {
+												if (this._selectedrowminindex > -1 && this._selectedrowmaxindex > -1) {
+													return html`
+														<!--mdi:selection-remove source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+															<path
+																fill="${Theme.GetNextColorA(this.color)}"
+																d="M20 20v-3h2v3a2 2 0 0 1-2 2h-3v-2zM2 20v-3h2v3h3v2H4c-1.1 0-2-.9-2-2m8 0h4v2h-4zm4.59-12L12 10.59L9.41 8L8 9.41L10.59 12L8 14.59L9.41 16L12 13.41L14.59 16L16 14.59L13.41 12L16 9.41zM20 10h2v4h-2zM2 10h2v4H2zm0-6a2 2 0 0 1 2-2h3v2H4v3H2zm20 0v3h-2V4h-3V2h3c1.1 0 2 .9 2 2M10 2h4v2h-4z"
+															/>
+														</svg>
+													`
+												}
+
+												return html`
+													<!--mdi:square-outline source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="${Theme.GetNextColorA(this.color)}" d="M3 3h18v18H3zm2 2v14h14V5z" /></svg>
+												`
+											})()}
 										</button>
 										${(() => {
 											if (this._showHintID === 'header-menu-unselect-rows') {
@@ -1683,7 +1848,19 @@ class Component extends LitElement {
 														/>
 														<div class="min-h-full flex flex-col justify-center">
 															<div class="self-center w-fit h-fit">
-																<iconify-icon icon=${rowIndex >= this._selectedrowminindex && rowIndex <= this._selectedrowmaxindex ? 'mdi:square-medium' : 'mdi:square-medium-outline'} style="color:${this.color};" width=${Misc.IconifySize('32')} height=${Misc.IconifySize('32')}></iconify-icon>
+																${(() => {
+																	if (rowIndex >= this._selectedrowminindex && rowIndex <= this._selectedrowmaxindex) {
+																		return html`
+																			<!--mdi:square-medium source: https://icon-sets.iconify.design-->
+																			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M16 8H8v8h8z" /></svg>
+																		`
+																	}
+
+																	return html`
+																		<!--mdi:square-medium-outline source: https://icon-sets.iconify.design-->
+																		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M14 10v4h-4v-4zm2-2H8v8h8z" /></svg>
+																	`
+																})()}
 															</div>
 														</div>
 													</div>

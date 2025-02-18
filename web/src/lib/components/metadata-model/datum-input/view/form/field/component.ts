@@ -4,7 +4,6 @@ import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
 import MetadataModel from '$src/lib/metadata_model'
-import Misc from '$src/lib/miscellaneous'
 import '../../column-field/text/component'
 import '../../column-field/number/component'
 import '../../column-field/checkbox/component'
@@ -107,7 +106,10 @@ class Component extends LitElement {
 				}}
 			>
 				<button slot="header" class="btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showMenuContent = !this._showMenuContent)}>
-					<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+					<!--mdi:dots-vertical source: https://icon-sets.iconify.design-->
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+						<path fill="black" d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2" />
+					</svg>
 				</button>
 				<div slot="content" class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
 					<button
@@ -118,20 +120,31 @@ class Component extends LitElement {
 						}}
 					>
 						<div class="flex self-center">
-							<iconify-icon icon="mdi:delete-empty" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+							<!--mdi:delete-empty source: https://icon-sets.iconify.design-->
+							<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path fill="black" d="m20.37 8.91l-1 1.73l-12.13-7l1-1.73l3.04 1.75l1.36-.37l4.33 2.5l.37 1.37zM6 19V7h5.07L18 11v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2" /></svg>
 						</div>
 						<div class="self-center font-bold">delete data</div>
 					</button>
 					<button class="btn btn-ghost p-1 w-full justify-start" @click=${() => (this._viewJsonOutput = !this._viewJsonOutput)}>
 						<div class="flex flex-col justify-center">
 							<div class="flex self-center">
-								<iconify-icon icon="mdi:code-json" style="color:black;" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
+								<!--mdi:code-json source: https://icon-sets.iconify.design-->
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+									<path
+										fill="black"
+										d="M5 3h2v2H5v5a2 2 0 0 1-2 2a2 2 0 0 1 2 2v5h2v2H5c-1.07-.27-2-.9-2-2v-4a2 2 0 0 0-2-2H0v-2h1a2 2 0 0 0 2-2V5a2 2 0 0 1 2-2m14 0a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h1v2h-1a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-2v-2h2v-5a2 2 0 0 1 2-2a2 2 0 0 1-2-2V5h-2V3zm-7 12a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m-4 0a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m8 0a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1"
+									/>
+								</svg>
 								${(() => {
 									if (this._viewJsonOutput) {
-										return html` <iconify-icon icon="mdi:close-circle" style="color:black;" width=${Misc.IconifySize('10')} height=${Misc.IconifySize('10')}></iconify-icon> `
-									} else {
-										return nothing
+										return html`
+											<!--mdi:close-circle source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24">
+												<path fill="black" d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
+											</svg>
+										`
 									}
+									return nothing
 								})()}
 							</div>
 						</div>
@@ -147,7 +160,8 @@ class Component extends LitElement {
 									}}
 								>
 									<div class="flex self-center">
-										<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										<!--mdi:content-copy source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z" /></svg>
 									</div>
 									<div class="self-center font-bold">copy data</div>
 								</button>
@@ -158,7 +172,13 @@ class Component extends LitElement {
 									}}
 								>
 									<div class="flex self-center">
-										<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										<!--mdi:content-cut source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<path
+												fill="black"
+												d="m19 3l-6 6l2 2l7-7V3m-10 9.5a.5.5 0 0 1-.5-.5a.5.5 0 0 1 .5-.5a.5.5 0 0 1 .5.5a.5.5 0 0 1-.5.5M6 20a2 2 0 0 1-2-2a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2M6 8a2 2 0 0 1-2-2a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2m3.64-.36c.23-.5.36-1.05.36-1.64a4 4 0 0 0-4-4a4 4 0 0 0-4 4a4 4 0 0 0 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14a4 4 0 0 0-4 4a4 4 0 0 0 4 4a4 4 0 0 0 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1z"
+											/>
+										</svg>
 									</div>
 									<div class="self-center font-bold">cut data</div>
 								</button>
@@ -181,7 +201,13 @@ class Component extends LitElement {
 										this._showDescription = !this._showDescription
 									}}
 								>
-									<iconify-icon icon="mdi:question-mark-circle" style="color: black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('28')}></iconify-icon>
+									<!--mdi:question-mark-circle source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
+										<path
+											fill="black"
+											d="m15.07 11.25l-.9.92C13.45 12.89 13 13.5 13 15h-2v-.5c0-1.11.45-2.11 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41a2 2 0 0 0-2-2a2 2 0 0 0-2 2H8a4 4 0 0 1 4-4a4 4 0 0 1 4 4a3.2 3.2 0 0 1-.93 2.25M13 19h-2v-2h2M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10c0-5.53-4.5-10-10-10"
+										/>
+									</svg>
 								</button>
 							`
 						}
@@ -197,7 +223,10 @@ class Component extends LitElement {
 										this.pastefieldgroupdata(this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
 									}}
 								>
-									<iconify-icon icon="mdi:content-paste" style="color:black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('28')}></iconify-icon>
+									<!--mdi:content-paste source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
+										<path fill="black" d="M19 20H5V4h2v3h10V4h2m-7-2a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m7 0h-4.18C14.4.84 13.3 0 12 0S9.6.84 9.18 2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2" />
+									</svg>
 								</button>
 							`
 						} else {
@@ -224,7 +253,8 @@ class Component extends LitElement {
 									}}
 									.disabled=${typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && this.field[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= this.field[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
 								>
-									<iconify-icon icon="mdi:plus-circle" style="color:black;" width=${Misc.IconifySize('28')} height=${Misc.IconifySize('28')}></iconify-icon>
+									<!--mdi:plus-circle source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path fill="black" d="M17 13h-4v4h-2v-4H7v-2h4V7h2v4h4m-5-9A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2" /></svg>
 								</button>
 							`
 						} else {
@@ -284,12 +314,13 @@ class Component extends LitElement {
 													this.pastefieldgroupdata(`${this.field[MetadataModel.FgProperties.FIELD_GROUP_KEY]}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`, [...this.arrayindexplaceholders, rowIndex])
 												}}
 											>
-												<iconify-icon
-													icon="mdi:content-paste"
-													style="color:${this.color === Theme.Color.ACCENT ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT};"
-													width=${Misc.IconifySize()}
-													height=${Misc.IconifySize()}
-												></iconify-icon>
+												<!--mdi:content-paste source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path
+														fill="${this.color === Theme.Color.ACCENT ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.PRIMARY ? Theme.Color.SECONDARY_CONTENT : Theme.Color.ACCENT_CONTENT}"
+														d="M19 20H5V4h2v3h10V4h2m-7-2a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m7 0h-4.18C14.4.84 13.3 0 12 0S9.6.84 9.18 2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2"
+													/>
+												</svg>
 											</button>
 										`
 									} else {
@@ -309,7 +340,10 @@ class Component extends LitElement {
 											this._showIndividualFieldMenuContentID = this._showIndividualFieldMenuContentID === `${rowIndex}` ? '' : `${rowIndex}`
 										}}
 									>
-										<iconify-icon icon="mdi:dots-vertical" style="color: black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										<!--mdi:dots-vertical source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<path fill="black" d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2" />
+										</svg>
 									</button>
 									<div slot="content" class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
 										<button
@@ -320,7 +354,8 @@ class Component extends LitElement {
 										>
 											<div class="self-center font-bold">Copy field data</div>
 											<div class="flex self-center">
-												<iconify-icon icon="mdi:content-copy" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+												<!--mdi:content-copy source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z" /></svg>
 											</div>
 										</button>
 										<button
@@ -331,7 +366,13 @@ class Component extends LitElement {
 										>
 											<div class="self-center font-bold">Cut field data</div>
 											<div class="flex self-center">
-												<iconify-icon icon="mdi:content-cut" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+												<!--mdi:content-cut source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path
+														fill="black"
+														d="m19 3l-6 6l2 2l7-7V3m-10 9.5a.5.5 0 0 1-.5-.5a.5.5 0 0 1 .5-.5a.5.5 0 0 1 .5.5a.5.5 0 0 1-.5.5M6 20a2 2 0 0 1-2-2a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2M6 8a2 2 0 0 1-2-2a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2m3.64-.36c.23-.5.36-1.05.36-1.64a4 4 0 0 0-4-4a4 4 0 0 0-4 4a4 4 0 0 0 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14a4 4 0 0 0-4 4a4 4 0 0 0 4 4a4 4 0 0 0 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1z"
+													/>
+												</svg>
 											</div>
 										</button>
 										<button
@@ -360,7 +401,8 @@ class Component extends LitElement {
 										>
 											<div class="self-center font-bold">Delete field data</div>
 											<div class="flex self-center">
-												<iconify-icon icon="mdi:delete" style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+												<!--mdi:delete source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 											</div>
 										</button>
 									</div>

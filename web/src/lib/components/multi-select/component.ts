@@ -1,9 +1,7 @@
 import { LitElement, html, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import 'iconify-icon'
 import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Misc from '$src/lib/miscellaneous'
 import Theme from '$src/lib/theme'
 import '$src/lib/components/vertical-flex-scroll/component'
 import '$src/lib/components/drop-down/component'
@@ -93,12 +91,13 @@ class Component extends LitElement {
 															)
 														}}
 													>
-														<iconify-icon
-															icon="mdi:close-thick"
-															style="color:${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.ACCENT ? Theme.Color.ACCENT_CONTENT : 'black'};"
-															width=${Misc.IconifySize('20')}
-															height=${Misc.IconifySize('20')}
-														></iconify-icon>
+														<!--mdi:close-thick source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+															<path
+																fill="${this.color === Theme.Color.PRIMARY ? Theme.Color.PRIMARY_CONTENT : this.color === Theme.Color.SECONDARY ? Theme.Color.SECONDARY_CONTENT : this.color === Theme.Color.ACCENT ? Theme.Color.ACCENT_CONTENT : 'black'}"
+																d="M20 6.91L17.09 4L12 9.09L6.91 4L4 6.91L9.09 12L4 17.09L6.91 20L12 14.91L17.09 20L20 17.09L14.91 12z"
+															/>
+														</svg>
 													</button>
 												`
 											}
@@ -145,7 +144,10 @@ class Component extends LitElement {
 								}
 							}}
 						>
-							<iconify-icon icon="mdi:close" style="color:${typeof this.color !== 'undefined' ? this.color : 'black'};" width=${Misc.IconifySize('25')} height=${Misc.IconifySize('25')}></iconify-icon>
+							<!--mdi:close source: https://icon-sets.iconify.design-->
+							<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24">
+								<path fill="${typeof this.color !== 'undefined' ? this.color : 'black'}" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z" />
+							</svg>	
 						</button>
 						${(() => {
 							if (!this.disabled) {
@@ -170,7 +172,8 @@ class Component extends LitElement {
 											)
 										}}
 									>
-										<iconify-icon icon="mdi:delete" style="color:${typeof this.color !== 'undefined' ? this.color : 'black'};" width=${Misc.IconifySize('25')} height=${Misc.IconifySize('25')}></iconify-icon>
+										<!--mdi:delete source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="${typeof this.color !== 'undefined' ? this.color : 'black'}" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 									</button>
 								`
 							} else {

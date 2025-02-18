@@ -3,8 +3,6 @@ import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
-import 'iconify-icon'
-import Misc from '$src/lib/miscellaneous'
 import Json from '$src/lib/json'
 import MetadataModel from '$src/lib/metadata_model'
 import './field-group/component'
@@ -154,7 +152,10 @@ class Component extends LitElement {
 						@mouseover=${() => (this._showHintID = 'tabs-remove')}
 						@mouseout=${() => (this._showHintID = '')}
 					>
-						<iconify-icon icon="mdi:tab-remove" style="color: ${Theme.GetColorContent(this.startcolor)};" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+						<!--mdi:tab-remove source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="32" height="30" viewBox="0 0 24 24">
+							<path fill="${Theme.GetColorContent(this.startcolor)}" d="m7.46 11.88l1.42-1.42L11 12.59l2.12-2.13l1.42 1.42L12.41 14l2.13 2.12l-1.42 1.42L11 15.41l-2.12 2.13l-1.42-1.42L9.59 14zM3 3h18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m0 2v14h18V9h-8V5z" />
+						</svg>
 					</button>
 					${(() => {
 						if (this._showHintID === 'tabs-remove') {
@@ -180,7 +181,19 @@ class Component extends LitElement {
 							this._pinTabs = !this._pinTabs
 						}}
 					>
-						<iconify-icon icon=${this._pinTabs ? 'mdi:pin' : 'mdi:pin-off'} style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+						${(() => {
+							if (this._pinTabs) {
+								return html`
+									<!--mdi:pin source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path fill="black" d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2z" /></svg>
+								`
+							}
+
+							return html`
+								<!--mdi:pin-off source: https://icon-sets.iconify.design-->
+								<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path fill="black" d="M2 5.27L3.28 4L20 20.72L18.73 22l-5.93-5.93V22h-1.6v-6H6v-2l2-2v-.73zM16 12l2 2v2h-.18L8 6.18V4H7V2h10v2h-1z" /></svg>
+							`
+						})()}
 						${(() => {
 							if (this._expandTabSection || this._pinTabs) {
 								return html`<div>${this._pinTabs ? 'Unpin' : 'Pin'} tab panel</div>`
@@ -229,7 +242,10 @@ class Component extends LitElement {
 															}
 														}}
 													>
-														<iconify-icon icon="mdi:close-thick" style="color: ${this._currentTabIndex === index ? Theme.GetColorContent(this.startcolor) : 'black'};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+														<!--mdi:close-thick source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+															<path fill="${this._currentTabIndex === index ? Theme.GetColorContent(this.startcolor) : 'black'}" d="M20 6.91L17.09 4L12 9.09L6.91 4L4 6.91L9.09 12L4 17.09L6.91 20L12 14.91L17.09 20L20 17.09L14.91 12z" />
+														</svg>
 													</button>
 												`
 											}
@@ -249,7 +265,8 @@ class Component extends LitElement {
 							this._updateCurrentTabIndex(this.queryconditions.length - 1)
 						}}
 					>
-						<iconify-icon icon="mdi:tab-add" style="color: black;" width=${Misc.IconifySize('30')} height=${Misc.IconifySize('32')}></iconify-icon>
+						<!--mdi:tab-add source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path fill="black" d="M3 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 2h10v4h8v10H3zm7 5v3H7v2h3v3h2v-3h3v-2h-3v-3z" /></svg>
 						${(() => {
 							if (this._expandTabSection || this._pinTabs) {
 								return html`<div>New query condition</div>`
@@ -274,7 +291,10 @@ class Component extends LitElement {
 												this._selectedFieldGroupQueryConditionIndex = -1
 											}}
 										>
-											<iconify-icon icon="mdi:close-thick" style="color: ${this.startcolor};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+											<!--mdi:close-thick source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+												<path fill="${this.startcolor}" d="M20 6.91L17.09 4L12 9.09L6.91 4L4 6.91L9.09 12L4 17.09L6.91 20L12 14.91L17.09 20L20 17.09L14.91 12z" />
+											</svg>
 										</button>
 									</header>
 									<metadata-model-view-query-panel-field-group-query-condition

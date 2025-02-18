@@ -1,6 +1,5 @@
 import Json from '$src/lib/json'
 import MetadataModel from '$src/lib/metadata_model'
-import Misc from '$src/lib/miscellaneous'
 import Theme from '$src/lib/theme'
 import { LitElement, unsafeCSS, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
@@ -57,7 +56,26 @@ class Component extends LitElement {
 					<header class="flex justify-between">
 						<div class="h-fit self-center font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">General Properties</div>
 						<button class="btn btn-ghost w-fit h-fit min-h-fit p-0" @click=${() => (this._showFieldGroupGeneralProperties = !this._showFieldGroupGeneralProperties)}>
-							<iconify-icon icon=${this._showFieldGroupGeneralProperties ? 'mdi:eye' : 'mdi:eye-off'} style="color:${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+							${(() => {
+								if (this._showFieldGroupGeneralProperties) {
+									return html`
+										<!--mdi:eye source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<path fill="${this.color}" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5" />
+										</svg>
+									`
+								}
+
+								return html`
+									<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+										<path
+											fill="${this.color}"
+											d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+										/>
+									</svg>
+								`
+							})()}
 						</button>
 					</header>
 					${(() => {
@@ -83,12 +101,36 @@ class Component extends LitElement {
 																	}
 																}}
 															>
-																<iconify-icon
-																	icon=${this._cycleFieldGroupKeyViews === 0 ? 'mdi:code-array' : this._cycleFieldGroupKeyViews === 1 ? 'mdi:code-json' : 'mdi:transit-connection-horizontal'}
-																	style="color:${this.color};"
-																	width=${Misc.IconifySize()}
-																	height=${Misc.IconifySize()}
-																></iconify-icon>
+																${(() => {
+																	if (this._cycleFieldGroupKeyViews === 0) {
+																		return html`
+																			<!--mdi:code-array source: https://icon-sets.iconify.design-->
+																			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm3 1v12h4v-2H8V8h2V6zm10 10h-2v2h4V6h-4v2h2z" /></svg>
+																		`
+																	}
+
+																	if (this._cycleFieldGroupKeyViews === 1) {
+																		return html`
+																			<!--mdi:code-json source: https://icon-sets.iconify.design-->
+																			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																				<path
+																					fill="${this.color}"
+																					d="M5 3h2v2H5v5a2 2 0 0 1-2 2a2 2 0 0 1 2 2v5h2v2H5c-1.07-.27-2-.9-2-2v-4a2 2 0 0 0-2-2H0v-2h1a2 2 0 0 0 2-2V5a2 2 0 0 1 2-2m14 0a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h1v2h-1a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-2v-2h2v-5a2 2 0 0 1 2-2a2 2 0 0 1-2-2V5h-2V3zm-7 12a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m-4 0a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m8 0a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1"
+																				/>
+																			</svg>
+																		`
+																	}
+
+																	return html`
+																		<!--mdi:transit-connection-horizontal source: https://icon-sets.iconify.design-->
+																		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																			<path
+																				fill="${this.color}"
+																				d="M12 9c-1.3 0-2.4.8-2.8 2H6.8C6.4 9.8 5.3 9 4 9c-1.7 0-3 1.3-3 3s1.3 3 3 3c1.3 0 2.4-.8 2.8-2h2.4c.4 1.2 1.5 2 2.8 2s2.4-.8 2.8-2h2.4c.4 1.2 1.5 2 2.8 2c1.7 0 3-1.3 3-3s-1.3-3-3-3c-1.3 0-2.4.8-2.8 2h-2.4c-.4-1.2-1.5-2-2.8-2m-9 3c0-.6.4-1 1-1s1 .4 1 1s-.4 1-1 1s-1-.4-1-1m18 0c0 .6-.4 1-1 1s-1-.4-1-1s.4-1 1-1s1 .4 1 1"
+																			/>
+																		</svg>
+																	`
+																})()}
 															</button>
 															<span class="text-wrap break-words self-center">
 																${(() => {
@@ -209,7 +251,10 @@ class Component extends LitElement {
 											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group is Primary Key</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-is-primary-key')} @mouseout=${() => (this._showHintID = '')}>
-													<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+													</svg>
 												</div>
 											</span>
 											<input
@@ -239,7 +284,26 @@ class Component extends LitElement {
 								<header class="flex justify-between">
 									<div class="h-fit self-center font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">2D Field Reposition Properties</div>
 									<button class="btn btn-ghost w-fit h-fit min-h-fit p-0" @click=${() => (this._show2DRepositionFields = !this._show2DRepositionFields)}>
-										<iconify-icon icon=${this._show2DRepositionFields ? 'mdi:eye' : 'mdi:eye-off'} style="color:${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										${(() => {
+											if (this._show2DRepositionFields) {
+												return html`
+													<!--mdi:eye source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5" />
+													</svg>
+												`
+											}
+
+											return html`
+												<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path
+														fill="${this.color}"
+														d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+													/>
+												</svg>
+											`
+										})()}
 									</button>
 								</header>
 								${(() => {
@@ -377,7 +441,26 @@ class Component extends LitElement {
 					<header class="flex justify-between">
 						<div class="h-fit self-center font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Input, View, and Filter Properties</div>
 						<button class="btn btn-ghost w-fit h-fit min-h-fit p-0" @click=${() => (this._showFieldGroupInputFilterView = !this._showFieldGroupInputFilterView)}>
-							<iconify-icon icon=${this._showFieldGroupInputFilterView ? 'mdi:eye' : 'mdi:eye-off'} style="color:${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+							${(() => {
+								if (this._showFieldGroupInputFilterView) {
+									return html`
+										<!--mdi:eye source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<path fill="${this.color}" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5" />
+										</svg>
+									`
+								}
+
+								return html`
+									<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+										<path
+											fill="${this.color}"
+											d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+										/>
+									</svg>
+								`
+							})()}
 						</button>
 					</header>
 					${(() => {
@@ -408,7 +491,10 @@ class Component extends LitElement {
 											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group Disable User Input</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-input-disable')} @mouseout=${() => (this._showHintID = '')}>
-													<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+													</svg>
 												</div>
 											</span>
 											<input
@@ -448,7 +534,10 @@ class Component extends LitElement {
 											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group Disable View</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-disable')} @mouseout=${() => (this._showHintID = '')}>
-													<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+													</svg>
 												</div>
 											</span>
 											<input
@@ -489,7 +578,10 @@ class Component extends LitElement {
 											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group view values in separate columns</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns')} @mouseout=${() => (this._showHintID = '')}>
-													<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+													</svg>
 												</div>
 											</span>
 											<input
@@ -529,7 +621,10 @@ class Component extends LitElement {
 											<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 												<span class="h-fit self-center break-words">Field Group view max columns in separate columns</span>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-max-values-in-separate-columns')} @mouseout=${() => (this._showHintID = '')}>
-													<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+													</svg>
 												</div>
 											</span>
 											<input
@@ -575,7 +670,10 @@ class Component extends LitElement {
 											<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 												<span class="h-fit self-center break-words">Field view header format</span>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns-header-format')} @mouseout=${() => (this._showHintID = '')}>
-													<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+													</svg>
 												</div>
 											</span>
 											<input
@@ -620,7 +718,10 @@ class Component extends LitElement {
 														<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 															<div class="h-fit self-center">Group default view as table in 2D</div>
 															<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-as-table-in-2d')} @mouseout=${() => (this._showHintID = '')}>
-																<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+																<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+																<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																	<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+																</svg>
 															</div>
 														</span>
 														<input
@@ -660,7 +761,10 @@ class Component extends LitElement {
 														<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 															<div class="h-fit self-center">Group filter add full text search box</div>
 															<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-filter-add-full-text-search-box')} @mouseout=${() => (this._showHintID = '')}>
-																<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+																<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+																<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																	<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+																</svg>
 															</div>
 														</span>
 														<input
@@ -704,7 +808,10 @@ class Component extends LitElement {
 											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group Disable Filter</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-filter-disable')} @mouseout=${() => (this._showHintID = '')}>
-													<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+													</svg>
 												</div>
 											</span>
 											<input
@@ -731,7 +838,26 @@ class Component extends LitElement {
 					<header class="flex justify-between">
 						<div class="h-fit self-center font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Database Properties</div>
 						<button class="btn btn-ghost w-fit h-fit min-h-fit p-0" @click=${() => (this._showDatabaseProperties = !this._showDatabaseProperties)}>
-							<iconify-icon icon=${this._showDatabaseProperties ? 'mdi:eye' : 'mdi:eye-off'} style="color:${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+							${(() => {
+								if (this._showDatabaseProperties) {
+									return html`
+										<!--mdi:eye source: https://icon-sets.iconify.design-->
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<path fill="${this.color}" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5" />
+										</svg>
+									`
+								}
+
+								return html`
+									<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+										<path
+											fill="${this.color}"
+											d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+										/>
+									</svg>
+								`
+							})()}
 						</button>
 					</header>
 					${(() => {
@@ -760,7 +886,10 @@ class Component extends LitElement {
 										<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 											<span class="h-fit self-center break-words">Database table/collection unique id</span>
 											<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-table-collection-uid')} @mouseout=${() => (this._showHintID = '')}>
-												<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+												</svg>
 											</div>
 										</span>
 										<input
@@ -804,7 +933,10 @@ class Component extends LitElement {
 													<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 														<span class="h-fit self-center break-words">Database Table/Collection name</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-group-table-collection-name')} @mouseout=${() => (this._showHintID = '')}>
-															<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
 														</div>
 													</span>
 													<input
@@ -848,7 +980,10 @@ class Component extends LitElement {
 												<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 													<span class="h-fit self-center break-words">Database column/field name</span>
 													<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-field-column-name')} @mouseout=${() => (this._showHintID = '')}>
-														<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+														<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+															<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+														</svg>
 													</div>
 												</span>
 												<input
@@ -891,7 +1026,10 @@ class Component extends LitElement {
 										<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 											<div class="h-fit self-center">Database Skip Data Extraction</div>
 											<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'd-skip-data-extraction')} @mouseout=${() => (this._showHintID = '')}>
-												<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+												</svg>
 											</div>
 										</span>
 										<input
@@ -920,7 +1058,26 @@ class Component extends LitElement {
 								<header class="flex justify-between">
 									<div class="h-fit self-center font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Field Properties</div>
 									<button class="btn btn-ghost w-fit h-fit min-h-fit p-0" @click=${() => (this._showFieldProperties = !this._showFieldProperties)}>
-										<iconify-icon icon=${this._showFieldProperties ? 'mdi:eye' : 'mdi:eye-off'} style="color:${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+										${(() => {
+											if (this._showFieldProperties) {
+												return html`
+													<!--mdi:eye source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5" />
+													</svg>
+												`
+											}
+
+											return html`
+												<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path
+														fill="${this.color}"
+														d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+													/>
+												</svg>
+											`
+										})()}
 									</button>
 								</header>
 								${(() => {
@@ -950,7 +1107,10 @@ class Component extends LitElement {
 													<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 														<span class="h-fit self-center break-words">Field input placeholder</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'f-input-placeholder')} @mouseout=${() => (this._showHintID = '')}>
-															<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
 														</div>
 													</span>
 													<input
@@ -1112,7 +1272,10 @@ class Component extends LitElement {
 																		}}
 																		.disabled=${!Array.isArray(this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS]) || this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS].length === 0}
 																	>
-																		<iconify-icon icon="mdi:download-circle" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																		<!--mdi:download-circle source: https://icon-sets.iconify.design-->
+																		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																			<path fill="${Theme.GetColorContent(this.color)}" d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12S6.5 2 12 2M8 17h8v-2H8zm8-7h-2.5V6h-3v4H8l4 4z" />
+																		</svg>
 																	</button>
 																	<button
 																		class="btn btn-circle btn-ghost"
@@ -1129,7 +1292,10 @@ class Component extends LitElement {
 																			}
 																		}}
 																	>
-																		<iconify-icon icon="mdi:plus-circle" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																		<!--mdi:plus-circle source: https://icon-sets.iconify.design-->
+																		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																			<path fill="${Theme.GetColorContent(this.color)}" d="M17 13h-4v4h-2v-4H7v-2h4V7h2v4h4m-5-9A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2" />
+																		</svg>
 																	</button>
 																</span>
 															</div>
@@ -1198,7 +1364,11 @@ class Component extends LitElement {
 																	return html`
 																		<div class="flex self-center w-fit">
 																			<span class="self-center">Click the</span>
-																			<iconify-icon icon="mdi:plus-circle" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon><span class="self-center">to add a new select option</span>
+																			<!--mdi:plus-circle source: https://icon-sets.iconify.design-->
+																			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																				<path fill="${this.color}" d="M17 13h-4v4h-2v-4H7v-2h4V7h2v4h4m-5-9A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2" />
+																			</svg>
+																			<span class="self-center">to add a new select option</span>
 																		</div>
 																	`
 																}
@@ -1340,7 +1510,8 @@ class Component extends LitElement {
 																								this.updatefieldgroup(this.fieldgroup)
 																							}}
 																						>
-																							<iconify-icon icon="mdi:delete" style="color: ${Theme.Color.ERROR};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																							<!--mdi:delete source: https://icon-sets.iconify.design-->
+																							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${Theme.Color.ERROR}" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 																						</button>
 																					</div>
 																				`
@@ -1390,7 +1561,10 @@ class Component extends LitElement {
 																<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 																	<span class="h-fit self-center break-words">Field checkbox value if true</span>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'f-checkbox-value-if-true')} @mouseout=${() => (this._showHintID = '')}>
-																		<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+																		<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+																		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																			<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+																		</svg>
 																	</div>
 																</span>
 																<select
@@ -1420,8 +1594,7 @@ class Component extends LitElement {
 																	</option>
 																	<option
 																		value="${MetadataModel.FieldType.TEXT}"
-																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE] === 'object' &&
-																		this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.TEXT}
+																		.selected=${typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE] === 'object' && this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.TYPE] === MetadataModel.FieldType.TEXT}
 																	>
 																		Text
 																	</option>
@@ -1481,7 +1654,10 @@ class Component extends LitElement {
 																<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 																	<span class="h-fit self-center break-words">Field checkbox value if false</span>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'f-checkbox-value-if-false')} @mouseout=${() => (this._showHintID = '')}>
-																		<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+																		<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+																		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																			<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+																		</svg>
 																	</div>
 																</span>
 																<select
@@ -1572,7 +1748,10 @@ class Component extends LitElement {
 																<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 																	<div class="h-fit self-center">Field Checkbox value is in storage</div>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-use-checkbox-values-in-storage')} @mouseout=${() => (this._showHintID = '')}>
-																		<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+																		<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+																		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																			<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+																		</svg>
 																	</div>
 																</span>
 																<input
@@ -1620,7 +1799,10 @@ class Component extends LitElement {
 																<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 																	<div class="h-fit self-center">Database add data to full text search index</div>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'd-field-add-data-to-full-text-search-index')} @mouseout=${() => (this._showHintID = '')}>
-																		<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+																		<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+																		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																			<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+																		</svg>
 																	</div>
 																</span>
 																<input

@@ -6,44 +6,28 @@ import (
 
 // Performs a deep check to see if two values are equal.
 //
+// Particulary useful for nested objects and arrays.
+//
+// Expects arguments to be presented as if converted from JSON.
+//
 // Checks the following:
 //
 //  1. The data type of each value.
 //
-//  2. Number of elements or keys in an array and map respectively.
-//
-// Expects passed values to be pointers.
-func AreValuesEqual(valueOne any, valueTwo any) (bool, error) {
-	valueOneJson, err := JSONStringifyParse(valueOne)
-	if err != nil {
-		return false, err
-	}
-
-	valueTwoJson, err := JSONStringifyParse(valueTwo)
-	if err != nil {
-		return false, err
-	}
-
-	return areValuesEqual(valueOneJson, valueTwoJson), nil
-}
-
-func areValuesEqual(currentValueOne any, currentValueTwo any) bool {
-	if currentValueOne == nil || currentValueTwo == nil {
-		return currentValueOne == currentValueTwo
-	}
-
-	if reflect.TypeOf(currentValueOne).Kind() != reflect.TypeOf(currentValueTwo).Kind() {
+//  2. Number of elements in an array and keys-values in a map.
+func AreValuesEqual(valueOne any, valueTwo any) bool {
+	if reflect.TypeOf(valueOne).Kind() != reflect.TypeOf(valueTwo).Kind() {
 		return false
 	}
 
-	switch reflect.TypeOf(currentValueOne).Kind() {
+	switch reflect.TypeOf(valueOne).Kind() {
 	case reflect.Map:
 		valueOneKeys := make([]string, 0)
-		for key := range currentValueOne.(map[string]any) {
+		for key := range valueOne.(map[string]any) {
 			valueOneKeys = append(valueOneKeys, key)
 		}
 		valueTwoKeys := make([]string, 0)
-		for key := range currentValueTwo.(map[string]any) {
+		for key := range valueTwo.(map[string]any) {
 			valueTwoKeys = append(valueTwoKeys, key)
 		}
 
@@ -56,7 +40,7 @@ func areValuesEqual(currentValueOne any, currentValueTwo any) bool {
 			for _, keyTwo := range valueTwoKeys {
 				if keyOne == keyTwo {
 					keyOneMatchesKeyTwo = true
-					if !areValuesEqual(currentValueOne.(map[string]any)[keyOne], currentValueTwo.(map[string]any)[keyTwo]) {
+					if !AreValuesEqual(valueOne.(map[string]any)[keyOne], valueTwo.(map[string]any)[keyTwo]) {
 						return false
 					}
 					break
@@ -68,16 +52,16 @@ func areValuesEqual(currentValueOne any, currentValueTwo any) bool {
 		}
 		return true
 	case reflect.Slice:
-		if len(currentValueOne.([]any)) != len(currentValueTwo.([]any)) {
+		if len(valueOne.([]any)) != len(valueTwo.([]any)) {
 			return false
 		}
-		for cvoIndex, cvovalue := range currentValueOne.([]any) {
-			if !areValuesEqual(cvovalue, currentValueTwo.([]any)[cvoIndex]) {
+		for cvoIndex, cvovalue := range valueOne.([]any) {
+			if !AreValuesEqual(cvovalue, valueTwo.([]any)[cvoIndex]) {
 				return false
 			}
 		}
 		return true
 	default:
-		return currentValueOne == currentValueTwo
+		return valueOne == valueTwo
 	}
 }

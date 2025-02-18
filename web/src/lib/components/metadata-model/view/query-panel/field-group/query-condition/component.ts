@@ -4,7 +4,6 @@ import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
 import MetadataModel from '$src/lib/metadata_model'
-import Misc from '$src/lib/miscellaneous'
 import '$src/lib/components/drop-down/component'
 import '$src/lib/components/calendar-time/component'
 import '$src/lib/components/multi-select/component'
@@ -111,7 +110,10 @@ class Component extends LitElement {
 					this.querycondition = structuredClone(this.querycondition)
 				}}
 			>
-				<iconify-icon icon="mdi:filter-plus" style="color: ${Theme.GetColorContent(this.color)}};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+				<!--mdi:filter-plus source: https://icon-sets.iconify.design-->
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+					<path fill="${Theme.GetColorContent(this.color)}" d="M12 12v7.88c.04.3-.06.62-.29.83a.996.996 0 0 1-1.41 0L8.29 18.7a.99.99 0 0 1-.29-.83V12h-.03L2.21 4.62a1 1 0 0 1 .17-1.4c.19-.14.4-.22.62-.22h14c.22 0 .43.08.62.22a1 1 0 0 1 .17 1.4L12.03 12zm3 5h3v-3h2v3h3v2h-3v3h-2v-3h-3z" />
+				</svg>
 			</button>
 		`
 	}
@@ -134,7 +136,13 @@ class Component extends LitElement {
 						slot="header"
 						class="btn ${this._currentTab === Tab.QUERY_JSON || this._currentTab === Tab.FIELD_GROUP_JSON ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'} w-fit min-w-fit h-fit min-h-fit p-1"
 					>
-						<iconify-icon icon="mdi:dots-vertical" style="color: ${this._currentTab === Tab.QUERY_JSON || this._currentTab === Tab.FIELD_GROUP_JSON ? Theme.GetColorContent(this.color) : 'black'}};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+						<!--mdi:dots-vertical source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+							<path
+								fill="${this._currentTab === Tab.QUERY_JSON || this._currentTab === Tab.FIELD_GROUP_JSON ? Theme.GetColorContent(this.color) : 'black'}"
+								d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2"
+							/>
+						</svg>
 					</button>
 					<div slot="content" class="shadow-sm shadow-gray-800 p-1 flex flex-col rounded-md bg-white space-y-1">
 						<button class="btn ${this._currentTab === Tab.QUERY_JSON ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'} break-words" @click=${() => (this._currentTab = Tab.QUERY_JSON)}>Query JSON</button>
@@ -228,7 +236,10 @@ class Component extends LitElement {
 										<div class="flex space-x-1">
 											<div class="h-fit self-center">View Disabled</div>
 											<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-disable')} @mouseout=${() => (this._showHintID = '')}>
-												<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+												</svg>
 											</div>
 										</div>
 										<input
@@ -269,7 +280,10 @@ class Component extends LitElement {
 													<span class="flex space-x-1">
 														<div class="h-fit self-center">Group default view as table in 2D</div>
 														<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-as-table-in-2d')} @mouseout=${() => (this._showHintID = '')}>
-															<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
 														</div>
 													</span>
 													<input
@@ -310,7 +324,10 @@ class Component extends LitElement {
 												<div class="flex space-x-1">
 													<div class="h-fit self-center">Sort Order</div>
 													<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-sort-order')} @mouseout=${() => (this._showHintID = '')}>
-														<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+														<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+															<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+														</svg>
 													</div>
 												</div>
 												<button
@@ -327,12 +344,26 @@ class Component extends LitElement {
 														this.handleupdatefieldgroupquerycondition(this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.querycondition)
 													}}
 												>
-													<iconify-icon
-														icon=${this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === true ? 'mdi:sort-ascending' : this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === false ? 'mdi:sort-descending' : 'mdi:do-not-enter'}
-														style="color: ${this.color};"
-														width=${Misc.IconifySize()}
-														height=${Misc.IconifySize()}
-													></iconify-icon>
+													${(() => {
+														if (this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === true) {
+															return html`
+																<!--mdi:sort-ascending source: https://icon-sets.iconify.design-->
+																<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M19 17h3l-4 4l-4-4h3V3h2M2 17h10v2H2M6 5v2H2V5m0 6h7v2H2z" /></svg>
+															`
+														}
+
+														if (this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === false) {
+															return html`
+																<!--mdi:sort-descending source: https://icon-sets.iconify.design-->
+																<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M19 7h3l-4-4l-4 4h3v14h2M2 17h10v2H2M6 5v2H2V5m0 6h7v2H2z" /></svg>
+															`
+														}
+
+														return html`
+															<!--mdi:do-not-enter source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M17 13H7v-2h10m-5-9A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2" /></svg>
+														`
+													})()}
 												</button>
 											`
 										})()}
@@ -358,7 +389,10 @@ class Component extends LitElement {
 										<span class="flex space-x-1">
 											<div class="h-fit self-center">Database Skip Data Extraction</div>
 											<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'd-skip-data-extraction')} @mouseout=${() => (this._showHintID = '')}>
-												<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+												</svg>
 											</div>
 										</span>
 										<input
@@ -396,7 +430,10 @@ class Component extends LitElement {
 										<span class="flex space-x-1">
 											<div class="h-fit self-center">Field Group is Primary Key</div>
 											<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-is-primary-key')} @mouseout=${() => (this._showHintID = '')}>
-												<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+												</svg>
 											</div>
 										</span>
 										<input
@@ -434,7 +471,10 @@ class Component extends LitElement {
 										<span class="flex space-x-1">
 											<span class="h-fit self-center break-words">Database table/collection unique id</span>
 											<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-table-collection-uid')} @mouseout=${() => (this._showHintID = '')}>
-												<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+												</svg>
 											</div>
 										</span>
 										<input
@@ -476,7 +516,10 @@ class Component extends LitElement {
 													<span class="flex space-x-1">
 														<span class="h-fit self-center break-words">Database Table/Collection name</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-group-table-collection-name')} @mouseout=${() => (this._showHintID = '')}>
-															<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
 														</div>
 													</span>
 													<input
@@ -517,7 +560,10 @@ class Component extends LitElement {
 												<span class="flex space-x-1">
 													<span class="h-fit self-center break-words">Database column/field name</span>
 													<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-field-column-name')} @mouseout=${() => (this._showHintID = '')}>
-														<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+														<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+															<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+														</svg>
 													</div>
 												</span>
 												<input
@@ -561,7 +607,10 @@ class Component extends LitElement {
 													<span class="flex space-x-1">
 														<div class="h-fit self-center">Field Group view values in separate columns</div>
 														<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns')} @mouseout=${() => (this._showHintID = '')}>
-															<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
 														</div>
 													</span>
 													<input
@@ -599,7 +648,10 @@ class Component extends LitElement {
 													<span class="flex space-x-1">
 														<span class="h-fit self-center break-words">Field Group view max columns in separate columns</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-max-values-in-separate-columns')} @mouseout=${() => (this._showHintID = '')}>
-															<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
 														</div>
 													</span>
 													<input
@@ -643,7 +695,10 @@ class Component extends LitElement {
 													<span class="flex space-x-1">
 														<span class="h-fit self-center break-words">Field view header format</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns-header-format')} @mouseout=${() => (this._showHintID = '')}>
-															<iconify-icon icon="mdi:question-mark" style="color: ${this.color};" width=${Misc.IconifySize()} height=${Misc.IconifySize('18')}></iconify-icon>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
 														</div>
 													</span>
 													<input
@@ -683,7 +738,13 @@ class Component extends LitElement {
 															this.querycondition = structuredClone(this.querycondition)
 														}}
 													>
-														<iconify-icon icon="mdi:filter-remove" style="color: ${Theme.GetColorContent(this.color)}};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+														<!--mdi:filter-remove source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+															<path
+																fill="${Theme.GetColorContent(this.color)}"
+																d="M14.76 20.83L17.6 18l-2.84-2.83l1.41-1.41L19 16.57l2.83-2.81l1.41 1.41L20.43 18l2.81 2.83l-1.41 1.41L19 19.4l-2.83 2.84zM12 12v7.88c.04.3-.06.62-.29.83a.996.996 0 0 1-1.41 0L8.29 18.7a.99.99 0 0 1-.29-.83V12h-.03L2.21 4.62a1 1 0 0 1 .17-1.4c.19-.14.4-.22.62-.22h14c.22 0 .43.08.62.22a1 1 0 0 1 .17 1.4L12.03 12z"
+															/>
+														</svg>
 													</button>
 													${this._addAndFilterConditionButtonHtmlTemplate(orIndex)}
 												</div>
@@ -1089,7 +1150,8 @@ class Component extends LitElement {
 																				this.querycondition = structuredClone(this.querycondition)
 																			}}
 																		>
-																			<iconify-icon icon="mdi:delete" style="color: ${Theme.GetColorContent(this.color)}};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+																			<!--mdi:delete source: https://icon-sets.iconify.design-->
+																			<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 																		</button>
 																	</aside>
 																	${(() => {

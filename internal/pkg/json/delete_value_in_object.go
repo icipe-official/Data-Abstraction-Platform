@@ -10,7 +10,7 @@ import (
 //
 // Parameters:
 //
-//   - object - Object or array to modify through deletion. Expects object to be a pointer.
+//   - object - Object or array to modify through deletion. Expected to be presented as if converted from JSON.
 //
 //   - path - Object-like path to value to remove from object.
 //     Numbers enclosed in square brackets or between full-stops indicate array indexes.

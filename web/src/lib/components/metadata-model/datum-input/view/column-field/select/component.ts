@@ -4,7 +4,6 @@ import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
 import MetadataModel from '$src/lib/metadata_model'
-import '$src/lib/components/calendar-time/component'
 import '$src/lib/components/multi-select/component'
 
 @customElement('metadata-model-datum-input-column-field-select')

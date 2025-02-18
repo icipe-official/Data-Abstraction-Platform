@@ -4,7 +4,6 @@ import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import Theme from '$src/lib/theme'
 import MetadataModel from '$src/lib/metadata_model'
-import Misc from '$src/lib/miscellaneous'
 import Json from '$src/lib/json'
 import '$src/lib/components/vertical-flex-scroll/component'
 
@@ -48,8 +47,27 @@ class Component extends LitElement {
 					if (MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
 						return html`
 							<div class="flex flex-col" @mouseover=${() => (this._showHintID = `header-show-group-field-tree-${dIndex}`)} @mouseout=${() => (this._showHintID = '')}>
-								<button class="btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[38px] h-[38px] w-[38px]" @click=${() => (this.showgroupfields = !this.showgroupfields)}>
-									<iconify-icon icon=${this.showgroupfields ? 'mdi:eye' : 'mdi:eye-off'} style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('18')} height=${Misc.IconifySize('18')}></iconify-icon>
+								<button class="btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[38px] h-[38px] w-[38px] p-2" @click=${() => (this.showgroupfields = !this.showgroupfields)}>
+									${(() => {
+										if (this.showgroupfields) {
+											return html`
+												<!--mdi:eye source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+													<path fill="${Theme.GetColorContent(this.color)}" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5" />
+												</svg>
+											`
+										}
+
+										return html`
+											<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+												<path
+													fill="${Theme.GetColorContent(this.color)}"
+													d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+												/>
+											</svg>
+										`
+									})()}
 								</button>
 								${(() => {
 									if (this._showHintID === `header-show-group-field-tree-${dIndex}`) {
@@ -114,8 +132,14 @@ class Component extends LitElement {
 									<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${() => (this._showSearchFieldGroupBar = '')}>
 										<div class="flex flex-col justify-center">
 											<div class="flex self-center">
-												<iconify-icon icon="mdi:search" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
-												<iconify-icon icon="mdi:close-circle" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('15')}></iconify-icon>
+												<!--mdi:search source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+													<path fill="${Theme.GetColorContent(this.color)}" d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5l-1.5 1.5l-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16A6.5 6.5 0 0 1 3 9.5A6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14S14 12 14 9.5S12 5 9.5 5" />
+												</svg>
+												<!--mdi:close-circle source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 24 24">
+													<path fill="${Theme.GetColorContent(this.color)}" d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
+												</svg>
 											</div>
 										</div>
 									</button>
@@ -130,7 +154,10 @@ class Component extends LitElement {
 										return html`
 											<div class="flex flex-col" @mouseover=${() => (this._showHintID = `header-search-group-fields-${dIndex}`)} @mouseout=${() => (this._showHintID = '')}>
 												<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${() => (this._showSearchFieldGroupBar = `header-search-group-bar-${dIndex}`)}>
-													<iconify-icon icon="mdi:search" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
+													<!--mdi:search source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+														<path fill="${Theme.GetColorContent(this.color)}" d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5l-1.5 1.5l-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16A6.5 6.5 0 0 1 3 9.5A6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14S14 12 14 9.5S12 5 9.5 5" />
+													</svg>
 												</button>
 												${(() => {
 													if (this._showHintID === `header-search-group-fields-${dIndex}`) {
@@ -161,7 +188,8 @@ class Component extends LitElement {
 										return html`
 											<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-hide-current-field-group')} @mouseout=${() => (this._showHintID = '')}>
 												<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[24px] h-fit w-fit p-2" @click=${this.showhidegroupfields}>
-													<iconify-icon icon="mdi:arrow-collapse-vertical" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
+													<!--mdi:arrow-collapse-vertical source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="M4 12h16v2H4zm0-3h16v2H4zm12-5l-4 4l-4-4h3V1h2v3zM8 19l4-4l4 4h-3v3h-2v-3z" /></svg>
 												</button>
 												${(() => {
 													if (this._showHintID === 'header-hide-current-field-group') {
@@ -189,7 +217,7 @@ class Component extends LitElement {
 								})()}
 								<div class="flex flex-col" @mouseover=${() => (this._showHintID = `header-show-hide-field-group-${dIndex}`)} @mouseout=${() => (this._showHintID = '')}>
 									<button
-										class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[38px] h-[38px] w-[38px]"
+										class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} min-h-[38px] h-[38px] w-[38px] p-2"
 										@click=${() => {
 											if (this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
 												delete this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]
@@ -199,7 +227,26 @@ class Component extends LitElement {
 											this.updatemetadatamodel(this.fieldgroup)
 										}}
 									>
-										<iconify-icon icon=${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] ? 'mdi:eye-off' : 'mdi:eye'} style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('18')} height=${Misc.IconifySize('18')}></iconify-icon>
+										${(() => {
+											if (!this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
+												return html`
+													<!--mdi:eye source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+														<path fill="${Theme.GetColorContent(this.color)}" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5" />
+													</svg>
+												`
+											}
+
+											return html`
+												<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+													<path
+														fill="${Theme.GetColorContent(this.color)}"
+														d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+													/>
+												</svg>
+											`
+										})()}
 									</button>
 									${(() => {
 										if (this._showHintID === `header-show-hide-field-group-${dIndex}`) {
@@ -231,7 +278,10 @@ class Component extends LitElement {
 														this.setcurrentgroupcontext!(this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.arrayindexplaceholders)
 													}}
 												>
-													<iconify-icon icon="mdi:jump" style="color:${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('20')} height=${Misc.IconifySize('20')}></iconify-icon>
+													<!--mdi:jump source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+														<path fill="${Theme.GetColorContent(this.color)}" d="M12 14a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m11.46-5.14l-1.59 6.89L15 14.16l3.8-2.38A7.97 7.97 0 0 0 12 8c-3.95 0-7.23 2.86-7.88 6.63l-1.97-.35C2.96 9.58 7.06 6 12 6c3.58 0 6.73 1.89 8.5 4.72z" />
+													</svg>
 												</button>
 												${(() => {
 													if (this._showHintID === `header-set-as-start-form-context-${dIndex}`) {

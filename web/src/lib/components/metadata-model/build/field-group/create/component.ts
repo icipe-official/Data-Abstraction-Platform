@@ -1,4 +1,3 @@
-import Misc from '$src/lib/miscellaneous'
 import Theme from '$src/lib/theme'
 import { LitElement, unsafeCSS, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
@@ -68,7 +67,10 @@ class Component extends LitElement {
 				</select>
 				<button class="join-item btn ${this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'} md:w-fit h-fit p-0" @click=${this._handleCreateFieldGroup}>
 					<span class="md:hidden">Create Field/Group</span>
-					<iconify-icon icon="mdi:plus" style="color: ${Theme.GetColorContent(this.color)};" width=${Misc.IconifySize('38')} height=${Misc.IconifySize('38')}></iconify-icon>
+					<!--mdi:plus source: https://icon-sets.iconify.design-->
+					<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 24 24">
+						<path fill="${Theme.GetColorContent(this.color)}" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z" />
+					</svg>
 				</button>
 			</div>
 			${(() => {

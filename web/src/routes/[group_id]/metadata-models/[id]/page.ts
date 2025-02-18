@@ -4,13 +4,9 @@ import indexCss from '$src/assets/index.css?inline'
 import pageCss from './page.css?inline'
 import MetadataModel from '$src/lib/metadata_model'
 import Misc from '$src/lib/miscellaneous'
-import 'iconify-icon'
-import '$src/lib/components/metadata-model/build/component'
-import '$src/lib/components/metadata-model/datum-input/component'
-import '$src/lib/components/metadata-model/view/table/component'
-import '$src/lib/components/metadata-model/view/query-panel/component'
 import Log from '$src/lib/log'
 import Theme from '$src/lib/theme'
+import { Task } from '@lit/task'
 
 enum Tab {
 	PROPERTIES = 'PROPERTIES',
@@ -55,6 +51,50 @@ class Page extends LitElement {
 
 	@state() private _colorTheme: Theme.Color = Theme.Color.PRIMARY
 
+	private _importMMDatumInputTask = new Task(this, {
+		task: async () => {
+			await import('$src/lib/components/metadata-model/datum-input/component')
+		},
+		args: () => []
+	})
+
+	private _importMMTableTask = new Task(this, {
+		task: async () => {
+			await import('$src/lib/components/metadata-model/view/table/component')
+		},
+		args: () => []
+	})
+
+	private _importMMQueryPanelTask = new Task(this, {
+		task: async () => {
+			await import('$src/lib/components/metadata-model/view/query-panel/component')
+		},
+		args: () => []
+	})
+
+	private _importMMBuildTask = new Task(this, {
+		task: async () => {
+			await import('$src/lib/components/metadata-model/build/component')
+		},
+		args: () => []
+	})
+
+	private _pendingTaskHtmlTemplate = () => html`
+		<div class="flex-1 flex flex-col justify-center items-center text-xl space-y-5">
+			<div class="flex">
+				<span class="loading loading-ball loading-sm text-accent"></span>
+				<span class="loading loading-ball loading-md text-secondary"></span>
+				<span class="loading loading-ball loading-lg text-primary"></span>
+			</div>
+		</div>
+	`
+
+	private _errorTaskHtmlTemplate = () => html`
+		<div class="flex-1 flex flex-col justify-center items-center">
+			<span class="w-fit text-error font-bold">Error: Could not download section content.</span>
+		</div>
+	`
+
 	private _viewHtmlTemplate() {
 		return html`
 			<header role="tablist" class="tabs tabs-bordered">
@@ -66,40 +106,61 @@ class Page extends LitElement {
 				${(() => {
 					switch (this._currentViewTab) {
 						case ViewTab.DATUM_INPUT:
-							return html`
-								<metadata-model-datum-input
-									class="flex-1"
-									.metadatamodel=${this._datuminputsamplemetadatamodel}
-									.data=${this._datuminputsampledata}
-									.startcolor=${this._colorTheme}
-									@metadata-model-datum-input:updatedata=${(e: CustomEvent) => {
-										this._datuminputsampledata = structuredClone(e.detail.value)
-									}}
-									@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
-										this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
-									}}
-								></metadata-model-datum-input>
-							`
+							return this._importMMDatumInputTask.render({
+								pending: () => this._pendingTaskHtmlTemplate(),
+								complete: () => html`
+									<metadata-model-datum-input
+										class="flex-1"
+										.metadatamodel=${this._datuminputsamplemetadatamodel}
+										.data=${this._datuminputsampledata}
+										.startcolor=${this._colorTheme}
+										@metadata-model-datum-input:updatedata=${(e: CustomEvent) => {
+											this._datuminputsampledata = structuredClone(e.detail.value)
+										}}
+										@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
+											this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
+										}}
+									></metadata-model-datum-input>
+								`,
+								error: (e) => {
+									console.error(e)
+									return this._errorTaskHtmlTemplate()
+								}
+							})
 						case ViewTab.TABLE:
-							return html`
-								<div class="border-[1px] border-gray-400 flex-1 h-fit max-h-full max-w-full flex overflow-hidden">
-									<metadata-model-view-table .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${[this._datuminputsampledata]} .color=${Theme.Color.SECONDARY}></metadata-model-view-table>
-								</div>
-							`
+							return this._importMMTableTask.render({
+								pending: () => this._pendingTaskHtmlTemplate(),
+								complete: () => html`
+									<div class="border-[1px] border-gray-400 flex-1 h-fit max-h-full max-w-full flex overflow-hidden">
+										<metadata-model-view-table .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${[this._datuminputsampledata]} .color=${Theme.Color.SECONDARY}></metadata-model-view-table>
+									</div>
+								`,
+								error: (e) => {
+									console.error(e)
+									return this._errorTaskHtmlTemplate()
+								}
+							})
 						case ViewTab.QUERY_PANEL:
-							return html`
-								<metadata-model-view-query-panel
-									.metadatamodel=${this._datuminputsamplemetadatamodel}
-									.queryconditions=${this._datumeinputqueryconditions}
-									.startcolor=${this._colorTheme}
-									@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
-										this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
-									}}
-									@metadata-model-view-query-panel:updatequeryconditions=${(e: CustomEvent) => {
-										this._datumeinputqueryconditions = structuredClone(e.detail.value)
-									}}
-								></metadata-model-view-query-panel>
-							`
+							return this._importMMQueryPanelTask.render({
+								pending: () => this._pendingTaskHtmlTemplate(),
+								complete: () => html`
+									<metadata-model-view-query-panel
+										.metadatamodel=${this._datuminputsamplemetadatamodel}
+										.queryconditions=${this._datumeinputqueryconditions}
+										.startcolor=${this._colorTheme}
+										@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
+											this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
+										}}
+										@metadata-model-view-query-panel:updatequeryconditions=${(e: CustomEvent) => {
+											this._datumeinputqueryconditions = structuredClone(e.detail.value)
+										}}
+									></metadata-model-view-query-panel>
+								`,
+								error: (e) => {
+									console.error(e)
+									return this._errorTaskHtmlTemplate()
+								}
+							})
 						default:
 							return html`<div class="text-error font-bold">Tab not implemented</div>`
 					}
@@ -203,17 +264,24 @@ class Page extends LitElement {
 												</div>
 											`
 										case Tab.BUILD:
-											return html`
-												<metadata-model-build
-													class="flex-[9] flex flex-col rounded-md bg-gray-100 shadow-inner shadow-gray-800 p-1"
-													.metadatamodel=${this._data}
-													.startcolor=${this._colorTheme}
-													@metadata-model-build:updatemetadatamodel=${(e: CustomEvent) => {
-														this._data = structuredClone(e.detail.value)
-														this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
-													}}
-												></metadata-model-build>
-											`
+											return this._importMMBuildTask.render({
+												pending: () => this._pendingTaskHtmlTemplate(),
+												complete: () => html`
+													<metadata-model-build
+														class="flex-[9] flex flex-col rounded-md bg-gray-100 shadow-inner shadow-gray-800 p-1"
+														.metadatamodel=${this._data}
+														.startcolor=${this._colorTheme}
+														@metadata-model-build:updatemetadatamodel=${(e: CustomEvent) => {
+															this._data = structuredClone(e.detail.value)
+															this._datuminputsamplemetadatamodel = structuredClone(e.detail.value)
+														}}
+													></metadata-model-build>
+												`,
+												error: (e) => {
+													console.error(e)
+													return this._errorTaskHtmlTemplate()
+												}
+											})
 										case Tab.VIEW:
 											return this._viewHtmlTemplate()
 										default:
@@ -234,7 +302,19 @@ class Page extends LitElement {
 							<header class="flex justify-between">
 								<div class="font-bold text-lg h-fit self-center">View metadata-model</div>
 								<button class="btn btn-circle btn-ghost self-center" @click=${() => (this._expandRightSection = !this._expandRightSection)}>
-									<iconify-icon icon=${this._expandRightSection ? 'mdi:expand-vertical' : 'mdi:collapse-vertical'} style="color:black;" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
+									${(() => {
+										if (this._expandRightSection) {
+											return html`
+												<!--mdi:expand-vertical source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M18.17 12L15 8.83l1.41-1.42L21 12l-4.59 4.58L15 15.17zM5.83 12L9 15.17l-1.41 1.42L3 12l4.59-4.58L9 8.83z" /></svg>
+											`
+										}
+
+										return html`
+											<!--mdi:collapse-vertical source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M5.41 7.41L10 12l-4.59 4.59L4 15.17L7.17 12L4 8.83zm13.18 9.18L14 12l4.59-4.58L20 8.83L16.83 12L20 15.17z" /></svg>
+										`
+									})()}
 								</button>
 							</header>
 							${this._viewHtmlTemplate()}

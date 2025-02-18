@@ -1,11 +1,10 @@
-import MetadataModel from "$src/lib/metadata_model"
-import Misc from "$src/lib/miscellaneous"
-import Theme from "$src/lib/theme"
-import { LitElement, unsafeCSS, html, nothing } from "lit"
-import { customElement, state } from "lit/decorators.js"
+import MetadataModel from '$src/lib/metadata_model'
+import Misc from '$src/lib/miscellaneous'
+import Theme from '$src/lib/theme'
+import { LitElement, unsafeCSS, html, nothing } from 'lit'
+import { customElement, state } from 'lit/decorators.js'
 import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
-import 'iconify-icon'
 // import '$src/lib/components/metadata-model/view/panel/component'
 // import '$src/lib/components/metadata-model/view/table/component'
 
@@ -127,12 +126,13 @@ class Component extends LitElement {
 										this._closeToast()
 									}}
 								>
-									<iconify-icon
-										icon="mdi:close"
-										style="color:${this._toastType === Misc.ToastType.ERROR ? Theme.Color.ERROR_CONTENT : this._toastType === Misc.ToastType.WARNING ? Theme.Color.WARNING_CONTENT : Theme.Color.INFO_CONTENT};"
-										width=${Misc.IconifySize()}
-										height=${Misc.IconifySize()}
-									></iconify-icon>
+									<!--mdi:close source: https://icon-sets.iconify.design-->
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+										<path
+											fill="${this._toastType === Misc.ToastType.ERROR ? Theme.Color.ERROR_CONTENT : this._toastType === Misc.ToastType.WARNING ? Theme.Color.WARNING_CONTENT : Theme.Color.INFO_CONTENT}"
+											d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"
+										/>
+									</svg>
 								</button>
 							</div>
 						</div>
@@ -142,16 +142,16 @@ class Component extends LitElement {
 					return nothing
 				}
 			})()}
-			<dialog id="metadata-model-search-results-dialog" class="modal">
+			<!-- <dialog id="metadata-model-search-results-dialog" class="modal">
 				<form method="dialog" class="modal-box p-0 rounded min-w-[500px] w-full max-w-fit max-h-fit overflow-hidden">
 					<header class="sticky flex justify-between items-center p-2 shadow-gray-800 shadow-sm top-0 left-0 right-0">
 						<div class="h-fit w-fit flex space-x-1">
 							<button
 								class="btn btn-circle btn-ghost flex justify-center"
 								@click=${(e: Event) => {
-									e.preventDefault()
-									this._showFilterPanel = !this._showFilterPanel
-								}}
+				e.preventDefault()
+				this._showFilterPanel = !this._showFilterPanel
+			}}
 							>
 								<iconify-icon icon="mdi:filter" style="color:${Theme.Color.INFO};" width=${Misc.IconifySize()} height=${Misc.IconifySize()}></iconify-icon>
 							</button>
@@ -163,66 +163,66 @@ class Component extends LitElement {
 					</header>
 					<main class="flex-[9.5] p-2 space-x-1 max-w-[90vw] overflow-hidden max-h-[90vh] flex">
 						${(() => {
-							if (typeof this._toastMetadataModelSearchResults !== 'undefined' && this._toastMetadataModelSearchResults !== null) {
+				if (typeof this._toastMetadataModelSearchResults !== 'undefined' && this._toastMetadataModelSearchResults !== null) {
+					return html`
+						${(() => {
+							if (this._showFilterPanel) {
 								return html`
-									${(() => {
-										if (this._showFilterPanel) {
-											return html`
-												<div class="flex-[2] flex flex-col bg-gray-100 shadow-inner shadow-gray-800 space-y-1 rounded-md overflow-hidden max-w-fit p-1">
-													<metadata-model-view-panel
-														class="flex-[9.5] max-w-fit"
-														.queryconditions=${this._queryConditions}
-														.metadatamodel=${this._toastMetadataModelSearchResults.metadata_model}
-														@metadata-model-view-panel:updatequeryconditions=${(e: CustomEvent) => {
-															this._queryConditions = structuredClone(e.detail.value)
-														}}
-														@metadata-model-view-panel:updatemetadatamodel=${(e: CustomEvent) => {
-															this._toastMetadataModelSearchResults!.metadata_model = e.detail
-															this._toastMetadataModelSearchResults = structuredClone(this._toastMetadataModelSearchResults)
-														}}
-													></metadata-model-view-panel>
-													<button
-														class="flex-[0.5] btn btn-primary"
-														@click=${(e: Event) => {
-															e.preventDefault()
-															this._filterincludeindexes = MetadataModel.FilterData(this._queryConditions, this._toastMetadataModelSearchResults!.data!)
-														}}
-													>
-														Filter
-													</button>
-												</div>
-											`
-										} else {
-											return nothing
-										}
-									})()}
-									${(() => {
-										if (!this._showFilterPanel || this._windowWidth > 1000) {
-											return html`
-												<div class="flex-[3] overflow-hidden flex rounded-md bg-white">
-													<metadata-model-view-table
-														class="flex-[1]"
-														.addclickcolumn=${false}
-														.multiselectcolumns=${false}
-														.addselectcolumn=${false}
-														.filterincludeindexes=${this._filterincludeindexes}
-														.metadatamodel=${this._toastMetadataModelSearchResults.metadata_model}
-														.data=${this._toastMetadataModelSearchResults.data!}
-													></metadata-model-view-table>
-												</div>
-											`
-										} else {
-											return nothing
-										}
-									})()}
+									<div class="flex-[2] flex flex-col bg-gray-100 shadow-inner shadow-gray-800 space-y-1 rounded-md overflow-hidden max-w-fit p-1">
+										<metadata-model-view-panel
+											class="flex-[9.5] max-w-fit"
+											.queryconditions=${this._queryConditions}
+											.metadatamodel=${this._toastMetadataModelSearchResults.metadata_model}
+											@metadata-model-view-panel:updatequeryconditions=${(e: CustomEvent) => {
+												this._queryConditions = structuredClone(e.detail.value)
+											}}
+											@metadata-model-view-panel:updatemetadatamodel=${(e: CustomEvent) => {
+												this._toastMetadataModelSearchResults!.metadata_model = e.detail
+												this._toastMetadataModelSearchResults = structuredClone(this._toastMetadataModelSearchResults)
+											}}
+										></metadata-model-view-panel>
+										<button
+											class="flex-[0.5] btn btn-primary"
+											@click=${(e: Event) => {
+												e.preventDefault()
+												this._filterincludeindexes = MetadataModel.FilterData(this._queryConditions, this._toastMetadataModelSearchResults!.data!)
+											}}
+										>
+											Filter
+										</button>
+									</div>
 								`
 							} else {
 								return nothing
 							}
 						})()}
+						${(() => {
+							if (!this._showFilterPanel || this._windowWidth > 1000) {
+								return html`
+									<div class="flex-[3] overflow-hidden flex rounded-md bg-white">
+										<metadata-model-view-table
+											class="flex-[1]"
+											.addclickcolumn=${false}
+											.multiselectcolumns=${false}
+											.addselectcolumn=${false}
+											.filterincludeindexes=${this._filterincludeindexes}
+											.metadatamodel=${this._toastMetadataModelSearchResults.metadata_model}
+											.data=${this._toastMetadataModelSearchResults.data!}
+										></metadata-model-view-table>
+									</div>
+								`
+							} else {
+								return nothing
+							}
+						})()}
+					`
+				} else {
+					return nothing
+				}
+			})()}
 					</main>
 				</form>
-			</dialog>
+			</dialog> -->
 		`
 	}
 }
@@ -232,4 +232,3 @@ declare global {
 		'toast-notification': Component
 	}
 }
-

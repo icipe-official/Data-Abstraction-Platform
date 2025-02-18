@@ -43,7 +43,6 @@
 		"@types/papaparse": "^5.3.15",
 		"autoprefixer": "^10.4.20",
 		"daisyui": "^4.12.13",
-		"iconify-icon": "^2.1.0",
 		"postcss": "^8.4.47",
 		"prettier": "^3.3.3",
 		"tailwindcss": "^3.4.14",

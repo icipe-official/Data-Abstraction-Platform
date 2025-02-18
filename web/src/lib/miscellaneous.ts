@@ -33,13 +33,6 @@ namespace Misc {
 
 	export const EMAIL_VALIDATION_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
-	/**
-	 * Use to seet icon size for iconify-icon, comes with handy default
-	 * @param size. default 24.
-	 * @returns
-	 */
-	export const IconifySize = (size?: string) => (size ? size : '24')
-
 	export const WINDOW_APP_OBJECT_KEY = 'data-abstraction-platform'
 
 	export const DEFAULT_FETCH_ERROR = 'Unknown error occured possibly due to server being unreachable.'
