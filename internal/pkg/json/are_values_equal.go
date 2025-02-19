@@ -8,19 +8,36 @@ import (
 //
 // Particulary useful for nested objects and arrays.
 //
-// Expects arguments to be presented as if converted from JSON.
-//
 // Checks the following:
 //
 //  1. The data type of each value.
 //
 //  2. Number of elements in an array and keys-values in a map.
+//
+// Parameters:
+//
+//   - valueOne - Expected to be presented as if converted from JSON.
+//
+//   - valueTwo - Expected to be presented as if converted from JSON.
+//
+// returns true if values are equal and false if values are not equal.
 func AreValuesEqual(valueOne any, valueTwo any) bool {
 	if reflect.TypeOf(valueOne).Kind() != reflect.TypeOf(valueTwo).Kind() {
 		return false
 	}
 
 	switch reflect.TypeOf(valueOne).Kind() {
+	case reflect.Slice:
+		if len(valueOne.([]any)) != len(valueTwo.([]any)) {
+			return false
+		}
+		for cvoIndex, cvovalue := range valueOne.([]any) {
+			if !AreValuesEqual(cvovalue, valueTwo.([]any)[cvoIndex]) {
+				return false
+			}
+		}
+		return true
+
 	case reflect.Map:
 		valueOneKeys := make([]string, 0)
 		for key := range valueOne.(map[string]any) {
@@ -51,16 +68,7 @@ func AreValuesEqual(valueOne any, valueTwo any) bool {
 			}
 		}
 		return true
-	case reflect.Slice:
-		if len(valueOne.([]any)) != len(valueTwo.([]any)) {
-			return false
-		}
-		for cvoIndex, cvovalue := range valueOne.([]any) {
-			if !AreValuesEqual(cvovalue, valueTwo.([]any)[cvoIndex]) {
-				return false
-			}
-		}
-		return true
+
 	default:
 		return valueOne == valueTwo
 	}

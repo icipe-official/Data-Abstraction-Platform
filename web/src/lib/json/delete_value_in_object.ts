@@ -1,7 +1,7 @@
 import Json from '.'
 
 /**
- * Delete value in {@linkcode object} using {@linkcode path}.
+ * Delete value in {@linkcode object} found at {@linkcode path}.
  *
  * @param object Object or array of objects which to modify through deletion. Expected to be presented as if converted from JSON.
  * @param path Object-like path to value to remove from {@linkcode object} supplied as param.
@@ -10,7 +10,7 @@ import Json from '.'
  *
  * If path is empty, then an empty array will be returned if object param was an array otherwise it will return an empty object.
  *
- * If path begins with `$.`, then it is removed. Intention is to match Postgres' json path syntax
+ * If path begins with `$.`, then it is removed. Inspired by Postgres' json path syntax
  *
  * Examples:
  *

@@ -40,9 +40,9 @@ class Component extends LitElement {
 			}
 		}
 		return html`
-			<option value="${MetadataModel.FilterCondition.FIELD_TEXT_BEGINS_WITH}" .selected=${filterCondition === MetadataModel.FilterCondition.FIELD_TEXT_BEGINS_WITH}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>text</i>) begins with</option>
-			<option value="${MetadataModel.FilterCondition.FIELD_TEXT_CONTAINS}" .selected=${filterCondition === MetadataModel.FilterCondition.FIELD_TEXT_CONTAINS}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>text</i>) contains</option>
-			<option value="${MetadataModel.FilterCondition.FIELD_TEXT_ENDS_WITH}" .selected=${filterCondition === MetadataModel.FilterCondition.FIELD_TEXT_ENDS_WITH}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>text</i>) ends with</option>
+			<option value="${MetadataModel.FilterCondition.TEXT_BEGINS_WITH}" .selected=${filterCondition === MetadataModel.FilterCondition.TEXT_BEGINS_WITH}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>text</i>) begins with</option>
+			<option value="${MetadataModel.FilterCondition.TEXT_CONTAINS}" .selected=${filterCondition === MetadataModel.FilterCondition.TEXT_CONTAINS}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>text</i>) contains</option>
+			<option value="${MetadataModel.FilterCondition.TEXT_ENDS_WITH}" .selected=${filterCondition === MetadataModel.FilterCondition.TEXT_ENDS_WITH}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>text</i>) ends with</option>
 		`
 	}
 
@@ -56,8 +56,8 @@ class Component extends LitElement {
 			}
 		}
 		return html`
-			<option value="${MetadataModel.FilterCondition.FIELD_TIMESTAMP_GREATER_THAN}" .selected=${filterCondition === MetadataModel.FilterCondition.FIELD_TIMESTAMP_GREATER_THAN}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>timestamp</i>) greater than</option>
-			<option value="${MetadataModel.FilterCondition.FIELD_TIMESTAMP_LESS_THAN}" .selected=${filterCondition === MetadataModel.FilterCondition.FIELD_TIMESTAMP_LESS_THAN}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>timestamp</i>) less than</option>
+			<option value="${MetadataModel.FilterCondition.TIMESTAMP_GREATER_THAN}" .selected=${filterCondition === MetadataModel.FilterCondition.TIMESTAMP_GREATER_THAN}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>timestamp</i>) greater than</option>
+			<option value="${MetadataModel.FilterCondition.TIMESTAMP_LESS_THAN}" .selected=${filterCondition === MetadataModel.FilterCondition.TIMESTAMP_LESS_THAN}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>timestamp</i>) less than</option>
 		`
 	}
 
@@ -71,8 +71,8 @@ class Component extends LitElement {
 			}
 		}
 		return html`
-			<option value="${MetadataModel.FilterCondition.FIELD_NUMBER_GREATER_THAN}" .selected=${filterCondition === MetadataModel.FilterCondition.FIELD_NUMBER_GREATER_THAN}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>number</i>) greater than</option>
-			<option value="${MetadataModel.FilterCondition.FIELD_NUMBER_LESS_THAN}" .selected=${filterCondition === MetadataModel.FilterCondition.FIELD_NUMBER_LESS_THAN}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>number</i>) less than</option>
+			<option value="${MetadataModel.FilterCondition.NUMBER_GREATER_THAN}" .selected=${filterCondition === MetadataModel.FilterCondition.NUMBER_GREATER_THAN}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>number</i>) greater than</option>
+			<option value="${MetadataModel.FilterCondition.NUMBER_LESS_THAN}" .selected=${filterCondition === MetadataModel.FilterCondition.NUMBER_LESS_THAN}>${MetadataModel.GetFieldGroupName(this.fieldgroup)} (<i>number</i>) less than</option>
 		`
 	}
 
@@ -796,7 +796,7 @@ class Component extends LitElement {
 																					${(() => {
 																						if (MetadataModel.IsFieldAField(this.fieldgroup)) {
 																							return html`
-																								<option value="${MetadataModel.FilterCondition.FIELD_EQUAL_TO}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.FIELD_EQUAL_TO}>
+																								<option value="${MetadataModel.FilterCondition.EQUAL_TO}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.EQUAL_TO}>
 																									${MetadataModel.GetFieldGroupName(this.fieldgroup)} value equal to
 																								</option>
 																							`
@@ -814,13 +814,13 @@ class Component extends LitElement {
 																								return this._timestampFilterConditionHtmlTemplate(orIndex, andIndex)
 																						}
 																					})()}
-																					<option value="${MetadataModel.FilterCondition.FIELD_GROUP_NO_OF_ENTRIES_GREATER_THAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.FIELD_GROUP_NO_OF_ENTRIES_GREATER_THAN}>
+																					<option value="${MetadataModel.FilterCondition.NO_OF_ENTRIES_GREATER_THAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.NO_OF_ENTRIES_GREATER_THAN}>
 																						No. of '${MetadataModel.GetFieldGroupName(this.fieldgroup)}' greater than
 																					</option>
-																					<option value="${MetadataModel.FilterCondition.FIELD_GROUP_NO_OF_ENTRIES_LESS_THAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.FIELD_GROUP_NO_OF_ENTRIES_LESS_THAN}>
+																					<option value="${MetadataModel.FilterCondition.NO_OF_ENTRIES_LESS_THAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.NO_OF_ENTRIES_LESS_THAN}>
 																						No. of '${MetadataModel.GetFieldGroupName(this.fieldgroup)}' less than
 																					</option>
-																					<option value="${MetadataModel.FilterCondition.FIELD_GROUP_NO_OF_ENTRIES_EQUAL_TO}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.FIELD_GROUP_NO_OF_ENTRIES_EQUAL_TO}>
+																					<option value="${MetadataModel.FilterCondition.NO_OF_ENTRIES_EQUAL_TO}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.NO_OF_ENTRIES_EQUAL_TO}>
 																						No. of '${MetadataModel.GetFieldGroupName(this.fieldgroup)}' equal to
 																					</option>
 																					<option value="" disabled>
@@ -854,9 +854,9 @@ class Component extends LitElement {
 																					}
 
 																					switch (andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] as MetadataModel.FilterCondition) {
-																						case MetadataModel.FilterCondition.FIELD_TEXT_BEGINS_WITH:
-																						case MetadataModel.FilterCondition.FIELD_TEXT_CONTAINS:
-																						case MetadataModel.FilterCondition.FIELD_TEXT_ENDS_WITH:
+																						case MetadataModel.FilterCondition.TEXT_BEGINS_WITH:
+																						case MetadataModel.FilterCondition.TEXT_CONTAINS:
+																						case MetadataModel.FilterCondition.TEXT_ENDS_WITH:
 																							return html`
 																								<textarea
 																									class="textarea w-full rounded-none ${this.color === Theme.Color.PRIMARY ? 'textarea-primary' : this.color === Theme.Color.SECONDARY ? 'textarea-secondary' : 'textarea-accent'}"
@@ -873,11 +873,11 @@ class Component extends LitElement {
 																									}}
 																								></textarea>
 																							`
-																						case MetadataModel.FilterCondition.FIELD_GROUP_NO_OF_ENTRIES_EQUAL_TO:
-																						case MetadataModel.FilterCondition.FIELD_GROUP_NO_OF_ENTRIES_GREATER_THAN:
-																						case MetadataModel.FilterCondition.FIELD_GROUP_NO_OF_ENTRIES_LESS_THAN:
-																						case MetadataModel.FilterCondition.FIELD_NUMBER_GREATER_THAN:
-																						case MetadataModel.FilterCondition.FIELD_NUMBER_LESS_THAN:
+																						case MetadataModel.FilterCondition.NO_OF_ENTRIES_EQUAL_TO:
+																						case MetadataModel.FilterCondition.NO_OF_ENTRIES_GREATER_THAN:
+																						case MetadataModel.FilterCondition.NO_OF_ENTRIES_LESS_THAN:
+																						case MetadataModel.FilterCondition.NUMBER_GREATER_THAN:
+																						case MetadataModel.FilterCondition.NUMBER_LESS_THAN:
 																							return html`
 																								<input
 																									class="input w-full rounded-none ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
@@ -911,8 +911,8 @@ class Component extends LitElement {
 																									}}
 																								/>
 																							`
-																						case MetadataModel.FilterCondition.FIELD_TIMESTAMP_GREATER_THAN:
-																						case MetadataModel.FilterCondition.FIELD_TIMESTAMP_LESS_THAN:
+																						case MetadataModel.FilterCondition.TIMESTAMP_GREATER_THAN:
+																						case MetadataModel.FilterCondition.TIMESTAMP_LESS_THAN:
 																							return html`
 																								<calendar-time
 																									class="min-w-full"
@@ -930,7 +930,7 @@ class Component extends LitElement {
 																									}}
 																								></calendar-time>
 																							`
-																						case MetadataModel.FilterCondition.FIELD_EQUAL_TO:
+																						case MetadataModel.FilterCondition.EQUAL_TO:
 																							if (typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] === 'undefined') {
 																								andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] = {}
 																							}

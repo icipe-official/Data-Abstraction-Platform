@@ -8,7 +8,7 @@ import Json from '.'
  */
 
 /**
- * Calls a callback function when a value is found following the path
+ * Calls {@linkcode ifValueFoundInObject} if value is found at path.
  *
  * @param object Expected to be an object or array of objects and be presented as if converted from JSON.
  * @param path Object-like path to value to find from {@linkcode object} supplied as param.

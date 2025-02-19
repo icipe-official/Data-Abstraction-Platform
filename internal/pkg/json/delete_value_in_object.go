@@ -17,42 +17,32 @@ import (
 //
 //     If path is empty, or equals to '$' then the object itself will be returned.
 //
-//     If path begins with `$.`, then it is removed. Intention is to match Postgres' json path syntax.
+//     If path begins with `$.`, then it is removed. Inspired by Postgres' json path syntax.
 //
 //     Examples:
 //
-//   - `$.[8].childobject.array[2][3].childobject`.
+//     -- `$.[8].childobject.array[2][3].childobject`.
 //
-//   - `$.8.childobject.array.2.3.childobject`.
+//     -- `$.8.childobject.array.2.3.childobject`.
 //
-// Returns object with value found at path deleted to it or an error in the following instances:
-//   - Value not found in object "ValueNotFound"
-//   - Converting object and valueToSet to JSON and back fails.
-func DeleteValueInObject(object any, path string) (any, error) {
-	var objectJson any
-
-	objectJson, err := JSONStringifyParse(object)
-	if err != nil {
-		return nil, err
-	}
-
+// Returns object with value removed if it was found using the path.
+func DeleteValueInObject(object any, path string) any {
 	if len(path) == 0 || path == "$" {
-		switch reflect.TypeOf(objectJson).Kind() {
+		switch reflect.TypeOf(object).Kind() {
 		case reflect.Map:
-			return map[string]any{}, nil
+			return map[string]any{}
 		case reflect.Slice:
-			return []any{}, nil
+			return []any{}
 		default:
-			return nil, nil
+			return nil
 		}
-	} else {
-		return deleteValueInObject(objectJson, GetPathObjectKeyArrayIndexes(path))
 	}
+	return deleteValueInObject(object, GetPathObjectKeyArrayIndexes(path))
 }
 
-func deleteValueInObject(currentValue any, pathObjectKeyArrayIndexes []string) (any, error) {
+func deleteValueInObject(currentValue any, pathObjectKeyArrayIndexes []string) any {
 	if currentValue == nil || (reflect.TypeOf(currentValue).Kind() != reflect.Map && reflect.TypeOf(currentValue).Kind() != reflect.Slice) {
-		return currentValue, ErrValueNotFoundError
+		return currentValue
 	}
 	typeOfCurrentValue := reflect.TypeOf(currentValue).Kind()
 
@@ -71,14 +61,10 @@ func deleteValueInObject(currentValue any, pathObjectKeyArrayIndexes []string) (
 	case reflect.Int:
 		if typeOfCurrentValue == reflect.Slice {
 			if currentPathKeyArrayIndex.(int) > len(currentValue.([]any)) {
-				return currentValue, ErrValueNotFoundError
+				return currentValue
 			}
 			if len(pathObjectKeyArrayIndexes) > 0 {
-				var err error
-				currentValue.([]any)[currentPathKeyArrayIndex.(int)], err = deleteValueInObject(currentValue.([]any)[currentPathKeyArrayIndex.(int)], pathObjectKeyArrayIndexes)
-				if err != nil {
-					return currentValue, err
-				}
+				currentValue.([]any)[currentPathKeyArrayIndex.(int)] = deleteValueInObject(currentValue.([]any)[currentPathKeyArrayIndex.(int)], pathObjectKeyArrayIndexes)
 			} else {
 				currentValue = append(currentValue.([]any)[:currentPathKeyArrayIndex.(int)], currentValue.([]any)[currentPathKeyArrayIndex.(int)+1:]...)
 			}
@@ -87,23 +73,19 @@ func deleteValueInObject(currentValue any, pathObjectKeyArrayIndexes []string) (
 		}
 	}
 
-	return currentValue, nil
+	return currentValue
 }
 
-func deleteValueInMap(currentValue any, currentPathKeyArrayIndex any, pathObjectKeyArrayIndexes []string) (any, error) {
+func deleteValueInMap(currentValue any, currentPathKeyArrayIndex any, pathObjectKeyArrayIndexes []string) any {
 	if reflect.TypeOf(currentValue).Kind() == reflect.Map {
 		if value, ok := currentValue.(map[string]any)[fmt.Sprintf("%v", currentPathKeyArrayIndex)]; ok {
 			if len(pathObjectKeyArrayIndexes) > 0 {
-				var err error
-				currentValue.(map[string]any)[fmt.Sprintf("%v", currentPathKeyArrayIndex)], err = deleteValueInObject(value, pathObjectKeyArrayIndexes)
-				if err != nil {
-					return currentValue, err
-				}
+				currentValue.(map[string]any)[fmt.Sprintf("%v", currentPathKeyArrayIndex)] = deleteValueInObject(value, pathObjectKeyArrayIndexes)
 			} else {
 				delete(currentValue.(map[string]any), fmt.Sprintf("%v", currentPathKeyArrayIndex))
 			}
-			return currentValue, nil
+			return currentValue
 		}
 	}
-	return currentValue, ErrValueNotFoundError
+	return currentValue
 }

@@ -11,22 +11,36 @@ type forEachValInObj struct {
 
 // Calls ifValueFoundInObject if a value is found at path.
 //
-// Returns error if conversion of object to json and back fails.
-func ForEachValueInObject(object any, path string, ifValueFoundInObject func(currentValuePathKeyArrayIndexes []any, valueFound any) bool) (bool, error) {
+// Parameters:
+//
+//   - object - Object or array to modify through deletion. Expected to be presented as if converted from JSON.
+//
+//   - path - Object-like path to value to find.
+//     Numbers enclosed in square brackets or between full-stops indicate array indexes.
+//
+//     If path is empty, or equals to '$' then the object itself will be returned.
+//
+//     If path begins with `$.`, then it is removed. Inspired by Postgres' json path syntax.
+//
+//     Examples:
+//
+//     -- `$.[8].childobject.array[2][3].childobject`.
+//
+//     -- `$.8.childobject.array.2.3.childobject`.
+//
+//   - ifValueFoundInObject - ifValueFoundInObject Called when value has been found in object. Return true to terminate loop.
+//
+// Returns boolean to indicate that the loop has ended (true if successful).
+func ForEachValueInObject(object any, path string, ifValueFoundInObject func(currentValuePathKeyArrayIndexes []any, valueFound any) bool) bool {
+	if len(path) == 0 || path == "$" {
+		return ifValueFoundInObject([]any{"$"}, object)
+	}
+
 	n := forEachValInObj{
 		ifValueFoundInObject: ifValueFoundInObject,
 	}
 
-	objectJson, err := JSONStringifyParse(object)
-	if err != nil {
-		return false, err
-	}
-
-	if len(path) == 0 || path == "$" {
-		return ifValueFoundInObject([]any{"$"}, objectJson), nil
-	} else {
-		return n.forEachValueInObject(objectJson, GetPathObjectKeyArrayIndexes(path), []any{"$"}), nil
-	}
+	return n.forEachValueInObject(object, GetPathObjectKeyArrayIndexes(path), []any{"$"})
 }
 
 func (n *forEachValInObj) forEachValueInObject(currentValue any, pathObjectKeyArrayIndexes []string, currentValuePathKeyArrayIndexes []any) bool {
@@ -53,10 +67,9 @@ func (n *forEachValInObj) forEachValueInObject(currentValue any, pathObjectKeyAr
 						if n.forEachValueInObject(value, pathObjectKeyArrayIndexes, append(currentValuePathKeyArrayIndexes, key)) {
 							return true
 						}
-					} else {
-						if n.ifValueFoundInObject(append(currentValuePathKeyArrayIndexes, key), value) {
-							return true
-						}
+					}
+					if n.ifValueFoundInObject(append(currentValuePathKeyArrayIndexes, key), value) {
+						return true
 					}
 				}
 			case reflect.Slice:
@@ -65,11 +78,9 @@ func (n *forEachValInObj) forEachValueInObject(currentValue any, pathObjectKeyAr
 						if n.forEachValueInObject(value, pathObjectKeyArrayIndexes, append(currentValuePathKeyArrayIndexes, index)) {
 							return true
 						}
-					} else {
-						if n.ifValueFoundInObject(append(currentValuePathKeyArrayIndexes, index), value) {
-							return true
-						}
-
+					}
+					if n.ifValueFoundInObject(append(currentValuePathKeyArrayIndexes, index), value) {
+						return true
 					}
 				}
 			}

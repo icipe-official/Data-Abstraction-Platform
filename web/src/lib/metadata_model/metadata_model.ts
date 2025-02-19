@@ -55,17 +55,17 @@ export enum FConditionProperties {
 }
 
 export enum FilterCondition {
-	FIELD_GROUP_NO_OF_ENTRIES_GREATER_THAN = 'FILTER_FG_NO_OF_ENTRIES_GREATER_THAN',
-	FIELD_GROUP_NO_OF_ENTRIES_LESS_THAN = 'FILTER_FG_NO_OF_ENTRIES_LESS_THAN',
-	FIELD_GROUP_NO_OF_ENTRIES_EQUAL_TO = 'FILTER_FG_NO_OF_ENTRIES_EQUAL_TO',
-	FIELD_NUMBER_GREATER_THAN = 'FILTER_F_NUMBER_GREATER_THAN',
-	FIELD_NUMBER_LESS_THAN = 'FILTER_F_NUMBER_LESS_THAN',
-	FIELD_TIMESTAMP_GREATER_THAN = 'FILTER_F_TIMESTAMP_GREATER_THAN',
-	FIELD_TIMESTAMP_LESS_THAN = 'FILTER_F_TIMESTAMP_LESS_THAN',
-	FIELD_EQUAL_TO = 'FILTER_F_EQUAL_TO',
-	FIELD_TEXT_BEGINS_WITH = 'FILTER_F_TEXT_BEGINS_WITH',
-	FIELD_TEXT_ENDS_WITH = 'FILTER_F_TEXT_ENDS_WITH',
-	FIELD_TEXT_CONTAINS = 'FILTER_F_TEXT_CONTAINS'
+	NO_OF_ENTRIES_GREATER_THAN = 'NO_OF_ENTRIES_GREATER_THAN',
+	NO_OF_ENTRIES_LESS_THAN = 'NO_OF_ENTRIES_LESS_THAN',
+	NO_OF_ENTRIES_EQUAL_TO = 'NO_OF_ENTRIES_EQUAL_TO',
+	NUMBER_GREATER_THAN = 'NUMBER_GREATER_THAN',
+	NUMBER_LESS_THAN = 'NUMBER_LESS_THAN',
+	TIMESTAMP_GREATER_THAN = 'TIMESTAMP_GREATER_THAN',
+	TIMESTAMP_LESS_THAN = 'TIMESTAMP_LESS_THAN',
+	EQUAL_TO = 'EQUAL_TO',
+	TEXT_BEGINS_WITH = 'TEXT_BEGINS_WITH',
+	TEXT_ENDS_WITH = 'TEXT_ENDS_WITH',
+	TEXT_CONTAINS = 'TEXT_CONTAINS'
 }
 
 export const EmptyMetadataModel = () =>
@@ -108,7 +108,7 @@ export interface IMetadataModel {
 	[FgProperties.GROUP_EXTRACT_AS_SINGLE_FIELD]?: boolean
 
 	[FgProperties.GROUP_READ_ORDER_OF_FIELDS]?: string[]
-	[FgProperties.GROUP_FIELDS]?: { [key: string]: IMetadataModel }[]
+	[FgProperties.GROUP_FIELDS]?: { [key: string]: IMetadataModel[] }[]
 
 	[FgProperties.DATABASE_TABLE_COLLECTION_NAME]?: string
 	[FgProperties.DATABASE_TABLE_COLLECTION_UID]?: string
@@ -133,8 +133,7 @@ export enum FieldUi {
 	CHECKBOX = 'checkbox',
 	SELECT = 'select',
 	DATETIME = 'datetime',
-	GROUP = 'group',
-	UUID = 'uuid'
+	GROUP = 'group'
 }
 
 export enum FieldDateTimeFormat {
@@ -317,7 +316,7 @@ export interface I2DFields {
 
 export type RepositionFields = { [key: number]: I2DFieldViewPosition }
 
-export const IsGroupFieldsValid = (fg: any) => typeof fg === 'object' && !Array.isArray(fg) && fg !== null
+export const IsGroupFieldsValid = (gf: any) => typeof gf === 'object' && !Array.isArray(gf) && gf !== null
 export const IsFieldGroupKeyValid = (fgKey: any) => typeof fgKey === 'string'
 export const IsGroupReadOrderOfFieldsValid = (groofv: any) => typeof groofv === 'object' && Array.isArray(groofv)
 export const IsFieldAField = (fg: any) => typeof fg[FgProperties.FIELD_DATATYPE] === 'string' && typeof fg[FgProperties.FIELD_UI] === 'string'
@@ -334,4 +333,3 @@ export function GetFieldGroupName(fg: any, defaultValue: string = '#unnamed') {
 }
 
 export type Error = any[]
-

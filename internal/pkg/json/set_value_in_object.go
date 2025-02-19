@@ -9,25 +9,24 @@ import (
 //
 // Parameters:
 //
-//   - object - Object or array to modify through addition of valueToSet. Will be converted to JSON and back.
+//   - object - Object or array to modify through deletion. Expected to be presented as if converted from JSON.
 //
-//   - valueToSet - value to be added to object.
-//
-//   - path - Object-like path to where to place valueToSet.
-//
+//   - path - Object-like path to value to get from object.
 //     Numbers enclosed in square brackets or between full-stops indicate array indexes.
 //
 //     If path is empty, or equals to '$' then the object itself will be returned.
 //
-//     If path begins with `$.`, then it is removed. Intention is to match Postgres' json path syntax.
+//     If path begins with `$.`, then it is removed. Inspired by Postgres' json path syntax.
 //
 //     Examples:
 //
-//   - `$.[8].childobject.array[2][3].childobject`.
+//     -- `$.[8].childobject.array[2][3].childobject`.
 //
-//   - `$.8.childobject.array.2.3.childobject`.
+//     -- `$.8.childobject.array.2.3.childobject`.
 //
-// Returns object with valueToSet added to it or an error if converting object and valueToSet to JSON and back fails.
+//   - valueToSet - value to be added to object. Expected to be presented as if converted from JSON.
+//
+// Return Object with value added to it and error if converting valueToSet to Json and back failed.
 func SetValueInObject(object any, path string, valueToSet any) (any, error) {
 	var valueToSetJson any
 
@@ -73,16 +72,6 @@ func SetValueInObject(object any, path string, valueToSet any) (any, error) {
 		return currentValue
 	}
 
-	objectJson, err := JSONStringifyParse(object)
-	if err != nil {
-		return nil, err
-	}
-
-	valueToSetJson, err = JSONStringifyParse(&valueToSet)
-	if err != nil {
-		return nil, err
-	}
-
 	if len(path) == 0 || path == "$" {
 		if valueToSetJson, err := JSONStringifyParse(&valueToSet); err != nil {
 			return nil, err
@@ -90,6 +79,6 @@ func SetValueInObject(object any, path string, valueToSet any) (any, error) {
 			return valueToSetJson, nil
 		}
 	} else {
-		return setValueInObject(objectJson, GetPathObjectKeyArrayIndexes(path)), nil
+		return setValueInObject(object, GetPathObjectKeyArrayIndexes(path)), nil
 	}
 }
