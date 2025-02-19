@@ -17,7 +17,8 @@ enum Tab {
 enum ViewTab {
 	DATUM_INPUT = 'DATUM_INPUT',
 	TABLE = 'TABLE',
-	QUERY_PANEL = 'QUERY_PANEL'
+	QUERY_PANEL = 'QUERY_PANEL',
+	DATUM_VIEW = 'DATUM_VIEW'
 }
 
 @customElement('metadata-model-page')
@@ -79,6 +80,13 @@ class Page extends LitElement {
 		args: () => []
 	})
 
+	private _importMMViewDatumTask = new Task(this, {
+		task: async () => {
+			await import('$src/lib/components/metadata-model/view/datum/component')
+		},
+		args: () => []
+	})
+
 	private _pendingTaskHtmlTemplate = () => html`
 		<div class="flex-1 flex flex-col justify-center items-center text-xl space-y-5">
 			<div class="flex">
@@ -101,6 +109,7 @@ class Page extends LitElement {
 				<button role="tab" class="tab${this._currentViewTab === ViewTab.DATUM_INPUT ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.DATUM_INPUT)}>Datum Input</button>
 				<button role="tab" class="tab${this._currentViewTab === ViewTab.TABLE ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.TABLE)}>Table</button>
 				<button role="tab" class="tab${this._currentViewTab === ViewTab.QUERY_PANEL ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.QUERY_PANEL)}>Query Panel</button>
+				<button role="tab" class="tab${this._currentViewTab === ViewTab.DATUM_VIEW ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.DATUM_VIEW)}>Datum View</button>
 			</header>
 			<main class="flex-[9] h-full w-full overflow-hidden flex">
 				${(() => {
@@ -155,6 +164,19 @@ class Page extends LitElement {
 											this._datumeinputqueryconditions = structuredClone(e.detail.value)
 										}}
 									></metadata-model-view-query-panel>
+								`,
+								error: (e) => {
+									console.error(e)
+									return this._errorTaskHtmlTemplate()
+								}
+							})
+						case ViewTab.DATUM_VIEW:
+							return this._importMMViewDatumTask.render({
+								pending: () => this._pendingTaskHtmlTemplate(),
+								complete: () => html`
+									<div class="border-[1px] border-gray-400 flex-1 h-fit max-h-full max-w-full flex overflow-hidden">
+										<metadata-model-view-datum class="flex-1" .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${this._datuminputsampledata}></metadata-model-view-datum>
+									</div>
 								`,
 								error: (e) => {
 									console.error(e)
