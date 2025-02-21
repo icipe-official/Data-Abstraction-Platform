@@ -3,6 +3,7 @@ import Interface from '$src/lib/interface'
 import Log from '$src/lib/log'
 import '$src/lib/components/toast-notification/component'
 import '$src/lib/components/loading-screen/component'
+import '$src/lib/components/app-context/component'
 
 // listen to back forward navigation
 window.addEventListener('popstate', async (e: PopStateEvent) => {

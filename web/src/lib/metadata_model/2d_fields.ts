@@ -1,7 +1,7 @@
 import MetadataModel from '.'
 
 /**
- * Extracts fields that will can used for working with data in 2D array form like in excel or csv.
+ * Extracts fields that can be used for working with data in 2D array form like in excel or csv.
  *
  * Recommended order to Extract fields:
  * * {@linkcode Extract2DFields.Extract}
@@ -14,7 +14,7 @@ export class Extract2DFields {
 	private _skipIfFGDisabled: boolean = true
 	private _skipIfDataExtraction: boolean = true
 	private _removePrimaryKey: boolean = true
-	private _metadatamodel: any
+	private _metadataModel: any
 	private _repositionFields: MetadataModel.RepositionFields = {}
 
 	/**
@@ -31,7 +31,7 @@ export class Extract2DFields {
 			throw [Extract2DFields.name, 'argument metadatamodel is not an object']
 		}
 
-		this._metadatamodel = metadatamodel
+		this._metadataModel = metadatamodel
 		this._skipIfFGDisabled = skipIfFGDisabled
 		this._skipIfDataExtraction = skipIfDataExtraction
 		this._removePrimaryKey = removePrimaryKey
@@ -63,7 +63,7 @@ export class Extract2DFields {
 	 */
 	Extract() {
 		try {
-			this._extract(this._metadatamodel)
+			this._extract(this._metadataModel)
 		} catch (e) {
 			throw e
 		}
@@ -99,45 +99,32 @@ export class Extract2DFields {
 			throw [this._extract.name, `mmGroup${MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS} is not an array`, structuredClone(mmGroupReadOrderOfFields)]
 		}
 
-		for (const fgKey of mmGroupReadOrderOfFields) {
-			if (!MetadataModel.IsGroupFieldsValid(mmGroupFields[fgKey])) {
-				throw [this._extract.name, `mmGroupFields[${fgKey}] is not an object`, structuredClone(mmGroupFields[fgKey])]
+		for (const fgKeySuffix of mmGroupReadOrderOfFields) {
+			if (!MetadataModel.IsGroupFieldsValid(mmGroupFields[fgKeySuffix])) {
+				throw [this._extract.name, `mmGroupFields[${fgKeySuffix}] is not an object`, structuredClone(mmGroupFields[fgKeySuffix])]
 			}
 
-			if (Array.isArray(mmGroupFields[fgKey][MetadataModel.FgProperties.GROUP_FIELDS])) {
-				const skipDataExtraction = mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] || mmGroupSkipDataExtraction
-				const viewDisable = mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] || mmGroupViewDisable
+			if (Array.isArray(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.GROUP_FIELDS])) {
+				const skipDataExtraction = mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] || mmGroupSkipDataExtraction
+				const viewDisable = mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] || mmGroupViewDisable
 
-				if (mmGroupFields[fgKey][MetadataModel.FgProperties.GROUP_EXTRACT_AS_SINGLE_FIELD]) {
-					this._fields.push(mmGroupFields[fgKey])
+				if (mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.GROUP_EXTRACT_AS_SINGLE_FIELD]) {
+					this._fields.push(structuredClone(mmGroupFields[fgKeySuffix]))
 					continue
 				}
 
 				if (
-					MetadataModel.GroupCanBeProcessedAs2D(mmGroupFields[fgKey]) &&
-					mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] &&
-					!Number.isNaN(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) &&
-					mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS] > 0
+					MetadataModel.GroupCanBeProcessedAs2D(mmGroupFields[fgKeySuffix]) &&
+					mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] &&
+					!Number.isNaN(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) &&
+					mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS] > 1
 				) {
-					const maxIndexOfValuesInObject = Number(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) - 1
-					for (let columnIndex = 0; columnIndex <= maxIndexOfValuesInObject; columnIndex++) {
-						for (let value of Object.values(mmGroupFields[fgKey][MetadataModel.FgProperties.GROUP_FIELDS][0])) {
+					const maxIndexOfValuesInObject = Number(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS])
+					for (let columnIndex = 0; columnIndex < maxIndexOfValuesInObject; columnIndex++) {
+						for (let value of Object.values(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.GROUP_FIELDS][0])) {
 							let newField: any = structuredClone(value)
 
-							if (skipDataExtraction) {
-								newField[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] = true
-							}
-
-							if (viewDisable) {
-								newField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
-							}
-
-							newField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] = columnIndex
-							if (newField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT]) {
-								newField[MetadataModel.FgProperties.FIELD_GROUP_NAME] = (newField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT] as string).replace(MetadataModel.ARRAY_PATH_REGEX_SEARCH, `${columnIndex + 1}`)
-							} else {
-								newField[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${newField[MetadataModel.FgProperties.FIELD_GROUP_NAME]} ${columnIndex + 1}`
-							}
+							this._updateSeparateColumnsField(newField, mmGroupSkipDataExtraction, mmGroupViewDisable, columnIndex)
 
 							this._fields.push(newField)
 						}
@@ -145,34 +132,21 @@ export class Extract2DFields {
 					continue
 				}
 
-				this._extract(mmGroupFields[fgKey], skipDataExtraction, viewDisable)
+				this._extract(mmGroupFields[fgKeySuffix], skipDataExtraction, viewDisable)
 				continue
 			}
 
 			if (
-				mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] &&
-				!Number.isNaN(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) &&
-				mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS] > 0
+				mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS] &&
+				!Number.isNaN(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) &&
+				mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS] > 1
 			) {
-				const maxNoOfValuesInSeparateColumns = Number(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS])
+				const maxNoOfValuesInSeparateColumns = Number(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS])
 
 				for (let columnIndex = 0; columnIndex < maxNoOfValuesInSeparateColumns; columnIndex++) {
-					let newField: any = structuredClone(mmGroupFields[fgKey])
+					let newField: any = structuredClone(mmGroupFields[fgKeySuffix])
 
-					if (mmGroupSkipDataExtraction) {
-						newField[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] = true
-					}
-
-					if (mmGroupViewDisable) {
-						newField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
-					}
-
-					newField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] = columnIndex
-					if (newField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT]) {
-						newField[MetadataModel.FgProperties.FIELD_GROUP_NAME] = (newField[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT] as string).replace(MetadataModel.ARRAY_PATH_REGEX_SEARCH, `${columnIndex + 1}`)
-					} else {
-						newField[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${newField[MetadataModel.FgProperties.FIELD_GROUP_NAME]} ${columnIndex + 1}`
-					}
+					this._updateSeparateColumnsField(newField, mmGroupSkipDataExtraction, mmGroupViewDisable, columnIndex)
 
 					this._fields.push(newField)
 				}
@@ -180,7 +154,7 @@ export class Extract2DFields {
 				continue
 			}
 
-			let newField: any = structuredClone(mmGroupFields[fgKey])
+			let newField: any = structuredClone(mmGroupFields[fgKeySuffix])
 
 			if (MetadataModel.Is2DFieldViewPositionValid(newField)) {
 				this._repositionFields[this._fields.length] = newField[MetadataModel.FgProperties.FIELD_2D_VIEW_POSITION]
@@ -195,6 +169,23 @@ export class Extract2DFields {
 			}
 
 			this._fields.push(newField)
+		}
+	}
+
+	private _updateSeparateColumnsField(fg: any, mmGroupSkipDataExtraction: boolean, mmGroupViewDisable: boolean, columnIndex: number) {
+		if (mmGroupSkipDataExtraction) {
+			fg[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] = true
+		}
+
+		if (mmGroupViewDisable) {
+			fg[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
+		}
+
+		fg[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] = columnIndex
+		if (fg[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT]) {
+			fg[MetadataModel.FgProperties.FIELD_GROUP_NAME] = (fg[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_FORMAT] as string).replace(MetadataModel.ARRAY_PATH_REGEX_SEARCH, `${columnIndex + 1}`)
+		} else {
+			fg[MetadataModel.FgProperties.FIELD_GROUP_NAME] = `${MetadataModel.GetFieldGroupName(fg)} ${columnIndex + 1}`
 		}
 	}
 
@@ -213,7 +204,7 @@ export class Extract2DFields {
 	}
 
 	/**
-	 * Calls {@linkcode RemoveSkipped2DFields} and updates {@linkcode Extract2DFields._fields}..
+	 * Calls {@linkcode RemoveSkipped2DFields} and updates {@linkcode Extract2DFields._fields}.
 	 */
 	RemoveSkipped() {
 		this._fields = RemoveSkipped2DFields(this._fields, this._skipIfFGDisabled, this._skipIfDataExtraction, this._removePrimaryKey)
@@ -243,7 +234,7 @@ export class Reorder2DFields {
 	}
 
 	/**
-	 *
+	 * Initializes Reorder2DFields.sourceToTargetReadOrderOfFields and Reorder2DFields.targetToSourceReadOrderOfFields.
 	 * @param sourceFields Current order of columns in each row of data.
 	 * @param targetFields Target order of columns in each row of data.
 	 *
@@ -275,7 +266,6 @@ export class Reorder2DFields {
 
 					this._sourceToTargetReadOrderOfFields.push(sfIndex)
 					sourceIndex = sfIndex
-
 					break
 				}
 			}

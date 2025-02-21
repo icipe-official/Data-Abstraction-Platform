@@ -111,7 +111,7 @@ class Page extends LitElement {
 				<button role="tab" class="tab${this._currentViewTab === ViewTab.QUERY_PANEL ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.QUERY_PANEL)}>Query Panel</button>
 				<button role="tab" class="tab${this._currentViewTab === ViewTab.DATUM_VIEW ? ' tab-active' : ''}" @click=${() => (this._currentViewTab = ViewTab.DATUM_VIEW)}>Datum View</button>
 			</header>
-			<main class="flex-[9] h-full w-full overflow-hidden flex">
+			<main class="flex-[9] h-full w-full overflow-hidden flex flex-col">
 				${(() => {
 					switch (this._currentViewTab) {
 						case ViewTab.DATUM_INPUT:
@@ -141,7 +141,7 @@ class Page extends LitElement {
 								pending: () => this._pendingTaskHtmlTemplate(),
 								complete: () => html`
 									<div class="border-[1px] border-gray-400 flex-1 h-fit max-h-full max-w-full flex overflow-hidden">
-										<metadata-model-view-table .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${[this._datuminputsampledata]} .color=${Theme.Color.SECONDARY}></metadata-model-view-table>
+										<metadata-model-view-table .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${[this._datuminputsampledata]}></metadata-model-view-table>
 									</div>
 								`,
 								error: (e) => {
@@ -164,6 +164,14 @@ class Page extends LitElement {
 											this._datumeinputqueryconditions = structuredClone(e.detail.value)
 										}}
 									></metadata-model-view-query-panel>
+									<button
+										class="flex-1 btn ${this._colorTheme === Theme.Color.PRIMARY ? 'btn-primary' : this._colorTheme === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}"
+										@click=${() => {
+											console.log(MetadataModel.FilterData(this._datumeinputqueryconditions, [this._datuminputsampledata]))
+										}}
+									>
+										check is sample data passes query condtion
+									</button>
 								`,
 								error: (e) => {
 									console.error(e)

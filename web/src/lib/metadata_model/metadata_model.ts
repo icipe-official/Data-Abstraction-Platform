@@ -32,26 +32,22 @@ export enum QcProperties {
 }
 
 export interface IFilterCondition {
-	[FConditionProperties.FILTER_NEGATE]?: boolean
-	[FConditionProperties.FILTER_CONDITION]?: FilterCondition
-	[FConditionProperties.FILTER_VALUE]?: any[] | any
-}
-
-export enum FEqualToValue {
-	FILTER_NEGATE = '$FILTER_NEGATE',
-	FILTER_CONDITION = '$FILTER_CONDITION',
-	FILTER_VALUE = '$FILTER_VALUE'
+	[FConditionProperties.NEGATE]?: boolean
+	[FConditionProperties.CONDITION]?: FilterCondition
+	[FConditionProperties.DATE_TIME_FORMAT]?: FieldDateTimeFormat
+	[FConditionProperties.VALUE]?: any[] | any
 }
 
 export interface IFConditionFilterEqualToValue {
 	[FSelectProperties.TYPE]?: FSelectType
-	[FSelectProperties.VALUE]?: any
+	[FSelectProperties.VALUE]?: any | any[]
 }
 
 export enum FConditionProperties {
-	FILTER_NEGATE = '$FILTER_NEGATE',
-	FILTER_CONDITION = '$FILTER_CONDITION',
-	FILTER_VALUE = '$FILTER_VALUE'
+	NEGATE = '$FILTER_NEGATE',
+	CONDITION = '$FILTER_CONDITION',
+	DATE_TIME_FORMAT = '$FILTER_DATE_TIME_FORMAT',
+	VALUE = '$FILTER_VALUE'
 }
 
 export enum FilterCondition {
@@ -150,18 +146,21 @@ export const ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH = /\[\*\]/
 export enum FSelectProperties {
 	TYPE = '$TYPE',
 	LABEL = '$LABEL',
+	DATE_TIME_FORMAT = '$DATE_TIME_FORMAT',
 	VALUE = '$VALUE'
 }
 
 export enum FSelectType {
 	NUMBER = 'number',
 	TEXT = 'text',
-	BOOLEAN = 'boolean'
+	BOOLEAN = 'boolean',
+	SELECT = 'select'
 }
 
 export interface ISelectOption {
 	[FSelectProperties.LABEL]?: string
 	[FSelectProperties.TYPE]?: FSelectType
+	[FSelectProperties.DATE_TIME_FORMAT]?: FieldDateTimeFormat 
 	[FSelectProperties.VALUE]?: any
 }
 

@@ -71,8 +71,6 @@ export class ConvertObjectsTo2DArray {
 	 * @returns
 	 */
 	private _initFgConversion(mmGroup: MetadataModel.IMetadataModel | any) {
-		let mmGroupsConversion: IFieldGroupConversion = {}
-
 		const mmGroupFields = mmGroup[MetadataModel.FgProperties.GROUP_FIELDS][0]
 		if (!MetadataModel.IsGroupFieldsValid(mmGroupFields)) {
 			throw [this._initFgConversion.name, 'mmGroupFields is not an object', structuredClone(mmGroupFields)]
@@ -83,7 +81,10 @@ export class ConvertObjectsTo2DArray {
 			throw [this._initFgConversion.name, 'mmGroupReadOrderOfFields is not an array', structuredClone(mmGroupReadOrderOfFields)]
 		}
 
-		mmGroupsConversion.field_groups = []
+		let mmGroupsConversion: IFieldGroupConversion = {
+			field_groups: []
+		}
+
 		for (const fgKey of mmGroupReadOrderOfFields) {
 			if (!MetadataModel.IsGroupFieldsValid(mmGroupFields[fgKey])) {
 				throw [this._initFgConversion.name, `mmGroupFields[${fgKey}] is not an object`, structuredClone(mmGroupFields[fgKey])]
@@ -121,7 +122,7 @@ export class ConvertObjectsTo2DArray {
 				}
 			}
 
-			mmGroupsConversion.field_groups.push(newFieldGroupConversion)
+			mmGroupsConversion.field_groups!.push(newFieldGroupConversion)
 		}
 
 		return mmGroupsConversion
@@ -138,7 +139,7 @@ export class ConvertObjectsTo2DArray {
 	 */
 	Convert(data: any[]) {
 		if (!Array.isArray(data)) {
-			throw [this.Convert.name, 'datum is not an array']
+			throw [this.Convert.name, 'data is not an array']
 		}
 
 		for (let datum of data) {
@@ -186,19 +187,13 @@ export class ConvertObjectsTo2DArray {
 
 			if (Array.isArray(fgConversion.group_read_order_of_fields)) {
 				if (typeof fgConversion.fielg_group_sep_cols_max_values === 'number' && fgConversion.fielg_group_sep_cols_max_values > 0) {
-					let newValueInObject: any[] = []
-
-					for (let i = 0; i <= fgConversion.fielg_group_sep_cols_max_values; i++) {
-						for (const _ of fgConversion.group_read_order_of_fields) {
-							newValueInObject = [...newValueInObject, undefined]
-						}
-					}
+					let newValueInObject = new Array<any>(fgConversion.fielg_group_sep_cols_max_values * fgConversion.group_read_order_of_fields.length)
 
 					if (Array.isArray(valueInObject) && valueInObject.length > 0) {
 						let startIndexOfValueInObject = 0
 						for (let vioIndex = 0; vioIndex < valueInObject.length; vioIndex++) {
-							for (const fgKey of fgConversion.group_read_order_of_fields) {
-								newValueInObject[startIndexOfValueInObject] = Json.GetValueInObject(valueInObject, `$.${vioIndex}.${fgKey}`)
+							for (const fgKeySuffix of fgConversion.group_read_order_of_fields) {
+								newValueInObject[startIndexOfValueInObject] = Json.GetValueInObject(valueInObject, `$.${vioIndex}.${fgKeySuffix}`)
 								startIndexOfValueInObject += 1
 							}
 						}
@@ -218,16 +213,12 @@ export class ConvertObjectsTo2DArray {
 				}
 
 				datumObject2DArray = this._convert(datumObject2DArray, fgConversion, [...arrayIndexes, 0])
-
 				continue
 			}
 
 			if (typeof fgConversion.fielg_group_sep_cols_max_values === 'number' && fgConversion.fielg_group_sep_cols_max_values > 0) {
-				let newValueInObject: any[] = []
+				let newValueInObject = new Array<any>(fgConversion.fielg_group_sep_cols_max_values)
 
-				for (let i = 0; i <= fgConversion.fielg_group_sep_cols_max_values; i++) {
-					newValueInObject = [...newValueInObject, undefined]
-				}
 				if (Array.isArray(valueInObject) && valueInObject.length > 0) {
 					for (let vioIndex = 0; vioIndex < valueInObject.length; vioIndex++) {
 						newValueInObject[vioIndex] = valueInObject[vioIndex]

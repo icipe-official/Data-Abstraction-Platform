@@ -146,8 +146,8 @@ function mapFieldGroups(mmGroup: any, callback: (property: any) => any) {
 		if (value && value !== null) {
 			mmGroup[FgProperties.GROUP_FIELDS][0][key] = value
 		}
-		if (Array.isArray(mmGroupFields[key][FgProperties.GROUP_FIELDS])) {
-			mmGroup[FgProperties.GROUP_FIELDS][0][key] = mapFieldGroups(mmGroupFields[key], callback)
+		if (Array.isArray(mmGroup[FgProperties.GROUP_FIELDS][0][key][FgProperties.GROUP_FIELDS])) {
+			mmGroup[FgProperties.GROUP_FIELDS][0][key] = mapFieldGroups(mmGroup[FgProperties.GROUP_FIELDS][0][key], callback)
 		}
 	}
 

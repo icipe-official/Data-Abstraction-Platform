@@ -1,12 +1,21 @@
 package metadatamodel
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
+
+	intpkgutils "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/utils"
 )
+
+func argumentsError(function any, variableName string, expectedType string, valueFound any) error {
+	return fmt.Errorf("%s->%v", "ErrArgumentsInvalid", intpkgutils.GetFunctionNameAndErrorMessage(function, fmt.Sprintf("Expected %s to be of type %s, found %T", variableName, expectedType, valueFound)))
+}
+
+const ErrArgumentsInvalid string = "ErrArgumentsInvalid"
 
 const (
 	QUERY_CONDITION_PROP_FG_PROPERTY              string = "$FG_PROPERTY"
@@ -18,6 +27,7 @@ const (
 const (
 	FILTER_CONDITION_PROP_FILTER_NEGATE    string = "$FILTER_NEGATE"
 	FILTER_CONDITION_PROP_FILTER_CONDITION string = "$FILTER_CONDITION"
+	FILTER_CONDITION_PROP_DATE_TIME_FORMAT string = "$FILTER_DATE_TIME_FORMAT"
 	FILTER_CONDITION_PROP_FILTER_VALUE     string = "$FILTER_VALUE"
 )
 
@@ -63,15 +73,18 @@ const (
 )
 
 const (
-	FIELD_SELECT_PROP_TYPE  string = "$TYPE"
-	FIELD_SELECT_PROP_LABEL string = "$LABEL"
-	FIELD_SELECT_PROP_VALUE string = "$VALUE"
+	FIELD_SELECT_PROP_TYPE        string = "$TYPE"
+	FIELD_SELECT_PROP_LABEL       string = "$LABEL"
+	FIELD_SELECT_DATE_TIME_FORMAT string = "$DATE_TIME_FORMAT"
+	FIELD_SELECT_PROP_VALUE       string = "$VALUE"
 )
 
 const (
-	FIELD_SELECT_TYPE_NUMBER  string = "number"
-	FIELD_SELECT_TYPE_TEXT    string = "text"
-	FIELD_SELECT_TYPE_BOOLEAN string = "boolean"
+	FIELD_SELECT_TYPE_NUMBER    string = "number"
+	FIELD_SELECT_TYPE_TEXT      string = "text"
+	FIELD_SELECT_TYPE_BOOLEAN   string = "boolean"
+	FIELD_SELECT_TYPE_SELECT    string = "select"
+	FIELD_SELECT_TYPE_TIMESTAMP string = "timestamp"
 )
 
 const (
@@ -172,27 +185,51 @@ func PreparePathToValueInObject(path string, groupIndexes []int) (string, error)
 	return path, nil
 }
 
-func GroupCanBeProcessAs2D(fieldgroup any) bool {
-	if fieldGroupMap, ok := fieldgroup.(map[string]any); ok {
-		if groupFieldsArray, ok := fieldGroupMap[FIELD_GROUP_PROP_GROUP_FIELDS].([]any); ok && len(groupFieldsArray) == 1 {
-			if groupFieldsMap, ok := groupFieldsArray[0].(map[string]any); ok {
-				for _, value := range groupFieldsMap {
-					if valueMap, ok := value.(map[string]any); ok {
-						if reflect.TypeOf(valueMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS]).Kind() == reflect.Slice {
-							return false
+func FgGet2DConversion(fg any) int {
+	fgViewMaxNoOfValuesInSeparateColumns := -1
+	if fgMap, ok := fg.(map[string]any); ok {
+		if value, ok := fgMap[FIELD_GROUP_PROP_FIELD_GROUP_VIEW_VALUES_IN_SEPARATE_COLUMNS].(bool); ok && value {
+			if groupFieldsArray, ok := fgMap[FIELD_GROUP_PROP_GROUP_FIELDS].([]any); ok && len(groupFieldsArray) > 0 {
+				if groupFieldsMap, ok := groupFieldsArray[0].(map[string]any); ok {
+					for _, value := range groupFieldsMap {
+						if valueMap, ok := value.(map[string]any); ok {
+							if reflect.TypeOf(valueMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS]).Kind() == reflect.Slice {
+								return fgViewMaxNoOfValuesInSeparateColumns
+							}
 						}
 					}
 				}
-			} else {
-				return false
 			}
-		} else {
-			return false
+			if v, ok := fgMap[FIELD_GROUP_PROP_FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS].(int); ok && fgViewMaxNoOfValuesInSeparateColumns > 1 {
+				fgViewMaxNoOfValuesInSeparateColumns = v
+			}
 		}
 	}
 
-	return true
+	return fgViewMaxNoOfValuesInSeparateColumns
 }
+
+// func GroupCanBeProcessAs2D(fieldgroup any) bool {
+// 	if fieldGroupMap, ok := fieldgroup.(map[string]any); ok {
+// 		if groupFieldsArray, ok := fieldGroupMap[FIELD_GROUP_PROP_GROUP_FIELDS].([]any); ok && len(groupFieldsArray) == 1 {
+// 			if groupFieldsMap, ok := groupFieldsArray[0].(map[string]any); ok {
+// 				for _, value := range groupFieldsMap {
+// 					if valueMap, ok := value.(map[string]any); ok {
+// 						if reflect.TypeOf(valueMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS]).Kind() == reflect.Slice {
+// 							return false
+// 						}
+// 					}
+// 				}
+// 			} else {
+// 				return false
+// 			}
+// 		} else {
+// 			return false
+// 		}
+// 	}
+
+// 	return true
+// }
 
 func IfKeySuffixMatchesValues(keyToCheck string, valuesToMatch []string) bool {
 	for _, value := range valuesToMatch {
@@ -228,6 +265,22 @@ func IsFieldAField(f any) bool {
 	return false
 }
 
+func Get2DFieldViewPosition(f map[string]any) *I2DFieldViewPosition {
+	if value, ok := f[FIELD_GROUP_PROP_FIELD_2D_VIEW_POSITION].(map[string]any); ok {
+		if jsonData, err := json.Marshal(value); err != nil {
+			return nil
+		} else {
+			var fieldViewPostion *I2DFieldViewPosition
+			if err := json.Unmarshal(jsonData, fieldViewPostion); err != nil {
+				return nil
+			}
+			return fieldViewPostion
+		}
+	}
+
+	return nil
+}
+
 func Is2DFieldViewPositionValid(f any) bool {
 	if field, ok := f.(map[string]any); ok {
 		if field2Dposition, ok := field[FIELD_GROUP_PROP_FIELD_2D_VIEW_POSITION].(map[string]any); ok {
@@ -236,6 +289,47 @@ func Is2DFieldViewPositionValid(f any) bool {
 	}
 
 	return false
+}
+
+func GetValueAsString(v any) (string, error) {
+	if value, ok := v.(string); ok {
+		return value, nil
+	}
+
+	return "", argumentsError(GetValueAsString, "v", "string", v)
+}
+
+func GetFieldGroupMap(fg any) (map[string]any, error) {
+	if fgMap, ok := fg.(map[string]any); ok {
+		return fgMap, nil
+	}
+
+	return nil, argumentsError(GetFieldGroupMap, "fgMap", "map[string]any", fg)
+}
+
+func GetGroupReadOrderOfFields(fg any) ([]any, error) {
+	if fgMap, ok := fg.(map[string]any); ok {
+		if gFields, ok := fgMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS].([]any); ok {
+			return gFields, nil
+		}
+		return nil, argumentsError(GetGroupReadOrderOfFields, "fgMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS]", "[]any", fgMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS])
+	}
+
+	return nil, argumentsError(GetGroupReadOrderOfFields, "fgMap", "map[string]any", fg)
+}
+
+func GetGroupFields(fg any) (map[string]any, error) {
+	if fgMap, ok := fg.(map[string]any); ok {
+		if gFields, ok := fgMap[FIELD_GROUP_PROP_GROUP_FIELDS].([]any); ok && len(gFields) > 0 {
+			if gFieldsMap, ok := gFields[0].(map[string]any); ok {
+				return gFieldsMap, nil
+			}
+			return nil, argumentsError(GetGroupReadOrderOfFields, "fgMap[FIELD_GROUP_PROP_GROUP_FIELDS]", "map[string]any", gFields[0])
+		}
+		return nil, argumentsError(GetGroupReadOrderOfFields, "fgMap[FIELD_GROUP_PROP_GROUP_FIELDS]", "[]any", fgMap[FIELD_GROUP_PROP_GROUP_FIELDS])
+	}
+
+	return nil, argumentsError(GetGroupReadOrderOfFields, "fgMap", "map[string]any", fg)
 }
 
 func GetFieldGroupName(fg any, defaultValue string) string {
@@ -259,19 +353,32 @@ func GetFieldGroupName(fg any, defaultValue string) string {
 	return defaultValue
 }
 
+type I2DFieldViewPosition struct {
+	FgKey                                   string `json:"$FIELD_GROUP_KEY,omitempty"`
+	FViewValuesInSeparateColumnsHeaderIndex *int   `json:"$FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX,omitempty"`
+	FieldPositionBefore                     *bool  `json:"$FIELD_POSITION_BEFORE,omitempty"`
+}
+
+type Field2DsWithReposition struct {
+	Fields     []any            `json:"fields,omitempty"`
+	Reposition RepositionFields `json:"reposition,omitempty"`
+}
+
+type RepositionFields map[int]*I2DFieldViewPosition
+
+type QueryConditions map[string]QueryCondition
+
 type QueryCondition struct {
-	QueryConditionLabel *string             `json:"$QC_LABEL,omitempty"`
-	FgProperty          *MetadataModel      `json:"$FG_PROPERTY,omitempty"`
-	FgFilterCondition   [][]FilterCondition `json:"$FG_FILTER_CONDITION,omitempty"`
-	SortByAsc           map[string]bool     `json:"$D_SORT_BY_ASC,omitempty"`
-	SortByDesc          map[string]bool     `json:"$D_SORT_BY_DESC,omitempty"`
-	Distinct            *bool               `json:"$D_DISTINCT,omitempty"`
+	FilterCondition             [][]FilterCondition `json:"$FG_FILTER_CONDITION,omitempty"`
+	DatabaseSortByAsc           *bool               `json:"$D_SORT_BY_ASC,omitempty"`
+	DatabaseFullTextSearchQuery *string             `json:"$D_FULL_TEXT_SEARCH_QUERY,omitempty"`
 }
 
 type FilterCondition struct {
-	FilterNegate    *bool  `json:"$FILTER_NEGATE,omitempty"`
-	FilterCondition string `json:"$FILTER_CONDITION,omitempty"`
-	FilterValue     []any  `json:"$FILTER_VALUE,omitempty"`
+	Negate         bool    `json:"$FILTER_NEGATE,omitempty"`
+	Condition      string  `json:"$FILTER_CONDITION,omitempty"`
+	DateTimeFormat *string `json:"$FILTER_DATE_TIME_FORMAT,omitempty"`
+	Value          any     `json:"$FILTER_VALUE,omitempty"`
 }
 
 type MetadataModel struct {

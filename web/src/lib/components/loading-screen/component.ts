@@ -1,7 +1,6 @@
-import Interface from "$src/lib/interface"
-import Misc from "$src/lib/miscellaneous"
-import { LitElement, unsafeCSS, html, nothing } from "lit"
-import { customElement, property, state } from "lit/decorators.js"
+import Misc from '$src/lib/miscellaneous'
+import { LitElement, unsafeCSS, html, nothing } from 'lit'
+import { customElement, state } from 'lit/decorators.js'
 import indexCss from '$src/assets/index.css?inline'
 
 /**
@@ -28,8 +27,6 @@ type ShowLoadingScreenEvent = CustomEvent & {
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss)]
 
-	@property({ type: Object }) data: Interface.SessionData | null = null
-
 	@state() private _loading: boolean = false
 	@state() private _loadingMessage: string | null = null
 
@@ -46,8 +43,6 @@ class Component extends LitElement {
 
 	connectedCallback(): void {
 		super.connectedCallback()
-		window.addEventListener(Misc.CustomEvents.SHOW_LOADING_SCREEN, this._showLoadingScreenListener as EventListenerOrEventListenerObject)
-		sessionStorage.setItem(Misc.SharedStorageKey.SESSION_DATA, JSON.stringify(this.data))
 	}
 
 	disconnectedCallback(): void {

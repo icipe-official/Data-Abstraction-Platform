@@ -35,7 +35,7 @@ class Component extends LitElement {
 		if (Array.isArray(this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION])) {
 			if (Array.isArray(this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex])) {
 				if (typeof this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex][andIndex] === 'object') {
-					filterCondition = this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex][andIndex][MetadataModel.FConditionProperties.FILTER_CONDITION] || ''
+					filterCondition = this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex][andIndex][MetadataModel.FConditionProperties.CONDITION] || ''
 				}
 			}
 		}
@@ -51,7 +51,7 @@ class Component extends LitElement {
 		if (Array.isArray(this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION])) {
 			if (Array.isArray(this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex])) {
 				if (typeof this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex][andIndex] === 'object') {
-					filterCondition = this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex][andIndex][MetadataModel.FConditionProperties.FILTER_CONDITION] || ''
+					filterCondition = this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex][andIndex][MetadataModel.FConditionProperties.CONDITION] || ''
 				}
 			}
 		}
@@ -66,7 +66,7 @@ class Component extends LitElement {
 		if (Array.isArray(this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION])) {
 			if (Array.isArray(this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex])) {
 				if (typeof this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex][andIndex] === 'object') {
-					filterCondition = this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex][andIndex][MetadataModel.FConditionProperties.FILTER_CONDITION] || ''
+					filterCondition = this.querycondition[MetadataModel.QcProperties.FG_FILTER_CONDITION][orIndex][andIndex][MetadataModel.FConditionProperties.CONDITION] || ''
 				}
 			}
 		}
@@ -763,21 +763,21 @@ class Component extends LitElement {
 																			class="rounded-none w-full select ${this.color === Theme.Color.PRIMARY ? 'select-primary' : this.color === Theme.Color.SECONDARY ? 'select-secondary' : 'select-accent'}"
 																			@change=${(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) => {
 																				if (e.currentTarget.value === 'true') {
-																					andFilterCondition[MetadataModel.FConditionProperties.FILTER_NEGATE] = true
+																					andFilterCondition[MetadataModel.FConditionProperties.NEGATE] = true
 																				} else if (e.currentTarget.value === 'false') {
-																					andFilterCondition[MetadataModel.FConditionProperties.FILTER_NEGATE] = false
+																					andFilterCondition[MetadataModel.FConditionProperties.NEGATE] = false
 																				} else {
 																					andFilterCondition = {}
 																				}
 																				this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
 																			}}
 																		>
-																			<option value="" .selected=${typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_NEGATE] !== 'boolean'}>is?/is not?</option>
-																			<option value="false" .selected=${!andFilterCondition[MetadataModel.FConditionProperties.FILTER_NEGATE] === false}>is</option>
-																			<option value="true" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_NEGATE] === true}>is not</option>
+																			<option value="" .selected=${typeof andFilterCondition[MetadataModel.FConditionProperties.NEGATE] !== 'boolean'}>is?/is not?</option>
+																			<option value="false" .selected=${andFilterCondition[MetadataModel.FConditionProperties.NEGATE] === false}>is</option>
+																			<option value="true" .selected=${andFilterCondition[MetadataModel.FConditionProperties.NEGATE] === true}>is not</option>
 																		</select>
 																		${(() => {
-																			if (typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_NEGATE] !== 'boolean') {
+																			if (typeof andFilterCondition[MetadataModel.FConditionProperties.NEGATE] !== 'boolean') {
 																				return nothing
 																			}
 
@@ -785,18 +785,21 @@ class Component extends LitElement {
 																				<select
 																					class="rounded-none w-full select ${this.color === Theme.Color.PRIMARY ? 'select-primary' : this.color === Theme.Color.SECONDARY ? 'select-secondary' : 'select-accent'}"
 																					@change=${(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) => {
-																						andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] = e.currentTarget.value as MetadataModel.FilterCondition
-																						if (typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] !== 'undefined') {
-																							delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE]
+																						andFilterCondition[MetadataModel.FConditionProperties.CONDITION] = e.currentTarget.value as MetadataModel.FilterCondition
+																						if (typeof andFilterCondition[MetadataModel.FConditionProperties.VALUE] !== 'undefined') {
+																							delete andFilterCondition[MetadataModel.FConditionProperties.VALUE]
+																							if (andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT]) {
+																								delete andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT]
+																							}
 																						}
 																						this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
 																					}}
 																				>
-																					<option value="" .selected=${typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] !== 'string'} disabled>pick filter condition...</option>
+																					<option value="" .selected=${typeof andFilterCondition[MetadataModel.FConditionProperties.CONDITION] !== 'string'} disabled>pick filter condition...</option>
 																					${(() => {
 																						if (MetadataModel.IsFieldAField(this.fieldgroup)) {
 																							return html`
-																								<option value="${MetadataModel.FilterCondition.EQUAL_TO}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.EQUAL_TO}>
+																								<option value="${MetadataModel.FilterCondition.EQUAL_TO}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.CONDITION] === MetadataModel.FilterCondition.EQUAL_TO}>
 																									${MetadataModel.GetFieldGroupName(this.fieldgroup)} value equal to
 																								</option>
 																							`
@@ -814,13 +817,13 @@ class Component extends LitElement {
 																								return this._timestampFilterConditionHtmlTemplate(orIndex, andIndex)
 																						}
 																					})()}
-																					<option value="${MetadataModel.FilterCondition.NO_OF_ENTRIES_GREATER_THAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.NO_OF_ENTRIES_GREATER_THAN}>
+																					<option value="${MetadataModel.FilterCondition.NO_OF_ENTRIES_GREATER_THAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.CONDITION] === MetadataModel.FilterCondition.NO_OF_ENTRIES_GREATER_THAN}>
 																						No. of '${MetadataModel.GetFieldGroupName(this.fieldgroup)}' greater than
 																					</option>
-																					<option value="${MetadataModel.FilterCondition.NO_OF_ENTRIES_LESS_THAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.NO_OF_ENTRIES_LESS_THAN}>
+																					<option value="${MetadataModel.FilterCondition.NO_OF_ENTRIES_LESS_THAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.CONDITION] === MetadataModel.FilterCondition.NO_OF_ENTRIES_LESS_THAN}>
 																						No. of '${MetadataModel.GetFieldGroupName(this.fieldgroup)}' less than
 																					</option>
-																					<option value="${MetadataModel.FilterCondition.NO_OF_ENTRIES_EQUAL_TO}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] === MetadataModel.FilterCondition.NO_OF_ENTRIES_EQUAL_TO}>
+																					<option value="${MetadataModel.FilterCondition.NO_OF_ENTRIES_EQUAL_TO}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.CONDITION] === MetadataModel.FilterCondition.NO_OF_ENTRIES_EQUAL_TO}>
 																						No. of '${MetadataModel.GetFieldGroupName(this.fieldgroup)}' equal to
 																					</option>
 																					<option value="" disabled>
@@ -849,11 +852,11 @@ class Component extends LitElement {
 																					})()}
 																				</select>
 																				${(() => {
-																					if (typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] !== 'string') {
+																					if (typeof andFilterCondition[MetadataModel.FConditionProperties.CONDITION] !== 'string') {
 																						return nothing
 																					}
 
-																					switch (andFilterCondition[MetadataModel.FConditionProperties.FILTER_CONDITION] as MetadataModel.FilterCondition) {
+																					switch (andFilterCondition[MetadataModel.FConditionProperties.CONDITION] as MetadataModel.FilterCondition) {
 																						case MetadataModel.FilterCondition.TEXT_BEGINS_WITH:
 																						case MetadataModel.FilterCondition.TEXT_CONTAINS:
 																						case MetadataModel.FilterCondition.TEXT_ENDS_WITH:
@@ -862,12 +865,12 @@ class Component extends LitElement {
 																									class="textarea w-full rounded-none ${this.color === Theme.Color.PRIMARY ? 'textarea-primary' : this.color === Theme.Color.SECONDARY ? 'textarea-secondary' : 'textarea-accent'}"
 																									placeholder="Enter text value..."
 																									type="text"
-																									.value=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] || ''}
+																									.value=${andFilterCondition[MetadataModel.FConditionProperties.VALUE] || ''}
 																									@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																										if (e.currentTarget.value.length > 0) {
-																											andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] = e.currentTarget.value
+																											andFilterCondition[MetadataModel.FConditionProperties.VALUE] = e.currentTarget.value
 																										} else {
-																											delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE]
+																											delete andFilterCondition[MetadataModel.FConditionProperties.VALUE]
 																										}
 																										this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
 																									}}
@@ -883,72 +886,87 @@ class Component extends LitElement {
 																									class="input w-full rounded-none ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
 																									placeholder="Enter numeric value..."
 																									type="number"
-																									.value=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] || ''}
+																									.value=${andFilterCondition[MetadataModel.FConditionProperties.VALUE] || ''}
 																									@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																										if (e.currentTarget.value.length > 0) {
-																											andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] = e.currentTarget.value
+																											if (!Number.isNaN(e.currentTarget.value)) {
+																												andFilterCondition[MetadataModel.FConditionProperties.VALUE] = Number(e.currentTarget.value)
+																											} else {
+																												delete andFilterCondition[MetadataModel.FConditionProperties.VALUE]
+																											}
 																										} else {
-																											delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE]
+																											delete andFilterCondition[MetadataModel.FConditionProperties.VALUE]
 																										}
 																										this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
 																									}}
 																									.value=${(() => {
-																										if (typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] === 'number') {
-																											return `${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE]}`
+																										if (typeof andFilterCondition[MetadataModel.FConditionProperties.VALUE] === 'number') {
+																											return `${andFilterCondition[MetadataModel.FConditionProperties.VALUE]}`
 																										}
 																										return ''
 																									})()}
-																									@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																										if (e.currentTarget.value.length > 0) {
-																											if (!Number.isNaN(e.currentTarget.value)) {
-																												andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] = Number(e.currentTarget.value)
-																											} else {
-																												delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE]
-																											}
-																										} else {
-																											delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE]
-																										}
-																									}}
 																								/>
 																							`
 																						case MetadataModel.FilterCondition.TIMESTAMP_GREATER_THAN:
 																						case MetadataModel.FilterCondition.TIMESTAMP_LESS_THAN:
+																							if (typeof andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] !== 'string') {
+																								andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] = this.fieldgroup[MetadataModel.FgProperties.FIELD_DATETIME_FORMAT] || MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM
+																							}
 																							return html`
+																								<select
+																									class="rounded-none w-full select ${this.color === Theme.Color.PRIMARY ? 'select-primary' : this.color === Theme.Color.SECONDARY ? 'select-secondary' : 'select-accent'}"
+																									@change=${(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) => {
+																										andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] = e.currentTarget.value as MetadataModel.FieldDateTimeFormat
+																										this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
+																									}}
+																								>
+																									<option disabled value="" .selected=${(andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] as string).length === 0}>Choose date time format...</option>
+																									<option value="${MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}>yyyy-mm-dd HH:MM</option>
+																									<option value="${MetadataModel.FieldDateTimeFormat.YYYYMMDD}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMMDD}>yyyy-mm-dd</option>
+																									<option value="${MetadataModel.FieldDateTimeFormat.YYYYMM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMM}>yyyy-mm</option>
+																									<option value="${MetadataModel.FieldDateTimeFormat.HHMM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.HHMM}>HH:MM</option>
+																									<option value="${MetadataModel.FieldDateTimeFormat.YYYY}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYY}>yyyy</option>
+																									<option value="${MetadataModel.FieldDateTimeFormat.MM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.MM}>mm</option>
+																								</select>
 																								<calendar-time
 																									class="min-w-full"
 																									.color=${this.color}
 																									.roundedborder=${false}
-																									.datetimeinputformat=${this.fieldgroup[MetadataModel.FgProperties.FIELD_DATETIME_FORMAT] || MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}
-																									.value=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] || ''}
+																									.datetimeinputformat=${andFilterCondition[MetadataModel.FConditionProperties.DATE_TIME_FORMAT] || MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}
+																									.value=${andFilterCondition[MetadataModel.FConditionProperties.VALUE] || ''}
 																									@calendar-time:datetimeupdate=${(e: CustomEvent) => {
 																										if (e.detail.value) {
-																											andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] = e.detail.value
+																											andFilterCondition[MetadataModel.FConditionProperties.VALUE] = e.detail.value
 																										} else {
-																											delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE]
+																											delete andFilterCondition[MetadataModel.FConditionProperties.VALUE]
 																										}
 																										this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
 																									}}
 																								></calendar-time>
 																							`
 																						case MetadataModel.FilterCondition.EQUAL_TO:
-																							if (typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] === 'undefined') {
-																								andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE] = {}
+																							if (typeof andFilterCondition[MetadataModel.FConditionProperties.VALUE] === 'undefined') {
+																								andFilterCondition[MetadataModel.FConditionProperties.VALUE] = {}
 																							}
 
-																							if (typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] === 'undefined') {
-																								switch (this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] as MetadataModel.FieldType) {
-																									case MetadataModel.FieldType.TEXT:
-																										andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FieldType.TEXT
-																										break
-																									case MetadataModel.FieldType.NUMBER:
-																										andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FieldType.NUMBER
-																										break
-																									case MetadataModel.FieldType.TIMESTAMP:
-																										andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FieldType.TIMESTAMP
-																										break
-																									case MetadataModel.FieldType.BOOLEAN:
-																										andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FieldType.BOOLEAN
-																										break
+																							if (typeof andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] === 'undefined') {
+																								if (this.fieldgroup[MetadataModel.FgProperties.FIELD_UI] === MetadataModel.FieldUi.SELECT) {
+																									andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FSelectType.SELECT
+																								} else {
+																									switch (this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] as MetadataModel.FieldType) {
+																										case MetadataModel.FieldType.TEXT:
+																											andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FieldType.TEXT
+																											break
+																										case MetadataModel.FieldType.NUMBER:
+																											andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FieldType.NUMBER
+																											break
+																										case MetadataModel.FieldType.TIMESTAMP:
+																											andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FieldType.TIMESTAMP
+																											break
+																										case MetadataModel.FieldType.BOOLEAN:
+																											andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] = MetadataModel.FieldType.BOOLEAN
+																											break
+																									}
 																								}
 																							}
 
@@ -956,179 +974,202 @@ class Component extends LitElement {
 																								<select
 																									class="rounded-none w-full select ${this.color === Theme.Color.PRIMARY ? 'select-primary' : this.color === Theme.Color.SECONDARY ? 'select-secondary' : 'select-accent'}"
 																									@change=${(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) => {
-																										andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] = e.currentTarget.value
-																										if (typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] !== 'undefined') {
-																											delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]
+																										andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] = e.currentTarget.value
+																										if (typeof andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] !== 'undefined') {
+																											delete andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]
 																										}
 																										this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
 																									}}
 																								>
-																									<option value="" .selected=${typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] !== 'string'} disabled>pick filter value type...</option>
-																									<option value="${MetadataModel.FieldType.TEXT}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FieldType.TEXT}>Text</option>
-																									<option value="${MetadataModel.FieldType.NUMBER}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FieldType.NUMBER}>Number</option>
-																									<option value="${MetadataModel.FieldType.TIMESTAMP}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FieldType.TIMESTAMP}>Timestamp/Date time</option>
-																									<option value="${MetadataModel.FieldType.BOOLEAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FieldType.BOOLEAN}>Boolean</option>
+																									<option value="" .selected=${typeof andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] !== 'string'} disabled>pick filter value type...</option>
+																									<option value="${MetadataModel.FieldType.TEXT}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FieldType.TEXT}>Text</option>
+																									<option value="${MetadataModel.FieldType.NUMBER}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FieldType.NUMBER}>Number</option>
+																									<option value="${MetadataModel.FieldType.TIMESTAMP}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FieldType.TIMESTAMP}>Timestamp/Date time</option>
+																									<option value="${MetadataModel.FieldType.BOOLEAN}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FieldType.BOOLEAN}>Boolean</option>
+																									<option value="${MetadataModel.FSelectType.SELECT}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] === MetadataModel.FSelectType.SELECT}>Text select</option>
 																								</select>
 																								${(() => {
-																									switch (andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] as MetadataModel.FieldType) {
-																										case MetadataModel.FieldType.TEXT:
-																										case MetadataModel.FieldType.NUMBER:
-																										case MetadataModel.FieldType.BOOLEAN:
-																											if (this.fieldgroup[MetadataModel.FgProperties.FIELD_UI] === MetadataModel.FieldUi.SELECT) {
-																												return html`
-																													<multi-select
-																														class="flex-1 w-full min-w-[300px]"
-																														.placeholder=${'choose select value...'}
-																														.selectoptions=${(this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS] as MetadataModel.ISelectOption[]).map((fss) => {
+																									switch (andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.TYPE] as MetadataModel.FieldType | MetadataModel.FSelectType) {
+																										case MetadataModel.FSelectType.SELECT:
+																											return html`
+																												<multi-select
+																													class="flex-1 w-full min-w-[300px]"
+																													.placeholder=${'choose select value...'}
+																													.selectoptions=${(this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS] as MetadataModel.ISelectOption[]).map((fss) => {
+																														return {
+																															label: fss[MetadataModel.FSelectProperties.LABEL] as string,
+																															value: fss[MetadataModel.FSelectProperties.VALUE]
+																														}
+																													})}
+																													.selectedoptions=${(() => {
+																														const fieldDatum = andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]
+																														const selectOptions = (this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS] as MetadataModel.ISelectOption[]).map((fss) => {
 																															return {
 																																label: fss[MetadataModel.FSelectProperties.LABEL] as string,
 																																value: fss[MetadataModel.FSelectProperties.VALUE]
 																															}
-																														})}
-																														.selectedoptions=${(() => {
-																															const fieldDatum = andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]
-																															const selectOptions = (this.fieldgroup[MetadataModel.FgProperties.FIELD_SELECT_OPTIONS] as MetadataModel.ISelectOption[]).map((fss) => {
-																																return {
-																																	label: fss[MetadataModel.FSelectProperties.LABEL] as string,
-																																	value: fss[MetadataModel.FSelectProperties.VALUE]
-																																}
-																															})
-																															let selectedOptions: any[] = []
-																															for (const so of selectOptions) {
-																																if ((Array.isArray(fieldDatum) && fieldDatum.includes(so.value)) || so.value === fieldDatum) {
-																																	selectedOptions = [...selectedOptions, so]
-																																}
+																														})
+																														let selectedOptions: any[] = []
+																														for (const so of selectOptions) {
+																															if ((Array.isArray(fieldDatum) && fieldDatum.includes(so.value)) || so.value === fieldDatum) {
+																																selectedOptions = [...selectedOptions, so]
 																															}
-
-																															return selectedOptions.length > 0 ? selectedOptions : null
-																														})()}
-																														.multiselect=${false}
-																														.color=${this.color}
-																														.borderrounded=${false}
-																														@multi-select:updateselectedoptions=${(e: CustomEvent) => {
-																															if (typeof e.detail.value === 'object' && e.detail.value !== null) {
-																																andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] = (e.detail.value as { label: string; value: any }).value
-																															} else {
-																																delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]
-																															}
-																															this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
-																														}}
-																													></multi-select>
-																												`
-																											}
-
-																											switch (andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.TYPE] as MetadataModel.FieldType) {
-																												case MetadataModel.FieldType.TEXT:
-																													return html`
-																														<textarea
-																															class="textarea w-full rounded-none ${this.color === Theme.Color.PRIMARY ? 'textarea-primary' : this.color === Theme.Color.SECONDARY ? 'textarea-secondary' : 'textarea-accent'}"
-																															placeholder="Enter text value..."
-																															type="text"
-																															.value=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] || ''}
-																															@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																																if (e.currentTarget.value.length > 0) {
-																																	andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] = e.currentTarget.value
-																																} else {
-																																	delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]
-																																}
-																																this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
-																															}}
-																														></textarea>
-																													`
-																												case MetadataModel.FieldType.NUMBER:
-																													return html`
-																														<input
-																															class="input w-full rounded-none ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
-																															placeholder="Enter numeric value..."
-																															type="number"
-																															.value=${(() => {
-																																if (typeof andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] === 'number') {
-																																	return `${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]}`
-																																}
-																																return ''
-																															})()}
-																															@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																																if (e.currentTarget.value.length > 0) {
-																																	if (!Number.isNaN(e.currentTarget.value)) {
-																																		andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] = Number(e.currentTarget.value)
-																																	} else {
-																																		delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]
-																																	}
-																																} else {
-																																	delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]
-																																}
-																															}}
-																														/>
-																													`
-																												case MetadataModel.FieldType.BOOLEAN:
-																													let newSelectOptions = [
-																														{
-																															label: 'true',
-																															value: true
-																														},
-																														{
-																															label: 'false',
-																															value: false
 																														}
-																													]
 
-																													if (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE]) {
-																														newSelectOptions.push({
-																															label: this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE],
-																															value: this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE]
-																														})
-																													}
+																														return selectedOptions.length > 0 ? selectedOptions : null
+																													})()}
+																													.multiselect=${false}
+																													.color=${this.color}
+																													.borderrounded=${false}
+																													@multi-select:updateselectedoptions=${(e: CustomEvent) => {
+																														if (typeof e.detail.value === 'object' && e.detail.value !== null) {
+																															andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] = (e.detail.value as { label: string; value: any }).value
+																														} else {
+																															delete andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]
+																														}
+																														this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
+																													}}
+																												></multi-select>
+																											`
+																										case MetadataModel.FieldType.TEXT:
+																											return html`
+																												<textarea
+																													class="textarea w-full rounded-none ${this.color === Theme.Color.PRIMARY ? 'textarea-primary' : this.color === Theme.Color.SECONDARY ? 'textarea-secondary' : 'textarea-accent'}"
+																													placeholder="Enter text value..."
+																													type="text"
+																													.value=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] || ''}
+																													@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+																														if (e.currentTarget.value.length > 0) {
+																															andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] = e.currentTarget.value
+																														} else {
+																															delete andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]
+																														}
+																														this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
+																													}}
+																												></textarea>
+																											`
+																										case MetadataModel.FieldType.NUMBER:
+																											return html`
+																												<input
+																													class="input w-full rounded-none ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'}"
+																													placeholder="Enter numeric value..."
+																													type="number"
+																													.value=${(() => {
+																														if (typeof andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] === 'number') {
+																															return `${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]}`
+																														}
+																														return ''
+																													})()}
+																													@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+																														if (e.currentTarget.value.length > 0) {
+																															if (!Number.isNaN(e.currentTarget.value)) {
+																																andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] = Number(e.currentTarget.value)
+																															} else {
+																																delete andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]
+																															}
+																														} else {
+																															delete andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]
+																														}
+																													}}
+																												/>
+																											`
+																										case MetadataModel.FieldType.BOOLEAN:
+																											let newSelectOptions = [
+																												{
+																													label: 'true',
+																													value: true
+																												},
+																												{
+																													label: 'false',
+																													value: false
+																												}
+																											]
 
-																													if (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE]) {
-																														newSelectOptions.push({
-																															label: this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE],
-																															value: this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE]
-																														})
-																													}
-
-																													return html`
-																														<multi-select
-																															class="flex-1 w-full min-w-[300px]"
-																															.placeholder=${'choose select value...'}
-																															.selectoptions=${newSelectOptions}
-																															.selectedoptions=${(() => {
-																																for (const so of newSelectOptions) {
-																																	if (so.value === andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]) {
-																																		return so
-																																	}
-																																}
-
-																																return null
-																															})()}
-																															.multiselect=${false}
-																															.color=${this.color}
-																															.borderrounded=${false}
-																															@multi-select:updateselectedoptions=${(e: CustomEvent) => {
-																																if (typeof e.detail.value === 'object' && e.detail.value !== null) {
-																																	andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] = (e.detail.value as { label: string; value: any }).value
-																																} else {
-																																	delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]
-																																}
-																																this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
-																															}}
-																														></multi-select>
-																													`
+																											if (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE]) {
+																												newSelectOptions.push({
+																													label: this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE],
+																													value: this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE]
+																												})
 																											}
 
-																											return nothing
-																										case MetadataModel.FieldType.TIMESTAMP:
+																											if (this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE]) {
+																												newSelectOptions.push({
+																													label: this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE],
+																													value: this.fieldgroup[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE]
+																												})
+																											}
+
 																											return html`
+																												<multi-select
+																													class="flex-1 w-full min-w-[300px]"
+																													.placeholder=${'choose select value...'}
+																													.selectoptions=${newSelectOptions}
+																													.selectedoptions=${(() => {
+																														for (const so of newSelectOptions) {
+																															if (so.value === andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]) {
+																																return so
+																															}
+																														}
+
+																														return null
+																													})()}
+																													.multiselect=${false}
+																													.color=${this.color}
+																													.borderrounded=${false}
+																													@multi-select:updateselectedoptions=${(e: CustomEvent) => {
+																														if (typeof e.detail.value === 'object' && e.detail.value !== null) {
+																															andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] = (e.detail.value as { label: string; value: any }).value
+																														} else {
+																															delete andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]
+																														}
+																														this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
+																													}}
+																												></multi-select>
+																											`
+																										case MetadataModel.FieldType.TIMESTAMP:
+																											if (typeof andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] !== 'string') {
+																												andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] = this.fieldgroup[MetadataModel.FgProperties.FIELD_DATETIME_FORMAT] || MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM
+																											}
+																											return html`
+																												<select
+																													class="rounded-none w-full select ${this.color === Theme.Color.PRIMARY ? 'select-primary' : this.color === Theme.Color.SECONDARY ? 'select-secondary' : 'select-accent'}"
+																													@change=${(e: Event & { currentTarget: EventTarget & HTMLSelectElement }) => {
+																														andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] = e.currentTarget.value as MetadataModel.FieldDateTimeFormat
+																														this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
+																													}}
+																												>
+																													<option disabled value="" .selected=${(andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] as string).length === 0}>Choose date time format...</option>
+																													<option
+																														value="${MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}"
+																														.selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}
+																													>
+																														yyyy-mm-dd HH:MM
+																													</option>
+																													<option value="${MetadataModel.FieldDateTimeFormat.YYYYMMDD}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMMDD}>
+																														yyyy-mm-dd
+																													</option>
+																													<option value="${MetadataModel.FieldDateTimeFormat.YYYYMM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMM}>
+																														yyyy-mm
+																													</option>
+																													<option value="${MetadataModel.FieldDateTimeFormat.HHMM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.HHMM}>
+																														HH:MM
+																													</option>
+																													<option value="${MetadataModel.FieldDateTimeFormat.YYYY}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYY}>
+																														yyyy
+																													</option>
+																													<option value="${MetadataModel.FieldDateTimeFormat.MM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.MM}>mm</option>
+																												</select>
 																												<calendar-time
 																													class="min-w-full"
 																													.color=${this.color}
 																													.roundedborder=${false}
-																													.datetimeinputformat=${this.fieldgroup[MetadataModel.FgProperties.FIELD_DATETIME_FORMAT] || MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}
-																													.value=${andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] || ''}
+																													.datetimeinputformat=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] || MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}
+																													.value=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] || ''}
 																													@calendar-time:datetimeupdate=${(e: CustomEvent) => {
 																														if (e.detail.value) {
-																															andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE] = e.detail.value
+																															andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE] = e.detail.value
 																														} else {
-																															delete andFilterCondition[MetadataModel.FConditionProperties.FILTER_VALUE][MetadataModel.FSelectProperties.VALUE]
+																															delete andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.VALUE]
 																														}
 																														this._updateAndFilterCondition(orIndex, andIndex, andFilterCondition)
 																													}}

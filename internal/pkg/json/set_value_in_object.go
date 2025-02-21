@@ -3,6 +3,8 @@ package json
 import (
 	"reflect"
 	"strconv"
+
+	"github.com/barkimedes/go-deepcopy"
 )
 
 // Add or replace value in object with ValueToSet following the path.
@@ -28,7 +30,10 @@ import (
 //
 // Return Object with value added to it and error if converting valueToSet to Json and back failed.
 func SetValueInObject(object any, path string, valueToSet any) (any, error) {
-	var valueToSetJson any
+	valueToSetCopy, err := deepcopy.Anything(valueToSet)
+	if err != nil {
+		return nil, err
+	}
 
 	var setValueInObject func(currentValue any, pathObjectKeyArrayIndexes []string) any
 	setValueInObject = func(currentValue any, pathObjectKeyArrayIndexes []string) any {
@@ -49,7 +54,7 @@ func SetValueInObject(object any, path string, valueToSet any) (any, error) {
 			if len(pathObjectKeyArrayIndexes) > 0 {
 				currentValue.(map[string]any)[currentPathKeyArrayIndex.(string)] = setValueInObject(currentValue.(map[string]any)[currentPathKeyArrayIndex.(string)], pathObjectKeyArrayIndexes)
 			} else {
-				currentValue.(map[string]any)[currentPathKeyArrayIndex.(string)] = valueToSetJson
+				currentValue.(map[string]any)[currentPathKeyArrayIndex.(string)] = valueToSetCopy
 			}
 		case reflect.Int:
 			if currentValue == nil || reflect.TypeOf(currentValue).Kind() != reflect.Slice {
@@ -63,7 +68,7 @@ func SetValueInObject(object any, path string, valueToSet any) (any, error) {
 			if len(pathObjectKeyArrayIndexes) > 0 {
 				currentValue.([]any)[currentPathKeyArrayIndex.(int)] = setValueInObject(currentValue.([]any)[currentPathKeyArrayIndex.(int)], pathObjectKeyArrayIndexes)
 			} else {
-				currentValue.([]any)[currentPathKeyArrayIndex.(int)] = valueToSetJson
+				currentValue.([]any)[currentPathKeyArrayIndex.(int)] = valueToSetCopy
 			}
 		default:
 			return currentValue
@@ -73,10 +78,10 @@ func SetValueInObject(object any, path string, valueToSet any) (any, error) {
 	}
 
 	if len(path) == 0 || path == "$" {
-		if valueToSetJson, err := JSONStringifyParse(&valueToSet); err != nil {
+		if valueToSetCopy, err := deepcopy.Anything(valueToSet); err != nil {
 			return nil, err
 		} else {
-			return valueToSetJson, nil
+			return valueToSetCopy, nil
 		}
 	} else {
 		return setValueInObject(object, GetPathObjectKeyArrayIndexes(path)), nil
