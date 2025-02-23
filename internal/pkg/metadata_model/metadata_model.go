@@ -130,6 +130,7 @@ const (
 	FIELD_GROUP_PROP_DATABASE_FIELD_COLUMN_NAME                            string = "$DATABASE_FIELD_COLUMN_NAME"
 	FIELD_GROUP_PROP_DATUM_INPUT_VIEW                                      string = "$DATUM_INPUT_VIEW"
 	FIELD_GROUP_PROP_FIELD_2D_VIEW_POSITION                                string = "$FIELD_2D_VIEW_POSITION"
+	FIELD_GROUP_PROP_FIELD_MULTIPLE_VALUES_JOIN_SYMBOL                     string = "$FIELD_MULTIPLE_VALUES_JOIN_SYMBOL"
 )
 
 const (
@@ -153,25 +154,25 @@ var ErrPathContainsIndexPlaceHolders = errors.New("PathContainsIndexPlaceHolders
 //
 // Parameters:
 //
-//   - path - path to value in object. Must begin with `$.$G_FIELDS[*]`.
-//     Examples: `$.$G_FIELDS[*].field_1` results in `field_1` and `$.$G_FIELDS[*].group_1.$G_FIELDS[*].group_1_field` results in `group_1[*].group_1_field`.
+//   - path - path to value in object. Must begin with `$.$GROUP_FIELDS[*]`.
+//     Examples: `$.$GROUP_FIELDS[*].field_1` results in `field_1` and `$.$GROUP_FIELDS[*].group_1.$GROUP_FIELDS[*].group_1_field` results in `group_1[*].group_1_field`.
 //
 //   - groupIndexes - Each element replaces array index placeholder (ARRAY_PATH_REGEX_SEARCH) `[*]` found in path.
 //
-//     Must NOT be empty as the first element in groupIndexes removed as it matches the first `$G_FIELDS[*]` in the path which is removed from the path since it indicates the root of the metadata-model.
+//     Must NOT be empty as the first element in groupIndexes removed as it matches the first `$GROUP_FIELDS[*]` in the path which is removed from the path since it indicates the root of the metadata-model.
 //
 //     Number of elements MUST match number of array index placeholders in path.
 //
-//     For example, with path like `$.$G_FIELDS[*].group_1.$G_FIELDS[*].group_1_field` the number of array indexes passed in groupIndexes MUST be 2.
+//     For example, with path like `$.$GROUP_FIELDS[*].group_1.$GROUP_FIELDS[*].group_1_field` the number of array indexes passed in groupIndexes MUST be 2.
 //
-// The first element in groupIndexes removed as it matches the first `$G_FIELDS[*]` in the path which is removed from the path since it indicates the root of the metadata-model.
+// The first element in groupIndexes removed as it matches the first `$GROUP_FIELDS[*]` in the path which is removed from the path since it indicates the root of the metadata-model.
 //
-// For example, path `$.$G_FIELDS[*].group_1.$G_FIELDS[*].group_1_field` will be trimmed to `$.group_1[*].group_1_field` before groupIndexes are added.
+// For example, path `$.$GROUP_FIELDS[*].group_1.$GROUP_FIELDS[*].group_1_field` will be trimmed to `$.group_1[*].group_1_field` before groupIndexes are added.
 //
 // Return path to value in object or error if the number of array index placeholders in path being more than the number of array indexes in groupIndexes.
 func PreparePathToValueInObject(path string, groupIndexes []int) (string, error) {
-	path = strings.Replace(path, ".$G_FIELDS[*]", "", 1)
-	path = string(G_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(path), []byte("")))
+	path = strings.Replace(path, ".$GROUP_FIELDS[*]", "", 1)
+	path = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(path), []byte("")))
 	groupIndexes = groupIndexes[1:]
 	for _, groupIndex := range groupIndexes {
 		path = strings.Replace(path, ARRAY_PATH_PLACEHOLDER, fmt.Sprintf("[%v]", groupIndex), 1)
@@ -193,43 +194,25 @@ func FgGet2DConversion(fg any) int {
 				if groupFieldsMap, ok := groupFieldsArray[0].(map[string]any); ok {
 					for _, value := range groupFieldsMap {
 						if valueMap, ok := value.(map[string]any); ok {
-							if reflect.TypeOf(valueMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS]).Kind() == reflect.Slice {
+							if valueMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS] != nil && reflect.TypeOf(valueMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS]).Kind() == reflect.Slice {
 								return fgViewMaxNoOfValuesInSeparateColumns
 							}
 						}
 					}
 				}
 			}
-			if v, ok := fgMap[FIELD_GROUP_PROP_FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS].(int); ok && fgViewMaxNoOfValuesInSeparateColumns > 1 {
-				fgViewMaxNoOfValuesInSeparateColumns = v
+			if vInt, ok := fgMap[FIELD_GROUP_PROP_FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS].(int); ok && vInt > 1 {
+				fgViewMaxNoOfValuesInSeparateColumns = vInt
+			} else {
+				if vFloat, ok := fgMap[FIELD_GROUP_PROP_FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS].(float64); ok && vFloat > 1 {
+					fgViewMaxNoOfValuesInSeparateColumns = int(vFloat)
+				}
 			}
 		}
 	}
 
 	return fgViewMaxNoOfValuesInSeparateColumns
 }
-
-// func GroupCanBeProcessAs2D(fieldgroup any) bool {
-// 	if fieldGroupMap, ok := fieldgroup.(map[string]any); ok {
-// 		if groupFieldsArray, ok := fieldGroupMap[FIELD_GROUP_PROP_GROUP_FIELDS].([]any); ok && len(groupFieldsArray) == 1 {
-// 			if groupFieldsMap, ok := groupFieldsArray[0].(map[string]any); ok {
-// 				for _, value := range groupFieldsMap {
-// 					if valueMap, ok := value.(map[string]any); ok {
-// 						if reflect.TypeOf(valueMap[FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS]).Kind() == reflect.Slice {
-// 							return false
-// 						}
-// 					}
-// 				}
-// 			} else {
-// 				return false
-// 			}
-// 		} else {
-// 			return false
-// 		}
-// 	}
-
-// 	return true
-// }
 
 func IfKeySuffixMatchesValues(keyToCheck string, valuesToMatch []string) bool {
 	for _, value := range valuesToMatch {
@@ -245,12 +228,12 @@ func ARRAY_PATH_REGEX_SEARCH() *regexp.Regexp {
 	return regexp.MustCompile(`\[\*\]`)
 }
 
-func G_FIELDS_PATH_REGEX_SEARCH() *regexp.Regexp {
-	return regexp.MustCompile(`\$G_FIELDS\[\*\](?:\.|)`)
+func GROUP_FIELDS_PATH_REGEX_SEARCH() *regexp.Regexp {
+	return regexp.MustCompile(`\$GROUP_FIELDS\[\*\](?:\.|)`)
 }
 
-func G_FIELDS_REGEX_SEARCH() *regexp.Regexp {
-	return regexp.MustCompile(`(?:\.|)\$G_FIELDS`)
+func GROUP_FIELDS_REGEX_SEARCH() *regexp.Regexp {
+	return regexp.MustCompile(`(?:\.|)\$GROUP_FIELDS`)
 }
 
 func SPECIAL_CHARS_REGEX_SEARCH() *regexp.Regexp {
@@ -420,8 +403,8 @@ type MetadataModel struct {
 }
 type MetadataModelGroup struct {
 	GroupReadOrderOfFields []string                   `json:"$G_READ_ORDER_OF_FIELDS,omitempty"`
-	GroupFieldsIndex       int                        `json:"$G_FIELDS_INDEX,omitempty"`
-	GroupFields            []map[string]MetadataModel `json:"$G_FIELDS,omitempty"`
+	GroupFieldsIndex       int                        `json:"$GROUP_FIELDS_INDEX,omitempty"`
+	GroupFields            []map[string]MetadataModel `json:"$GROUP_FIELDS,omitempty"`
 }
 
 type MetadataModelDatabase struct {

@@ -25,8 +25,8 @@ func DatabaseGetColumnFieldValue(metadatamodel any, columnFieldName string, tabl
 				return fieldGroupConversion{}, err
 			}
 
-			pathToColumnFieldValue = strings.Replace(pathToColumnFieldValue, ".$G_FIELDS[*]", "", 1)
-			pathToColumnFieldValue = string(G_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
+			pathToColumnFieldValue = strings.Replace(pathToColumnFieldValue, ".$GROUP_FIELDS[*]", "", 1)
+			pathToColumnFieldValue = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
 			pathToColumnFieldValue = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte(ARRAY_PATH_PLACEHOLDER)))
 
 			return intpkgjson.GetValueInObject(valueToGetFrom, pathToColumnFieldValue), nil
@@ -55,8 +55,8 @@ func DatabaseDeleteColumnFieldValue(metadatamodel any, columnFieldName string, t
 				return fieldGroupConversion{}, err
 			}
 
-			pathToColumnFieldValue = strings.Replace(pathToColumnFieldValue, ".$G_FIELDS[*]", "", 1)
-			pathToColumnFieldValue = string(G_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
+			pathToColumnFieldValue = strings.Replace(pathToColumnFieldValue, ".$GROUP_FIELDS[*]", "", 1)
+			pathToColumnFieldValue = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
 			pathToColumnFieldValue = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte(ARRAY_PATH_PLACEHOLDER)))
 
 			return intpkgjson.DeleteValueInObject(valueToDeleteIn, pathToColumnFieldValue), nil
@@ -85,8 +85,8 @@ func DatabaseSetColumnFieldValue(metadatamodel any, columnFieldName string, tabl
 				return fieldGroupConversion{}, err
 			}
 
-			pathToColumnFieldValue = strings.Replace(pathToColumnFieldValue, ".$G_FIELDS[*]", "", 1)
-			pathToColumnFieldValue = string(G_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
+			pathToColumnFieldValue = strings.Replace(pathToColumnFieldValue, ".$GROUP_FIELDS[*]", "", 1)
+			pathToColumnFieldValue = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
 			pathToColumnFieldValue = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte(ARRAY_PATH_PLACEHOLDER)))
 
 			if reflect.TypeOf(value).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Array {

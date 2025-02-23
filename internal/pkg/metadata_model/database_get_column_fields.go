@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/barkimedes/go-deepcopy"
+	"github.com/brunoga/deep"
 )
 
 type DatabaseColumnFields struct {
@@ -132,10 +132,8 @@ func (n *databaseGetColumnFields) GetDatabaseColumnFields(mmGroup any) error {
 				}
 
 				var newField map[string]any = fgMap
-				if value, err := deepcopy.Anything(fgMap); err == nil {
-					if valueMap, ok := value.(map[string]any); ok {
-						newField = valueMap
-					}
+				if value, err := deep.Copy(fgMap); err == nil {
+					newField = value
 				}
 
 				n.databaseColumnFields.ColumnFieldsReadOrder = append(n.databaseColumnFields.ColumnFieldsReadOrder, fieldColumnName)

@@ -3,12 +3,12 @@ module github.com/icipe-official/Data-Abstraction-Platform
 go 1.22.5
 
 require (
+	github.com/brunoga/deep v1.2.4
 	github.com/gofrs/uuid/v5 v5.0.0
 	github.com/jackc/pgx/v5 v5.7.1
 )
 
 require (
-	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

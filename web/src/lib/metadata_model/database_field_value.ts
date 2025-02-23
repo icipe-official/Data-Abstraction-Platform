@@ -42,7 +42,7 @@ export function DatabaseSetColumnFieldValue(metadatamodel: any, columnFieldName:
 	}
 
 	const pathToColumnFieldValue = (columnField[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string)
-		.replace(/\.\$G_FIELDS\[\*\]/, '')
+		.replace(/\.\$GROUP_FIELDS\[\*\]/, '')
 		.replace(new RegExp(MetadataModel.GROUP_FIELDS_REGEX_SEARCH, 'g'), '')
 		.replace(new RegExp(MetadataModel.ARRAY_PATH_REGEX_SEARCH, 'g'), '[0]')
 
@@ -79,7 +79,7 @@ export function DatabaseGetColumnFieldValue(metadatamodel: any, columnFieldName:
     }
 
     const pathToColumnFieldValue = (columnField[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string)
-        .replace(/\.\$G_FIELDS\[\*\]/, '')
+        .replace(/\.\$GROUP_FIELDS\[\*\]/, '')
         .replace(new RegExp(MetadataModel.GROUP_FIELDS_REGEX_SEARCH, 'g'), '')
         .replace(new RegExp(MetadataModel.ARRAY_PATH_REGEX_SEARCH, 'g'), '[0]')
 
@@ -116,7 +116,7 @@ export function DatabaseDeleteColumnFieldValue(metadatamodel: any, columnFieldNa
     }
 
     const pathToColumnFieldValue = (columnField[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string)
-        .replace(/\.\$G_FIELDS\[\*\]/, '')
+        .replace(/\.\$GROUP_FIELDS\[\*\]/, '')
         .replace(new RegExp(MetadataModel.GROUP_FIELDS_REGEX_SEARCH, 'g'), '')
         .replace(new RegExp(MetadataModel.ARRAY_PATH_REGEX_SEARCH, 'g'), '[0]')
 

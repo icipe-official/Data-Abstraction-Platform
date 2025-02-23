@@ -3,7 +3,6 @@ import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '$src/assets/index.css?inline'
 import componentCss from './component.css?inline'
 import Log from '$src/lib/log'
-import Misc from '$src/lib/miscellaneous'
 
 interface RenderTracker {
 	ContentIntersectionObserved: boolean

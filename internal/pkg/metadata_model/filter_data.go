@@ -3,6 +3,7 @@ package metadatamodel
 import (
 	"encoding/json"
 	"errors"
+	"reflect"
 	"strings"
 	"time"
 
@@ -79,13 +80,10 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 									switch andCondition.Condition {
 									case FILTER_CONDTION_NO_OF_ENTRIES_GREATER_THAN:
 										conditionTrue = len(valueFoundSlice) > valueInt
-										break
 									case FILTER_CONDTION_NO_OF_ENTRIES_LESS_THAN:
 										conditionTrue = len(valueFoundSlice) < valueInt
-										break
 									case FILTER_CONDTION_NO_OF_ENTRIES_EQUAL_TO:
 										conditionTrue = len(valueFoundSlice) == valueInt
-										break
 									}
 									if conditionTrue {
 										if andCondition.Negate {
@@ -95,7 +93,6 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 										return true
 									}
 								}
-								break
 							case FILTER_CONDTION_NUMBER_GREATER_THAN:
 							case FILTER_CONDTION_NUMBER_LESS_THAN:
 								var valueFloat float64
@@ -152,7 +149,6 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 										return true
 									}
 								}
-								break
 							case FILTER_CONDTION_TIMESTAMP_GREATER_THAN:
 							case FILTER_CONDTION_TIMESTAMP_LESS_THAN:
 								if andCondition.DateTimeFormat == nil {
@@ -349,6 +345,8 @@ func isEqualToConditionTrue(filterValueType string, dateTimeFormat string, value
 				return isTimestampConditionTrue(FILTER_CONDTION_EQUAL_TO, dateTimeFormat, valueFoundString, filterValueString)
 			}
 		}
+	default:
+		return reflect.DeepEqual(valueFound, filterValue)
 	}
 
 	return false
@@ -454,7 +452,6 @@ func isTimestampConditionTrue(filterCondition string, dateTimeFormat string, val
 			_, fvMonth, _ := valueFoundDateTime.Date()
 			return vfMonth > fvMonth
 		}
-		break
 	case FILTER_CONDTION_TIMESTAMP_LESS_THAN:
 		switch dateTimeFormat {
 		case FIELD_DATE_TIME_FORMAT_YYYYMMDDHHMM:
@@ -530,7 +527,6 @@ func isTimestampConditionTrue(filterCondition string, dateTimeFormat string, val
 			_, fvMonth, _ := valueFoundDateTime.Date()
 			return vfMonth < fvMonth
 		}
-		break
 	case FILTER_CONDTION_EQUAL_TO:
 		switch dateTimeFormat {
 		case FIELD_DATE_TIME_FORMAT_YYYYMMDDHHMM:
@@ -582,7 +578,6 @@ func isTimestampConditionTrue(filterCondition string, dateTimeFormat string, val
 			_, fvMonth, _ := valueFoundDateTime.Date()
 			return vfMonth == fvMonth
 		}
-		break
 	}
 
 	return false

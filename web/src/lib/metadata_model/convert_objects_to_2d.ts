@@ -3,7 +3,8 @@ import MetadataModel from '.'
 
 interface IFieldGroupConversion {
 	field_group_key?: string
-	fielg_group_sep_cols_max_values?: number
+	field_group_sep_cols_max_values?: number
+	field_join_symbol?: string
 	field_groups?: IFieldGroupConversion[]
 	group_read_order_of_fields?: string[]
 }
@@ -33,7 +34,7 @@ export class ConvertObjectsTo2DArray {
 	 * @throws {MetadataModel.Error} if {@linkcode ConvertObjectsTo2DArray._initFgConversion} throws an error.
 	 *
 	 * @param metadatamodel
-	 * @param skipIfFGDisabled Do not include field group if property {@linkcode FgProperties.FIELD_GROUP_VIEW_DISABLE}($FG_VIEW_DISABLE) is true. Default tru
+	 * @param skipIfFGDisabled Do not include field group if property {@linkcode FgProperties.FIELD_GROUP_VIEW_DISABLE}($FG_VIEW_DISABLE) is true. Default true
 	 * @param skipIfDataExtraction Do not include field group if property {@linkcode FgProperties.DATABASE_SKIP_DATA_EXTRACTION}($FG_SKIP_DATA_EXTRACTION) is true. Default true.
 	 */
 	constructor(metadatamodel: any, target2DFields: any[] | undefined = undefined, skipIfFGDisabled: boolean = true, skipIfDataExtraction: boolean = true) {
@@ -108,7 +109,7 @@ export class ConvertObjectsTo2DArray {
 					!Number.isNaN(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) &&
 					mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS] > 0
 				) {
-					newFieldGroupConversion.fielg_group_sep_cols_max_values = Number(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) - 1
+					newFieldGroupConversion.field_group_sep_cols_max_values = Number(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS])
 				} else {
 					newFieldGroupConversion.field_groups = this._initFgConversion(mmGroupFields[fgKey]).field_groups
 				}
@@ -118,8 +119,12 @@ export class ConvertObjectsTo2DArray {
 					!Number.isNaN(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) &&
 					mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS] > 0
 				) {
-					newFieldGroupConversion.fielg_group_sep_cols_max_values = Number(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) - 1
+					newFieldGroupConversion.field_group_sep_cols_max_values = Number(mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS])
 				}
+			}
+
+			if (typeof mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_MULTIPLE_VALUES_JOIN_SYMBOL] == 'string' && mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_MULTIPLE_VALUES_JOIN_SYMBOL].length > 0) {
+				newFieldGroupConversion.field_join_symbol = mmGroupFields[fgKey][MetadataModel.FgProperties.FIELD_MULTIPLE_VALUES_JOIN_SYMBOL]
 			}
 
 			mmGroupsConversion.field_groups!.push(newFieldGroupConversion)
@@ -186,14 +191,14 @@ export class ConvertObjectsTo2DArray {
 			const valueInObject = Json.GetValueInObject(this._currentDatum, MetadataModel.PreparePathToValueInObject(fgConversion.field_group_key, arrayIndexes))
 
 			if (Array.isArray(fgConversion.group_read_order_of_fields)) {
-				if (typeof fgConversion.fielg_group_sep_cols_max_values === 'number' && fgConversion.fielg_group_sep_cols_max_values > 0) {
-					let newValueInObject = new Array<any>(fgConversion.fielg_group_sep_cols_max_values * fgConversion.group_read_order_of_fields.length)
+				if (typeof fgConversion.field_group_sep_cols_max_values === 'number' && fgConversion.field_group_sep_cols_max_values > 0) {
+					let newValueInObject = new Array<any>(fgConversion.field_group_sep_cols_max_values * fgConversion.group_read_order_of_fields.length)
 
 					if (Array.isArray(valueInObject) && valueInObject.length > 0) {
 						let startIndexOfValueInObject = 0
-						for (let vioIndex = 0; vioIndex < valueInObject.length; vioIndex++) {
+						for (let vioIndex = 0; vioIndex < fgConversion.field_group_sep_cols_max_values; vioIndex++) {
 							for (const fgKeySuffix of fgConversion.group_read_order_of_fields) {
-								newValueInObject[startIndexOfValueInObject] = Json.GetValueInObject(valueInObject, `$.${vioIndex}.${fgKeySuffix}`)
+								newValueInObject[startIndexOfValueInObject] = this._getNewFieldValueInObject(Json.GetValueInObject(valueInObject, `$.${vioIndex}.${fgKeySuffix}`), fgConversion.field_join_symbol || undefined)
 								startIndexOfValueInObject += 1
 							}
 						}
@@ -216,12 +221,12 @@ export class ConvertObjectsTo2DArray {
 				continue
 			}
 
-			if (typeof fgConversion.fielg_group_sep_cols_max_values === 'number' && fgConversion.fielg_group_sep_cols_max_values > 0) {
-				let newValueInObject = new Array<any>(fgConversion.fielg_group_sep_cols_max_values)
+			if (typeof fgConversion.field_group_sep_cols_max_values === 'number' && fgConversion.field_group_sep_cols_max_values > 0) {
+				let newValueInObject = new Array<any>(fgConversion.field_group_sep_cols_max_values)
 
 				if (Array.isArray(valueInObject) && valueInObject.length > 0) {
-					for (let vioIndex = 0; vioIndex < valueInObject.length; vioIndex++) {
-						newValueInObject[vioIndex] = valueInObject[vioIndex]
+					for (let vioIndex = 0; vioIndex < fgConversion.field_group_sep_cols_max_values; vioIndex++) {
+						newValueInObject[vioIndex] = this._getNewFieldValueInObject(valueInObject[vioIndex], fgConversion.field_join_symbol || undefined)
 					}
 				}
 
@@ -229,10 +234,23 @@ export class ConvertObjectsTo2DArray {
 				continue
 			}
 
-			datumObject2DArray = this._merge2DArrays(datumObject2DArray, [[valueInObject]])
+			datumObject2DArray = this._merge2DArrays(datumObject2DArray, [[this._getNewFieldValueInObject(valueInObject, fgConversion.field_join_symbol || undefined)]])
 		}
 
 		return datumObject2DArray
+	}
+
+	private _getNewFieldValueInObject(valueInObject: any, joinSymbol: string = ','): any {
+		if (Array.isArray(valueInObject)) {
+			if (valueInObject.length > 1) {
+				return valueInObject.reduce((accumulator, currentValue) => {
+					return `${accumulator}${joinSymbol}${currentValue}`
+				})
+			}
+			return valueInObject[0]
+		}
+
+		return valueInObject
 	}
 
 	/**

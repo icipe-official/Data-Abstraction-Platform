@@ -79,7 +79,7 @@ test('Tests get, set, and delete value in object, expected to run successfully.'
 
 	path = 'child.1.nectar.willy.10'
 	value = Json.GetValueInObject(testObject, path)
-	expect(value).toBeNull()
+	expect(value).toBeUndefined()
 
 	path = '$.child'
 	value = Json.GetValueInObject(testObject, path)

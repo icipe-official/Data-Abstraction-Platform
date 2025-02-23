@@ -76,7 +76,7 @@ class Component extends LitElement {
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="m10 17l-5-5l1.41-1.42L10 14.17l7.59-7.59L19 8m0-5H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2" /></svg>
 							${(() => {
 								if (typeof field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE] !== 'undefined') {
-									return html`<div class="font-bold">(${field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE]})</div>`
+									return html`<div class="font-bold w-fit">(${field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE]})</div>`
 								}
 
 								return nothing
@@ -92,7 +92,7 @@ class Component extends LitElement {
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-3.4 14L12 13.4L8.4 17L7 15.6l3.6-3.6L7 8.4L8.4 7l3.6 3.6L15.6 7L17 8.4L13.4 12l3.6 3.6z" /></svg>
 							${(() => {
 								if (typeof field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE] !== 'undefined') {
-									return html`<div class="font-bold">(${field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE]})</div>`
+									return html`<div class="font-bold w-fit">(${field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE]})</div>`
 								}
 
 								return nothing
@@ -108,10 +108,10 @@ class Component extends LitElement {
 				}
 
 				if (field[MetadataModel.FgProperties.FIELD_DATATYPE] === MetadataModel.FieldType.TIMESTAMP) {
-					return html`<div>${this._formatDateTimeValue(field[MetadataModel.FgProperties.FIELD_DATETIME_FORMAT], datum)}</div>`
+					return html`<div class="w-fit">${this._formatDateTimeValue(field[MetadataModel.FgProperties.FIELD_DATETIME_FORMAT], datum)}</div>`
 				}
 
-				return html`<div>${datum}</div>`
+				return html`<div class="w-fit">${datum}</div>`
 		}
 	}
 
@@ -238,7 +238,7 @@ class Component extends LitElement {
 								pending: () => this._pendingTaskHtmlTemplate(),
 								complete: () => html`
 									<virtual-flex-scroll
-										class="w-full h-fit"
+										class="w-full h-fit p-1"
 										.data=${this.metadatamodel[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]}
 										.scrollelement=${this.scrollelement}
 										.enablescrollintoview=${false}
@@ -255,7 +255,7 @@ class Component extends LitElement {
 															<div class="sticky left-0 pl-1">${MetadataModel.GetFieldGroupName(fieldgroup)}</div>
 														</header>
 														<metadata-model-view-datum
-															class="z-[1] pl-1 pr-1 ${this._componentNested ? 'shadow-inner shadow-gray-800':''}"
+															class="z-[1] pl-1 pr-1 shadow-inner shadow-gray-800"
 															.color=${this.color}
 															.basestickytop=${this.basestickytop + 24}
 															.metadatamodel=${fieldgroup}
@@ -276,56 +276,41 @@ class Component extends LitElement {
 																return html`
 																	<div class="flex flex-col">
 																		<div>${MetadataModel.GetFieldGroupName(fieldgroup)}</div>
-																		<div class="p-1 border-2 rounded-md ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}">${this._rowColumnDatum(fieldgroup, rowdata[0])}</div>
+																		<div class="p-1 border-2 rounded-md w-fit ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}">${this._rowColumnDatum(fieldgroup, rowdata[0])}</div>
 																	</div>
 																`
 															}
 
 															return html`
-																<div
-																	class="rounded-md self-center flex flex-col ${this.color === Theme.Color.PRIMARY
-																		? 'bg-primary text-primary-content shadow-primary-content'
-																		: this.color === Theme.Color.SECONDARY
-																			? 'bg-secondary text-secondary-content shadow-secondary-content'
-																			: 'bg-accent text-accent-content shadow-accent-content'}"
-																>
-																	<header class="h-[6px] bg-transparent"></header>
-																	<main style="grid-template-columns: repeat(2, auto);" class="relative grid overflow-auto min-w-[200px] max-h-[400px] w-fit h-fit">
-																		<header style="grid-column:1/3; grid-template-columns: subgrid;" class="grid h-fit sticky top-0 z-[2] font-bold text-sm shadow-sm ">
-																			<div
-																				class="sticky left-0 shadow-sm min-w-[5px] p-1 ${this.color === Theme.Color.PRIMARY
-																					? 'bg-primary text-primary-content shadow-primary-content'
-																					: this.color === Theme.Color.SECONDARY
-																						? 'bg-secondary text-secondary-content shadow-secondary-content'
-																						: 'bg-accent text-accent-content accent-primary-content'}"
-																			>
-																				#
-																			</div>
-																			<div class="p-1">${MetadataModel.GetFieldGroupName(fieldgroup)}</div>
-																		</header>
-																		<main style="grid-column:1/3; grid-template-columns: subgrid;" class="grid text-xs z-[1]">
-																			${(rowdata as any[]).map((rd, index) => {
-																				return html`
+																<div style="grid-template-columns: repeat(2, auto);" class="relative grid shadow-sm shadow-gray-800 overflow-auto min-w-[200px] max-h-[400px] w-fit h-fit">
+																	<header
+																		style="grid-column:1/3; grid-template-columns: subgrid;"
+																		class="grid h-fit sticky top-0 z-[2] font-bold text-sm shadow-sm shadow-gray-800  ${this.color === Theme.Color.PRIMARY
+																			? 'bg-primary text-primary-content'
+																			: this.color === Theme.Color.SECONDARY
+																				? 'bg-secondary text-secondary-content'
+																				: 'bg-accent text-accent-content'}"
+																	>
+																		<div class="sticky left-0 shadow-sm shadow-gray-800 min-w-[5px] p-1">#</div>
+																		<div class="p-1">${MetadataModel.GetFieldGroupName(fieldgroup)}</div>
+																	</header>
+																	<main style="grid-column:1/3; grid-template-columns: subgrid;" class="grid text-xs z-[1]">
+																		${(rowdata as any[]).map((rd, index) => {
+																			return html`
+																				<div
+																					style="grid-column:1/3; grid-template-columns: subgrid;"
+																					class="grid ${index > 0 ? ` border-t-[1px] ${this.color === Theme.Color.PRIMARY ? 'border-secondary-content' : this.color === Theme.Color.SECONDARY ? 'border-accent-content' : 'border-primary-content'}` : ''}"
+																				>
 																					<div
-																						style="grid-column:1/3; grid-template-columns: subgrid;"
-																						class="grid${index > 0 ? ` border-t-[1px] ${this.color === Theme.Color.PRIMARY ? 'border-secondary-content' : this.color === Theme.Color.SECONDARY ? 'border-accent-content' : 'border-primary-content'}` : ''}"
+																						class="font-bold p-1 flex sticky left-0 shadow-sm shadow-gray-800 ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
 																					>
-																						<div
-																							class="font-bold p-1 flex sticky left-0 shadow-sm ${this.color === Theme.Color.PRIMARY
-																								? 'bg-primary text-primary-content shadow-primary-content'
-																								: this.color === Theme.Color.SECONDARY
-																									? 'bg-secondary text-secondary-content shadow-secondary-content'
-																									: 'bg-accent text-accent-content accent-primary-content'}"
-																						>
-																							<div class="self-center">${index + 1}</div>
-																						</div>
-																						<div class="flex p-1">${this._rowColumnDatum(fieldgroup, rd)}</div>
+																						<div class="self-center">${index + 1}</div>
 																					</div>
-																				`
-																			})}
-																		</main>
+																					<div class="flex p-1">${this._rowColumnDatum(fieldgroup, rd)}</div>
+																				</div>
+																			`
+																		})}
 																	</main>
-																	<footer class="h-[6px] bg-transparent"></footer>
 																</div>
 															`
 														}
@@ -333,7 +318,7 @@ class Component extends LitElement {
 														return html`
 															<div class="flex flex-col space-y-1">
 																<div>${MetadataModel.GetFieldGroupName(fieldgroup)}</div>
-																<div class="p-1 border-2 rounded-md ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}">${this._rowColumnDatum(fieldgroup, rowdata)}</div>
+																<div class="p-1 border-2 rounded-md w-fit ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}">${this._rowColumnDatum(fieldgroup, rowdata)}</div>
 															</div>
 														`
 													})()}

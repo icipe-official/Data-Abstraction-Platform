@@ -173,6 +173,8 @@ export class Extract2DFields {
 	}
 
 	private _updateSeparateColumnsField(fg: any, mmGroupSkipDataExtraction: boolean, mmGroupViewDisable: boolean, columnIndex: number) {
+		fg[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] = columnIndex
+		
 		if (mmGroupSkipDataExtraction) {
 			fg[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] = true
 		}
@@ -312,16 +314,22 @@ export class Reorder2DFields {
  */
 export function RemoveSkipped2DFields(fields: any[], skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false, removePrimaryKey: boolean = false) {
 	return fields.filter((field) => {
-		if (!removePrimaryKey) {
-			if (field[MetadataModel.FgProperties.FIELD_GROUP_IS_PRIMARY_KEY]) {
-				return true
-			}
-		}
 		if (skipIfDataExtraction && field[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION]) {
+			if (field[MetadataModel.FgProperties.FIELD_GROUP_IS_PRIMARY_KEY]) {
+				if (!removePrimaryKey) {
+					return true
+				}
+			}
+
 			return false
 		}
 
 		if (skipIfFGDisabled && field[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
+			if (field[MetadataModel.FgProperties.FIELD_GROUP_IS_PRIMARY_KEY]) {
+				if (!removePrimaryKey) {
+					return true
+				}
+			}
 			return false
 		}
 

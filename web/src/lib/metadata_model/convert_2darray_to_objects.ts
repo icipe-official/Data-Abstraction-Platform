@@ -12,6 +12,7 @@ interface IGroupConversion {
 
 interface IFieldConversion {
 	fg_key_suffix: string
+	field_join_symbol?: string
 	fields_2d_indexes?: number[]
 	column_indexes_that_match_2d_index_header?: number[][]
 	read_order_of_fields?: string[]
@@ -137,6 +138,10 @@ export class Convert2DArrayToObjects {
 				fg_key_suffix: fgKeySuffix
 			}
 
+			if (typeof mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_MULTIPLE_VALUES_JOIN_SYMBOL] == 'string') {
+				newField.field_join_symbol = mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_MULTIPLE_VALUES_JOIN_SYMBOL]
+			}
+
 			if (Array.isArray(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
 				if (mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.GROUP_EXTRACT_AS_SINGLE_FIELD]) {
 					const fields2dIndexes = this._get2DFieldsIndexesFromCurrentGroupIndexes(mmGroupConversion.fields_2d_indexes, mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_KEY])
@@ -147,7 +152,6 @@ export class Convert2DArrayToObjects {
 
 					newField.fields_2d_indexes = fields2dIndexes
 					mmGroupConversion.fields.push(newField)
-
 					continue
 				}
 
@@ -157,12 +161,10 @@ export class Convert2DArrayToObjects {
 					!Number.isNaN(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) &&
 					mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS] > 0
 				) {
-					const maxIndexOfValuesInObject = Number(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]) - 1
-
 					newField.read_order_of_fields = mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]
 
-					newField.column_indexes_that_match_2d_index_header = []
-					for (let columnIndex = 0; columnIndex <= maxIndexOfValuesInObject; columnIndex++) {
+					newField.column_indexes_that_match_2d_index_header = new Array<number[]>(Number(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_VIEW_MAX_NO_OF_VALUES_IN_SEPARATE_COLUMNS]))
+					for (let columnIndex = 0; columnIndex < newField.column_indexes_that_match_2d_index_header.length; columnIndex++) {
 						let columnIndexHeaders: number[] = []
 						for (let fIndex = 0; fIndex < this._2DFields.length; fIndex++) {
 							if (!MetadataModel.IsGroupFieldsValid(this._2DFields[fIndex])) {
@@ -179,8 +181,10 @@ export class Convert2DArrayToObjects {
 								}
 							}
 						}
-						newField.column_indexes_that_match_2d_index_header.push(columnIndexHeaders)
+						newField.column_indexes_that_match_2d_index_header[columnIndex] = columnIndexHeaders
 					}
+					mmGroupConversion.fields.push(newField)
+					continue
 				}
 
 				mmGroupConversion.groups.push(this._initFgConversion(mmGroupFields[fgKeySuffix]))
@@ -199,7 +203,7 @@ export class Convert2DArrayToObjects {
 	}
 
 	Convert(data: any[][]) {
-		data = data.filter(datum => {
+		data = data.filter((datum) => {
 			for (let dIndex = 0; dIndex < datum.length; dIndex++) {
 				if (datum[dIndex] !== null && typeof datum[dIndex] !== 'undefined') {
 					return true
@@ -215,7 +219,7 @@ export class Convert2DArrayToObjects {
 		this._current2DArray = data
 
 		try {
-			const newObjects = this._convert(this._fgConversion, currentDataIndexes, [])
+			const newObjects = this._convert(this._fgConversion, currentDataIndexes)
 			if (Array.isArray(newObjects)) {
 				this._objects = [...this._objects, ...newObjects]
 			}
@@ -224,11 +228,11 @@ export class Convert2DArrayToObjects {
 		}
 	}
 
-	private _convert(gConversion: IGroupConversion, current2DArrayRowIndexes: number[], groupIndexes: number[]) {
+	private _convert(gConversion: IGroupConversion, current2DArrayRowIndexes: number[]) {
 		try {
 			const groupedDataIndexes = this._groupDataByPrimaryKeys(gConversion, current2DArrayRowIndexes)
 
-			let objects = new Array(groupIndexes.length)
+			let objects = new Array(groupedDataIndexes.length)
 
 			for (let gdIndex = 0; gdIndex < groupedDataIndexes.length; gdIndex++) {
 				let object: any = {}
@@ -241,7 +245,7 @@ export class Convert2DArrayToObjects {
 							let newFieldValue: any = {}
 
 							for (let citmihIndex = 0; citmihIndex < ci2dhIndex.length; citmihIndex++) {
-								const fieldValue = this._extractFieldValueFromGroupedData(groupedDataIndexes[gdIndex], [ci2dhIndex[citmihIndex]])
+								const fieldValue = this._extractFieldValueFromGroupedData(groupedDataIndexes[gdIndex], [ci2dhIndex[citmihIndex]], field.field_join_symbol)
 								if (fieldValue.length > 0) {
 									newFieldValue[field.read_order_of_fields[citmihIndex]] = fieldValue
 								}
@@ -250,7 +254,7 @@ export class Convert2DArrayToObjects {
 							if (Object.keys(newFieldValue).length > 0) {
 								groupFieldValue.push(newFieldValue)
 							}
-						}
+						}			
 
 						if (groupFieldValue.length > 0) {
 							object[field.fg_key_suffix] = groupFieldValue
@@ -260,7 +264,7 @@ export class Convert2DArrayToObjects {
 					}
 
 					if (Array.isArray(field.fields_2d_indexes)) {
-						const fieldValue = this._extractFieldValueFromGroupedData(groupedDataIndexes[gdIndex], field.fields_2d_indexes)
+						const fieldValue = this._extractFieldValueFromGroupedData(groupedDataIndexes[gdIndex], field.fields_2d_indexes, field.field_join_symbol)
 						if (fieldValue.length > 0) {
 							object[field.fg_key_suffix] = fieldValue
 						}
@@ -269,7 +273,7 @@ export class Convert2DArrayToObjects {
 
 				if (gConversion.groups.length > 0) {
 					for (const gc of gConversion.groups) {
-						const newObjectValue = this._convert(gc, groupedDataIndexes[gdIndex], [...groupIndexes, gdIndex])
+						const newObjectValue = this._convert(gc, groupedDataIndexes[gdIndex])
 						if (Array.isArray(newObjectValue) && newObjectValue.length > 0) {
 							object[gc.fg_key_suffix] = newObjectValue
 						}
@@ -306,7 +310,7 @@ export class Convert2DArrayToObjects {
 	 * @param columnIndexes
 	 * @returns
 	 */
-	private _extractFieldValueFromGroupedData(groupedDataIndexes: number[], columnIndexes: number[]) {
+	private _extractFieldValueFromGroupedData(groupedDataIndexes: number[], columnIndexes: number[], joinSymbol: string | undefined) {
 		let duplicateRowValues: any[][] = []
 
 		for (const gdIndex of groupedDataIndexes) {
@@ -343,7 +347,21 @@ export class Convert2DArrayToObjects {
 			}
 		}
 
-		return !duplicatedRowIsEmpty ? duplicateRowValues[0] : []
+		if (duplicatedRowIsEmpty) {
+			return []
+		}
+
+		if (typeof joinSymbol === 'string' && joinSymbol.length > 0 && duplicateRowValues[0].length === 1 && typeof duplicateRowValues[0][0] === 'string') {
+			return duplicateRowValues[0][0].split(joinSymbol).map((value) => {
+				try {
+					return JSON.parse(value)
+				} catch {
+					return value
+				}
+			})
+		}
+
+		return duplicateRowValues[0]
 	}
 
 	/**

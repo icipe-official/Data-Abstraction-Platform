@@ -4,13 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/barkimedes/go-deepcopy"
+	"github.com/brunoga/deep"
 	intpkgjson "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/json"
 )
 
 type fieldGroupConversion struct {
 	FgKey                  *string
 	FgSepColsMaxValues     *int
+	FieldJoinSymbol        string
 	FieldGroups            []fieldGroupConversion
 	GroupReadOrderOfFields []string
 }
@@ -160,7 +161,7 @@ func (n *ConvertObjectsTo2DArray) initFgConversion(mmGroup any) (fieldGroupConve
 
 				if fgViewMaxNoOfValuesInSeparateColumns := FgGet2DConversion(fgMap); fgViewMaxNoOfValuesInSeparateColumns > 1 {
 					newFieldGroupConversion.FgSepColsMaxValues = new(int)
-					*newFieldGroupConversion.FgSepColsMaxValues = fgViewMaxNoOfValuesInSeparateColumns - 1
+					*newFieldGroupConversion.FgSepColsMaxValues = fgViewMaxNoOfValuesInSeparateColumns
 				} else {
 					if fgGroupConversion, err := n.initFgConversion(fgMap); err != nil {
 						return fieldGroupConversion{}, err
@@ -175,7 +176,14 @@ func (n *ConvertObjectsTo2DArray) initFgConversion(mmGroup any) (fieldGroupConve
 		}
 
 		if fgViewMaxNoOfValuesInSeparateColumns := FgGet2DConversion(fgMap); fgViewMaxNoOfValuesInSeparateColumns > 1 {
-			*newFieldGroupConversion.FgSepColsMaxValues = fgViewMaxNoOfValuesInSeparateColumns - 1
+			newFieldGroupConversion.FgSepColsMaxValues = new(int)
+			*newFieldGroupConversion.FgSepColsMaxValues = fgViewMaxNoOfValuesInSeparateColumns
+		}
+
+		if joinSymbol, ok := fgMap[FIELD_GROUP_PROP_FIELD_MULTIPLE_VALUES_JOIN_SYMBOL].(string); ok && len(joinSymbol) > 0 {
+			newFieldGroupConversion.FieldJoinSymbol = joinSymbol
+		} else {
+			newFieldGroupConversion.FieldJoinSymbol = ","
 		}
 
 		mmGroupConversion.FieldGroups = append(mmGroupConversion.FieldGroups, newFieldGroupConversion)
@@ -185,35 +193,41 @@ func (n *ConvertObjectsTo2DArray) initFgConversion(mmGroup any) (fieldGroupConve
 }
 
 // Converts Data into a 2D array.
-func (n *ConvertObjectsTo2DArray) Convert(data []any) error {
-	if len(data) < 1 {
-		return errors.New("data is not an slice")
-	}
+//
+// Expects data to be a slice of any
+func (n *ConvertObjectsTo2DArray) Convert(data any) error {
+	if dataSlice, ok := data.([]any); ok {
+		if len(dataSlice) < 1 {
+			return errors.New("data is not an slice")
+		}
 
-	for _, datum := range data {
-		if datumCopy, err := deepcopy.Anything(datum); err != nil {
-			return err
-		} else {
-			if datumMap, ok := datumCopy.(map[string]any); ok {
-				n.currentDatum = datumMap
+		for _, datum := range dataSlice {
+			if datumCopy, err := deep.Copy(datum); err != nil {
+				return err
+			} else {
+				if datumMap, ok := datumCopy.(map[string]any); ok {
+					n.currentDatum = datumMap
 
-				datum2DArray, err := n.convert([][]any{{}}, n.fgConversion, []int{0})
-				if err != nil {
-					return err
-				}
-
-				if n.reorder2DFields != nil {
-					if err := n.reorder2DFields.Reorder(datum2DArray); err != nil {
+					datum2DArray, err := n.convert([][]any{{}}, n.fgConversion, []int{0})
+					if err != nil {
 						return err
 					}
-				}
 
-				n.array2D = append(n.array2D, datum2DArray...)
-				n.currentDatum = make(map[string]any)
-			} else {
-				return argumentsError(n.Convert, "datum", "map[string]any", datum)
+					if n.reorder2DFields != nil {
+						if err := n.reorder2DFields.Reorder(datum2DArray); err != nil {
+							return err
+						}
+					}
+
+					n.array2D = append(n.array2D, datum2DArray...)
+					n.currentDatum = make(map[string]any)
+				} else {
+					return argumentsError(n.Convert, "datum", "map[string]any", datum)
+				}
 			}
 		}
+	} else {
+		return argumentsError(n.Convert, "data", "[]any", data)
 	}
 
 	return nil
@@ -243,8 +257,11 @@ func (n *ConvertObjectsTo2DArray) convert(datumObject2DArray [][]any, gConversio
 				if valueInObjectSlice, ok := valueInObject.([]any); ok && len(valueInObjectSlice) > 0 {
 					startIndexOfValueInObject := 0
 					for vioIndex := range valueInObjectSlice {
+						if vioIndex == *fgConversion.FgSepColsMaxValues {
+							break
+						}
 						for _, fgKeySuffix := range fgConversion.GroupReadOrderOfFields {
-							newValueInObject[startIndexOfValueInObject] = intpkgjson.GetValueInObject(valueInObject, fmt.Sprintf("$.%d.%s", vioIndex, fgKeySuffix))
+							newValueInObject[startIndexOfValueInObject] = n.getNewFieldValueInObject(intpkgjson.GetValueInObject(valueInObject, fmt.Sprintf("$.%d.%s", vioIndex, fgKeySuffix)), fgConversion.FieldJoinSymbol)
 							startIndexOfValueInObject += 1
 						}
 					}
@@ -257,12 +274,10 @@ func (n *ConvertObjectsTo2DArray) convert(datumObject2DArray [][]any, gConversio
 			if valueInObjectSlice, ok := valueInObject.([]any); ok && len(valueInObjectSlice) > 0 {
 				new2DArray := make([][]any, 0)
 				for vioIndex := range valueInObjectSlice {
-					if value, err := deepcopy.Anything(new2DArray); err != nil {
+					if value, err := deep.Copy(new2DArray); err != nil {
 						return nil, err
 					} else {
-						if valueSlice, ok := value.([][]any); ok {
-							new2DArray = valueSlice
-						}
+						new2DArray = value
 					}
 
 					if converted2DArray, err := n.convert(datumObject2DArray, fgConversion, append(arrayIndexes, vioIndex)); err != nil {
@@ -287,17 +302,46 @@ func (n *ConvertObjectsTo2DArray) convert(datumObject2DArray [][]any, gConversio
 			newValueInObject := make([]any, *fgConversion.FgSepColsMaxValues)
 
 			if valueInObjectSlice, ok := valueInObject.([]any); ok && len(valueInObjectSlice) > 0 {
-				copy(newValueInObject, valueInObjectSlice)
+				for vioIndex, vios := range valueInObjectSlice {
+					if vioIndex == *fgConversion.FgSepColsMaxValues {
+						break
+					}
+					newValueInObject[vioIndex] = n.getNewFieldValueInObject(vios, fgConversion.FieldJoinSymbol)
+				}
 			}
 
 			datumObject2DArray = n.merge2DArrays(datumObject2DArray, [][]any{newValueInObject})
 			continue
 		}
 
-		datumObject2DArray = n.merge2DArrays(datumObject2DArray, [][]any{{valueInObject}})
+		datumObject2DArray = n.merge2DArrays(datumObject2DArray, [][]any{{n.getNewFieldValueInObject(valueInObject, fgConversion.FieldJoinSymbol)}})
 	}
 
 	return datumObject2DArray, nil
+}
+
+func (n *ConvertObjectsTo2DArray) getNewFieldValueInObject(valueInObject any, joinSymbol string) any {
+	if valueInObjectSlice, ok := valueInObject.([]any); ok {
+		if len(valueInObjectSlice) > 1 {
+			newValueInObject := ""
+			for vioIndex, vios := range valueInObjectSlice {
+				newVios := vios
+				if newVios == nil {
+					newVios = "null"
+				}
+				if vioIndex == 0 {
+					newValueInObject = fmt.Sprintf("%v", newVios)
+				} else {
+					newValueInObject = fmt.Sprintf("%s%s%v", newValueInObject, joinSymbol, newVios)
+				}
+			}
+			return newValueInObject
+		}
+
+		return valueInObjectSlice[0]
+	}
+
+	return valueInObject
 }
 
 // Merges rightArray into rightArray.

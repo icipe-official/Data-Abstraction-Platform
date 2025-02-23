@@ -22,7 +22,15 @@ import (
 //
 // returns true if values are equal and false if values are not equal.
 func AreValuesEqual(valueOne any, valueTwo any) bool {
-	if reflect.TypeOf(valueOne).Kind() != reflect.TypeOf(valueTwo).Kind() {
+	if valueOne == nil && valueTwo == nil {
+		return true
+	}
+
+	if (valueOne == nil && valueTwo != nil) || (valueOne != nil && valueTwo == nil) {
+		return false
+	}
+
+	if valueOne != nil && valueTwo != nil && reflect.TypeOf(valueOne).Kind() != reflect.TypeOf(valueTwo).Kind() {
 		return false
 	}
 
@@ -70,6 +78,6 @@ func AreValuesEqual(valueOne any, valueTwo any) bool {
 		return true
 
 	default:
-		return valueOne == valueTwo
+		return reflect.DeepEqual(valueOne, valueTwo)
 	}
 }

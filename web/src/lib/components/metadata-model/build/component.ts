@@ -304,7 +304,14 @@ class Component extends LitElement {
 												return
 											}
 											this._createUpdateMetadataModel((fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]'), fieldgroup)
-											window.dispatchEvent(new CustomEvent(Misc.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Misc.ToastType.INFO, toastMessage: `Field/group updated` }, bubbles: true, composed: true }))
+											this.dispatchEvent(
+												new CustomEvent('metadata-model-build:notification', {
+													detail: {
+														type: Misc.ToastType.INFO,
+														value: 'Field/group updated'
+													}
+												})
+											)
 										}}
 									></metadata-model-build-edit-field-group>
 								`

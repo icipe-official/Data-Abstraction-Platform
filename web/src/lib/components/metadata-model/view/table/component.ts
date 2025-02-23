@@ -40,7 +40,7 @@ class Component extends LitElement {
 	@state() private _lockedColumnData2DFieldsIndex: number[] = []
 	@state() private _unlockedColumnData2DFieldsIndex: number[] = []
 
-	private readonly NO_OF_RENDER_CONTENT_TO_ADD: number = 20
+	private readonly NO_OF_RENDER_CONTENT_TO_ADD: number = 10
 	private _topHeaderResizeObserved: boolean = false
 	private _columnHeaderLockedResizeObserved: boolean = false
 
@@ -128,6 +128,9 @@ class Component extends LitElement {
 	@state() private _topHeaderHeight: number = 0
 	@state() private _columnHeaderLockedWidth: number = 0
 
+	@state() private _displayContent: boolean = false
+	@state() private _scrollelementobserved: boolean = false
+
 	protected firstUpdated(_changedProperties: PropertyValues): void {
 		this._resizeObserver = new ResizeObserver((entries) => {
 			for (const entry of entries) {
@@ -147,6 +150,111 @@ class Component extends LitElement {
 				}
 			}
 		})
+
+		this._rowStartEndIntersectionobserver = new IntersectionObserver(
+			(entries) => {
+				let decrementStartIndex = false
+				let incrementEndIndex = false
+
+				for (const entry of entries) {
+					if (entry.target.id === 'scroll-element') {
+						if (entry.intersectionRatio > 0) {
+							this._displayContent = true
+						}
+						continue
+					}
+
+					const renderStartEnd = /row-render-tracker-(start|end)/.exec(entry.target.id)
+					if (renderStartEnd === null) {
+						continue
+					}
+
+					if (entry.intersectionRatio > 0) {
+						switch (renderStartEnd[1]) {
+							case 'start':
+								if (typeof this._rowStartAddContentTimeout === 'number') {
+									break
+								}
+
+								if (this._rowStartIndex > 0) {
+									decrementStartIndex = true
+									if (typeof this._rowEndAddContentTimeout === 'number') {
+										window.clearTimeout(this._rowEndAddContentTimeout)
+										this._rowEndAddContentTimeout = undefined
+									}
+								}
+								break
+							case 'end':
+								if (typeof this._rowEndAddContentTimeout === 'number') {
+									break
+								}
+
+								if (this._rowEndIndex < this.data.length - 1) {
+									incrementEndIndex = true
+									if (typeof this._rowStartAddContentTimeout === 'number') {
+										window.clearTimeout(this._rowStartAddContentTimeout)
+										this._rowStartAddContentTimeout = undefined
+									}
+								}
+								break
+						}
+					}
+				}
+
+				if (decrementStartIndex) {
+					if (typeof this._rowStartAddContentTimeout !== 'number') {
+						this._rowStartAddContentTimeout = window.setTimeout(() => this._rowAddContentAtStartPosition(this._rowStartIndex), 500)
+					}
+				}
+
+				if (incrementEndIndex) {
+					if (typeof this._rowEndAddContentTimeout !== 'number') {
+						this._rowEndAddContentTimeout = window.setTimeout(() => this._rowAddContentAtEndPosition(this._rowEndIndex), 500)
+					}
+				}
+
+				if (this._rowItemsOutOfView.length > 0) {
+					let minStartIndex = this._rowStartIndex
+					let maxEndIndex = this._rowEndIndex
+					for (const itemID of this._rowItemsOutOfView) {
+						if (incrementEndIndex && itemID > minStartIndex && maxEndIndex - itemID >= this.NO_OF_RENDER_CONTENT_TO_ADD) {
+							minStartIndex = itemID
+							continue
+						}
+
+						if (decrementStartIndex && itemID < maxEndIndex && itemID - minStartIndex >= this.NO_OF_RENDER_CONTENT_TO_ADD) {
+							maxEndIndex = itemID
+							continue
+						}
+					}
+
+					for (const itemID of structuredClone(this._rowItemsOutOfView) as number[]) {
+						if (itemID <= minStartIndex || itemID >= maxEndIndex) {
+							this._rowItemsOutOfView = this._rowItemsOutOfView.filter((ioovid) => itemID !== ioovid)
+							delete this._rowRenderTrackers[itemID]
+						}
+					}
+
+					for (const key of Object.keys(this._rowRenderTrackers)) {
+						const keyNumber = Number(key)
+						if (keyNumber < minStartIndex || keyNumber > maxEndIndex) {
+							delete this._rowRenderTrackers[keyNumber]
+						}
+					}
+
+					if (this._rowStartIndex !== minStartIndex) {
+						this._rowStartIndex = minStartIndex - 1 > 0 ? minStartIndex - 1 : 0
+					}
+
+					if (this._rowEndIndex !== maxEndIndex) {
+						this._rowEndIndex = maxEndIndex - 1
+					}
+				}
+			},
+			{
+				root: this.scrollelement
+			}
+		)
 	}
 
 	private _columnHeaderHtmlTemplate(columnIndex: number, dfIndex: number) {
@@ -330,47 +438,26 @@ class Component extends LitElement {
 								}
 
 								return html`
-									<div
-										class="rounded-md self-center flex flex-col ${this.color === Theme.Color.PRIMARY
-											? 'bg-primary text-primary-content shadow-primary-content'
-											: this.color === Theme.Color.SECONDARY
-												? 'bg-secondary text-secondary-content shadow-secondary-content'
-												: 'bg-accent text-accent-content shadow-accent-content'}"
-									>
-										<header class="h-[6px] bg-transparent"></header>
-										<main style="grid-template-columns: repeat(2, auto);" class="relative grid overflow-auto min-w-[200px] max-h-[400px] w-fit h-fit">
-											<header style="grid-column:1/3; grid-template-columns: subgrid;" class="grid h-fit sticky top-0 z-[2] font-bold text-sm shadow-sm ">
-												<div
-													class="sticky left-0 shadow-sm min-w-[5px] p-1 ${this.color === Theme.Color.PRIMARY
-														? 'bg-primary text-primary-content shadow-primary-content'
-														: this.color === Theme.Color.SECONDARY
-															? 'bg-secondary text-secondary-content shadow-secondary-content'
-															: 'bg-accent text-accent-content accent-primary-content'}"
-												>
-													#
-												</div>
-												<div class="p-1">${MetadataModel.GetFieldGroupName(this._dataFields[columnIndex])}</div>
-											</header>
-											<main style="grid-column:1/3; grid-template-columns: subgrid;" class="grid text-xs z-[1]">
-												${(rowdata as any[]).map((rd, index) => {
-													return html`
-														<div style="grid-column:1/3; grid-template-columns: subgrid;" class="grid${index > 0 ? ` border-t-[1px] ${this.color === Theme.Color.PRIMARY ? 'border-secondary-content' : this.color === Theme.Color.SECONDARY ? 'border-accent-content' : 'border-primary-content'}` : ''}">
-															<div
-																class="font-bold p-1 flex sticky left-0 shadow-sm ${this.color === Theme.Color.PRIMARY
-																	? 'bg-primary text-primary-content shadow-primary-content'
-																	: this.color === Theme.Color.SECONDARY
-																		? 'bg-secondary text-secondary-content shadow-secondary-content'
-																		: 'bg-accent text-accent-content accent-primary-content'}"
-															>
-																<div class="self-center">${index + 1}</div>
-															</div>
-															<div class="flex p-1">${this._rowColumnDatum(columnIndex, rd)}</div>
+									<div style="grid-template-columns: repeat(2, auto);" class="relative grid shadow-sm shadow-gray-800 overflow-auto min-w-[200px] max-h-[400px] w-fit h-fit">
+										<header
+											style="grid-column:1/3; grid-template-columns: subgrid;"
+											class="grid h-fit sticky top-0 z-[2] font-bold text-sm shadow-sm shadow-gray-800  ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
+										>
+											<div class="sticky left-0 shadow-sm shadow-gray-800 min-w-[5px] p-1">#</div>
+											<div class="p-1">${MetadataModel.GetFieldGroupName(this._dataFields[columnIndex])}</div>
+										</header>
+										<main style="grid-column:1/3; grid-template-columns: subgrid;" class="grid text-xs z-[1]">
+											${(rowdata as any[]).map((rd, index) => {
+												return html`
+													<div style="grid-column:1/3; grid-template-columns: subgrid;" class="grid ${index > 0 ? ` border-t-[1px] ${this.color === Theme.Color.PRIMARY ? 'border-secondary-content' : this.color === Theme.Color.SECONDARY ? 'border-accent-content' : 'border-primary-content'}` : ''}">
+														<div class="font-bold p-1 flex sticky left-0 shadow-sm shadow-gray-800 ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}">
+															<div class="self-center">${index + 1}</div>
 														</div>
-													`
-												})}
-											</main>
+														<div class="flex p-1">${this._rowColumnDatum(columnIndex, rd)}</div>
+													</div>
+												`
+											})}
 										</main>
-										<footer class="h-[6px] bg-transparent"></footer>
 									</div>
 								`
 							}
@@ -665,7 +752,7 @@ class Component extends LitElement {
 			this._tableInsideTable = true
 		}
 
-		this._rowEndIndex = this.data.length - 1
+		this._rowEndIndex = this.data.length - 1 > this.NO_OF_RENDER_CONTENT_TO_ADD ? this.NO_OF_RENDER_CONTENT_TO_ADD : this.data.length - 1
 
 		try {
 			let data2DFields = new MetadataModel.Extract2DFields(this.metadatamodel, false, false, false)
@@ -701,8 +788,17 @@ class Component extends LitElement {
 			window.clearTimeout(this._rowEndAddContentTimeout)
 		}
 
-		this._rowStartEndIntersectionobserver.disconnect()
-		this._rowContentItemIntersectionObserver.disconnect()
+		if (typeof this._rowStartEndIntersectionobserver !== 'undefined') {
+			this._rowStartEndIntersectionobserver.disconnect()
+		}
+
+		if (typeof this._rowContentItemIntersectionObserver !== 'undefined') {
+			this._rowContentItemIntersectionObserver.disconnect()
+		}
+
+		if (typeof this._resizeObserver !== 'undefined') {
+			this._resizeObserver.disconnect()
+		}
 
 		if (typeof this._rowStartAddContentTimeout === 'number') {
 			window.clearTimeout(this._rowStartAddContentTimeout)
@@ -930,7 +1026,7 @@ class Component extends LitElement {
 		return html`
 			<div id="scroll-element" class="flex-1 grid ${!this._tableInsideTable ? 'overflow-auto max-h-full max-w-full' : 'min-h-fit min-w-fit'}" style="grid-template-columns: repeat(${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}, minmax(min-content,500px));">
 				${(() => {
-					if (typeof this.scrollelement === 'undefined') {
+					if (!this._scrollelementobserved) {
 						;(async () => {
 							await new Promise((resolve: (e: Element) => void) => {
 								if ((this.shadowRoot as ShadowRoot).querySelector('#scroll-element')) {
@@ -951,8 +1047,13 @@ class Component extends LitElement {
 								})
 							})
 								.then((e) => {
-									this.scrollelement = e
-									this._resizeObserver.observe(e)
+									if (typeof this.scrollelement === 'undefined') {
+										this.scrollelement = e
+										this._resizeObserver.observe(e)
+									} else {
+										this._rowStartEndIntersectionobserver.observe(e)
+									}
+									this._scrollelementobserved = true
 								})
 								.catch((err) => {
 									console.error('get scroll-element failed', err)
@@ -966,104 +1067,15 @@ class Component extends LitElement {
 						`
 					}
 
-					if (typeof this._rowStartEndIntersectionobserver === 'undefined') {
-						this._rowStartEndIntersectionobserver = new IntersectionObserver(
-							(entries) => {
-								let decrementStartIndex = false
-								let incrementEndIndex = false
+					if (this._tableInsideTable && !this._displayContent) {
+						this._rowRenderTrackerStartObserved = false
+						this._rowRenderTrackerEndObserved = false
+						this._topHeaderResizeObserved = false
+						this._columnHeaderLockedResizeObserved = false
+						this._columnHeaderLockedResizeObserved = false
+						this._rowRenderTrackers = {}
 
-								for (const entry of entries) {
-									const renderStartEnd = /row-render-tracker-(start|end)/.exec(entry.target.id)
-									if (renderStartEnd === null) {
-										continue
-									}
-
-									if (entry.intersectionRatio > 0) {
-										switch (renderStartEnd[1]) {
-											case 'start':
-												if (typeof this._rowStartAddContentTimeout === 'number') {
-													break
-												}
-
-												if (this._rowStartIndex > 0) {
-													decrementStartIndex = true
-													if (typeof this._rowEndAddContentTimeout === 'number') {
-														window.clearTimeout(this._rowEndAddContentTimeout)
-														this._rowEndAddContentTimeout = undefined
-													}
-												}
-												break
-											case 'end':
-												if (typeof this._rowEndAddContentTimeout === 'number') {
-													break
-												}
-
-												if (this._rowEndIndex < this.data.length - 1) {
-													incrementEndIndex = true
-													if (typeof this._rowStartAddContentTimeout === 'number') {
-														window.clearTimeout(this._rowStartAddContentTimeout)
-														this._rowStartAddContentTimeout = undefined
-													}
-												}
-												break
-										}
-									}
-								}
-
-								if (decrementStartIndex) {
-									if (typeof this._rowStartAddContentTimeout !== 'number') {
-										this._rowStartAddContentTimeout = window.setTimeout(() => this._rowAddContentAtStartPosition(this._rowStartIndex), 500)
-									}
-								}
-
-								if (incrementEndIndex) {
-									if (typeof this._rowEndAddContentTimeout !== 'number') {
-										this._rowEndAddContentTimeout = window.setTimeout(() => this._rowAddContentAtEndPosition(this._rowEndIndex), 500)
-									}
-								}
-
-								if (this._rowItemsOutOfView.length > 0) {
-									let minStartIndex = this._rowStartIndex
-									let maxEndIndex = this._rowEndIndex
-									for (const itemID of this._rowItemsOutOfView) {
-										if (incrementEndIndex && itemID > minStartIndex && maxEndIndex - itemID >= this.NO_OF_RENDER_CONTENT_TO_ADD) {
-											minStartIndex = itemID
-											continue
-										}
-
-										if (decrementStartIndex && itemID < maxEndIndex && itemID - minStartIndex >= this.NO_OF_RENDER_CONTENT_TO_ADD) {
-											maxEndIndex = itemID
-											continue
-										}
-									}
-
-									for (const itemID of structuredClone(this._rowItemsOutOfView) as number[]) {
-										if (itemID <= minStartIndex || itemID >= maxEndIndex) {
-											this._rowItemsOutOfView = this._rowItemsOutOfView.filter((ioovid) => itemID !== ioovid)
-											delete this._rowRenderTrackers[itemID]
-										}
-									}
-
-									for (const key of Object.keys(this._rowRenderTrackers)) {
-										const keyNumber = Number(key)
-										if (keyNumber < minStartIndex || keyNumber > maxEndIndex) {
-											delete this._rowRenderTrackers[keyNumber]
-										}
-									}
-
-									if (this._rowStartIndex !== minStartIndex) {
-										this._rowStartIndex = minStartIndex - 1 > 0 ? minStartIndex - 1 : 0
-									}
-
-									if (this._rowEndIndex !== maxEndIndex) {
-										this._rowEndIndex = maxEndIndex - 1
-									}
-								}
-							},
-							{
-								root: this.scrollelement
-							}
-						)
+						return html` <div class="flex space-x-1"><span class="loading loading-spinner loading-md"></span><button class="link" @click=${() => (this._displayContent = true)}>load data</button></div> `
 					}
 
 					if (typeof this._rowContentItemIntersectionObserver === 'undefined') {
@@ -1626,9 +1638,7 @@ class Component extends LitElement {
 						<main class="grid z-[1]" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
 							${(() => {
 								if (this._viewJsonOutput) {
-									this._rowRenderTrackerStartObserved = false
-									this._topHeaderResizeObserved = false
-									this._columnHeaderLockedResizeObserved = false
+									this._rowRenderTrackers = {}
 
 									return html`
 										<pre class="grid bg-gray-700 text-white w-full h-fit shadow-inner shadow-gray-800 p-1" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3};">
@@ -1968,7 +1978,7 @@ class Component extends LitElement {
 										})()
 									)}
 									<div id="row-render-tracker-end" class="grid bg-white shadow-sm shadow-gray-800" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;">
-										<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this.basestickytop + this._topHeaderHeight}px;left: ${this.basestickyleft}px;" class="grid sticky bg-white shadow-sm shadow-gray-800 z-10 rounded-bl-md">
+										<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this.basestickytop + this._topHeaderHeight}px;left: ${this.basestickyleft}px;" class="grid sticky bg-white shadow-sm shadow-gray-800 z-10">
 											${(() => {
 												let templates: TemplateResult<1>[] = []
 

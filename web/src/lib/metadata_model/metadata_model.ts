@@ -211,7 +211,9 @@ export enum FgProperties {
 	DATABASE_TABLE_COLLECTION_NAME = '$DATABASE_TABLE_COLLECTION_NAME',
 	DATABASE_FIELD_COLUMN_NAME = '$DATABASE_FIELD_COLUMN_NAME',
 	DATUM_INPUT_VIEW = '$DATUM_INPUT_VIEW',
-	FIELD_2D_VIEW_POSITION = '$FIELD_2D_VIEW_POSITION'
+	FIELD_2D_VIEW_POSITION = '$FIELD_2D_VIEW_POSITION',
+	FIELD_MULTIPLE_VALUES_JOIN_SYMBOL = '$FIELD_MULTIPLE_VALUES_JOIN_SYMBOL',
+	FIELD_2D_DATA_REMOVE_EMPTY_VALUES = '$FIELD_2D_DATA_REMOVE_EMPTY_VALUES'
 }
 
 export enum Field2dPositionProperties {
@@ -249,17 +251,17 @@ export const ARRAY_INDEX_PLACEHOLDER = '[*]'
  * * Number of array index placeholders in {@linkcode fieldgroupkey} being more than the number of array indexes in {@linkcode arrayplaceholderindexes}.
  * * {@linkcode arrayplaceholderindexes} not being an array of numbers ONLY.
  *
- * @param fieldgroupkey MUST begin with `$.$G_FIELDS[*]`. Examples:
- * * `$.$G_FIELDS[*].field_1`.
- * * `$.$G_FIELDS[*].group_1.$G_FIELDS[*].group_1_field`.
+ * @param fieldgroupkey MUST begin with `$.$GROUP_FIELDS[*]`. Examples:
+ * * `$.$GROUP_FIELDS[*].field_1`.
+ * * `$.$GROUP_FIELDS[*].group_1.$GROUP_FIELDS[*].group_1_field`.
  *
  * @param arrayplaceholderindexes Replaces array index placeholder `[*]` found in {@linkcode fieldgroupkey}.
  *
  * Number of elements MUST match number of array index placeholders in {@linkcode fieldgroupkey}.
- * For example, with {@linkcode fieldgroupkey} like `$.$G_FIELDS[*].group_1.$G_FIELDS[*].group_1_field` the number of array indexes passed in {@linkcode arrayplaceholderindexes} MUST be 2.
+ * For example, with {@linkcode fieldgroupkey} like `$.$GROUP_FIELDS[*].group_1.$GROUP_FIELDS[*].group_1_field` the number of array indexes passed in {@linkcode arrayplaceholderindexes} MUST be 2.
  *
- * The first element is removed as it matches the first `$G_FIELDS[*]` in the {@linkcode fieldgroupkey} which is removed from the path.
- * For example, {@linkcode fieldgroupkey} `$.$G_FIELDS[*].group_1.$G_FIELDS[*].group_1_field` will be trimmed to `$.group_1[*].group_1_field` before {@linkcode arrayplaceholderindexes} are added.
+ * The first element is removed as it matches the first `$GROUP_FIELDS[*]` in the {@linkcode fieldgroupkey} which is removed from the path.
+ * For example, {@linkcode fieldgroupkey} `$.$GROUP_FIELDS[*].group_1.$GROUP_FIELDS[*].group_1_field` will be trimmed to `$.group_1[*].group_1_field` before {@linkcode arrayplaceholderindexes} are added.
  *
  * @returns path to value in the object.
  */

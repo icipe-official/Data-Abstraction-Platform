@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/barkimedes/go-deepcopy"
+	"github.com/brunoga/deep"
 )
 
 // Add or replace value in object with ValueToSet following the path.
@@ -30,7 +30,7 @@ import (
 //
 // Return Object with value added to it and error if converting valueToSet to Json and back failed.
 func SetValueInObject(object any, path string, valueToSet any) (any, error) {
-	valueToSetCopy, err := deepcopy.Anything(valueToSet)
+	valueToSetCopy, err := deep.Copy(valueToSet)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func SetValueInObject(object any, path string, valueToSet any) (any, error) {
 	}
 
 	if len(path) == 0 || path == "$" {
-		if valueToSetCopy, err := deepcopy.Anything(valueToSet); err != nil {
+		if valueToSetCopy, err := deep.Copy(valueToSet); err != nil {
 			return nil, err
 		} else {
 			return valueToSetCopy, nil

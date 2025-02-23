@@ -1,13 +1,14 @@
 package metadatamodel
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"slices"
 	"strings"
 
-	"github.com/barkimedes/go-deepcopy"
-	intpkgjson "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/json"
+	"github.com/brunoga/deep"
 )
 
 type groupConversion struct {
@@ -22,6 +23,7 @@ type groupConversion struct {
 type fieldConversion struct {
 	FgKeySuffix                       string
 	Fields2DIndexes                   []int
+	FieldJoinSymbol                   string
 	ColumnIndexesThatMatchIndexHeader [][]int
 	ReadOrderOfFields                 []string
 }
@@ -111,12 +113,12 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 			return groupConversion{}, err
 		}
 
-		fValueMapKey, err := GetValueAsString(fValueMap[FIELD_2D_POSITION_PROP_FIELD_GROUP_KEY])
+		fValueMapKey, err := GetValueAsString(fValueMap[FIELD_GROUP_PROP_FIELD_GROUP_KEY])
 		if err != nil {
 			return groupConversion{}, err
 		}
 
-		relativePath := strings.Split(fValueMapKey, fmt.Sprintf("%s.%s%s", mmGroupKeyString, FIELD_GROUP_PROP_GROUP_FIELDS, ARRAY_PATH_PLACEHOLDER))
+		relativePath := strings.Split(fValueMapKey, fmt.Sprintf("%s.%s%s.", mmGroupKeyString, FIELD_GROUP_PROP_GROUP_FIELDS, ARRAY_PATH_PLACEHOLDER))
 		if len(relativePath) == 2 && len(strings.Split(relativePath[1], ".")) == 1 {
 			mmGroupConversion.Fields2DIndexes = append(mmGroupConversion.Fields2DIndexes, fIndex)
 		}
@@ -127,10 +129,8 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 		mmGroupConversion.Fields2DPrimaryKeyIndexes = value
 	} else {
 		mmGroupConversion.Fields2DPrimaryKeyIndexes = mmGroupConversion.Fields2DIndexes
-		if v, err := deepcopy.Anything(mmGroupConversion.Fields2DIndexes); err == nil {
-			if vSlice, ok := v.([]int); ok {
-				mmGroupConversion.Fields2DPrimaryKeyIndexes = vSlice
-			}
+		if v, err := deep.Copy(mmGroupConversion.Fields2DIndexes); err == nil {
+			mmGroupConversion.Fields2DPrimaryKeyIndexes = v
 		}
 	}
 
@@ -157,6 +157,12 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 
 		newFieldConversion := fieldConversion{
 			FgKeySuffix: fgKeySuffixString,
+		}
+
+		if joinSymbol, ok := fgMap[FIELD_GROUP_PROP_FIELD_MULTIPLE_VALUES_JOIN_SYMBOL].(string); ok && len(joinSymbol) > 0 {
+			newFieldConversion.FieldJoinSymbol = joinSymbol
+		} else {
+			newFieldConversion.FieldJoinSymbol = ","
 		}
 
 		fgMapKey, err := GetValueAsString(fgMap[FIELD_GROUP_PROP_FIELD_GROUP_KEY])
@@ -198,7 +204,7 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 					newFieldConversion.ColumnIndexesThatMatchIndexHeader = make([][]int, fgViewMaxNoOfValuesInSeparateColumns)
 					for columnIndex := 0; columnIndex < fgViewMaxNoOfValuesInSeparateColumns; columnIndex++ {
 						columnIndexHeaders := make([]int, 0)
-						for _, fValue := range n.fields2D {
+						for fIndex, fValue := range n.fields2D {
 							fMap, err := GetFieldGroupMap(fValue)
 							if err != nil {
 								return groupConversion{}, err
@@ -211,7 +217,7 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 
 							if strings.HasPrefix(fKeyString, fgMapKey) {
 								if fMap[FIELD_GROUP_PROP_FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] == columnIndex {
-									columnIndexHeaders = append(columnIndexHeaders, columnIndex)
+									columnIndexHeaders = append(columnIndexHeaders, fIndex)
 								}
 							}
 						}
@@ -244,20 +250,40 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 	return mmGroupConversion, nil
 }
 
-func (n *Convert2DArrayToObjects) Convert(data [][]any) error {
+func (n *Convert2DArrayToObjects) Convert(data any) error {
 	cleanedData := make([][]any, 0)
-
-	for _, dValue := range data {
-		includeRow := false
-		for _, datumValue := range dValue {
-			if datumValue != nil {
-				includeRow = true
-				break
+	if data2DArray, ok := data.([][]any); ok {
+		for _, dValue := range data2DArray {
+			includeRow := false
+			for _, datumValue := range dValue {
+				if datumValue != nil {
+					includeRow = true
+					break
+				}
+			}
+			if includeRow {
+				cleanedData = append(cleanedData, dValue)
 			}
 		}
-		if includeRow {
-			cleanedData = append(cleanedData, dValue)
+	} else if dataArray, ok := data.([]any); ok {
+		for _, dValue := range dataArray {
+			if datumArray, ok := dValue.([]any); ok {
+				includeRow := false
+				for _, datumValue := range datumArray {
+					if datumValue != nil {
+						includeRow = true
+						break
+					}
+				}
+				if includeRow {
+					cleanedData = append(cleanedData, datumArray)
+				}
+			} else {
+				return argumentsError(n.Convert, "dValue", "[]any", data)
+			}
 		}
+	} else {
+		return argumentsError(n.Convert, "data", "[][]any", data)
 	}
 
 	currentDataIndexes := make([]int, len(cleanedData))
@@ -267,7 +293,7 @@ func (n *Convert2DArrayToObjects) Convert(data [][]any) error {
 
 	n.current2DArray = cleanedData
 
-	if newObjects, err := n.convert(n.gConversion, currentDataIndexes, []int{}); err != nil {
+	if newObjects, err := n.convert(n.gConversion, currentDataIndexes); err != nil {
 		return err
 	} else if len(newObjects) > 0 {
 		n.objects = append(n.objects, newObjects...)
@@ -276,13 +302,13 @@ func (n *Convert2DArrayToObjects) Convert(data [][]any) error {
 	return nil
 }
 
-func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2DArrayRowIndexes []int, groupIndexes []int) ([]any, error) {
+func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2DArrayRowIndexes []int) ([]any, error) {
 	groupedDataIndexes, err := n.groupDataByPrimaryKeys(gConversion, current2DArrayRowIndexes)
 	if err != nil {
 		return nil, err
 	}
 
-	objects := make([]any, len(groupIndexes))
+	objects := make([]any, len(groupedDataIndexes))
 
 	for gdIndex, gdValue := range groupedDataIndexes {
 		object := make(map[string]any)
@@ -295,7 +321,7 @@ func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2D
 					newFieldValue := make(map[string]any)
 
 					for citmihIndex, citmihIndexValue := range ci2dhIndex {
-						fieldValue, err := n.extractFieldValueFromGroupedData(gdValue, []int{citmihIndexValue})
+						fieldValue, err := n.extractFieldValueFromGroupedData(gdValue, []int{citmihIndexValue}, field.FieldJoinSymbol)
 						if err != nil {
 							return nil, err
 						}
@@ -318,7 +344,7 @@ func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2D
 			}
 
 			if len(field.Fields2DIndexes) > 0 {
-				fieldValue, err := n.extractFieldValueFromGroupedData(gdValue, field.Fields2DIndexes)
+				fieldValue, err := n.extractFieldValueFromGroupedData(gdValue, field.Fields2DIndexes, field.FieldJoinSymbol)
 				if err != nil {
 					return nil, err
 				}
@@ -330,7 +356,7 @@ func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2D
 
 		if len(gConversion.Groups) > 0 {
 			for _, gc := range gConversion.Groups {
-				newObjectValue, err := n.convert(gc, gdValue, append(groupIndexes, gdIndex))
+				newObjectValue, err := n.convert(gc, gdValue)
 				if err != nil {
 					return nil, err
 				}
@@ -359,7 +385,7 @@ func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2D
 	return newObjects, nil
 }
 
-func (n *Convert2DArrayToObjects) extractFieldValueFromGroupedData(groupedDataIndexes []int, columnIndexes []int) ([]any, error) {
+func (n *Convert2DArrayToObjects) extractFieldValueFromGroupedData(groupedDataIndexes []int, columnIndexes []int, joinSymbol string) ([]any, error) {
 	duplicatedRowValues := make([][]any, 0)
 
 	for _, gdIndex := range groupedDataIndexes {
@@ -387,7 +413,7 @@ func (n *Convert2DArrayToObjects) extractFieldValueFromGroupedData(groupedDataIn
 
 	if len(duplicatedRowValues) > 0 {
 		for _, drValue := range duplicatedRowValues {
-			if !intpkgjson.AreValuesEqual(duplicatedRowValues[0], drValue) {
+			if !reflect.DeepEqual(duplicatedRowValues[0], drValue) {
 				return nil, fmt.Errorf("duplicateRowValues not equal")
 			}
 		}
@@ -395,6 +421,12 @@ func (n *Convert2DArrayToObjects) extractFieldValueFromGroupedData(groupedDataIn
 
 	duplicatedRowIsEmpty := true
 	for _, drValue := range duplicatedRowValues[0] {
+		if drValueString, ok := drValue.(string); ok {
+			if len(drValueString) > 0 {
+				duplicatedRowIsEmpty = false
+				break
+			}
+		}
 		if drValue != nil {
 			duplicatedRowIsEmpty = false
 			break
@@ -403,6 +435,20 @@ func (n *Convert2DArrayToObjects) extractFieldValueFromGroupedData(groupedDataIn
 
 	if duplicatedRowIsEmpty {
 		return []any{}, nil
+	}
+
+	if len(duplicatedRowValues[0]) == 1 {
+		if drvString, ok := duplicatedRowValues[0][0].(string); ok {
+			new := []any{}
+			for _, v := range strings.Split(drvString, joinSymbol) {
+				var newValue any
+				if err := json.Unmarshal([]byte(v), &newValue); err != nil {
+					newValue = v
+				}
+				new = append(new, newValue)
+			}
+			return new, nil
+		}
 	}
 
 	return duplicatedRowValues[0], nil
@@ -435,7 +481,7 @@ func (n *Convert2DArrayToObjects) groupDataByPrimaryKeys(gConversion groupConver
 				return nil, err
 			}
 
-			if intpkgjson.AreValuesEqual(cdPrimaryKeyValues, compCdPrimaryKeyValues) {
+			if reflect.DeepEqual(cdPrimaryKeyValues, compCdPrimaryKeyValues) {
 				currentDataIndexesProcessed = append(currentDataIndexesProcessed, compCdIndex)
 				groupedDataIndexes[currentGroupDataIndexesRow] = append(groupedDataIndexes[currentGroupDataIndexesRow], compCdIndex)
 			}

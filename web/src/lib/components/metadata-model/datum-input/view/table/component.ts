@@ -1389,6 +1389,54 @@ class Component extends LitElement {
 							</div>
 						</div>
 						<div class="join flex">
+							<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-lock-columns')} @mouseout=${() => (this._showHintID = '')}>
+								<button
+									class="join-item btn btn-ghost self-start w-fit h-fit min-h-fit p-1"
+									@click=${() => {
+										for (let cIndex = this._selectedcolumnminindex; cIndex <= this._selectedcolumnmaxindex; cIndex++) {
+											if (this._data2DFields[cIndex][MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]) {
+												delete this._data2DFields[cIndex][MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]
+											} else {
+												this._data2DFields[cIndex][MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] = true
+											}
+											this.updatemetadatamodel(this._data2DFields[cIndex])
+										}
+										this._columnData2DFieldsLockStateChanged = true
+									}}
+									.disabled=${!this._isSelectedFieldsIndexesValid()}
+								>
+									<div class="flex flex-col justify-center h-fit">
+										<div class="flex self-center h-fit">
+											<!--mdi:lock source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="23" height="24" viewBox="0 0 24 24">
+												<path fill="${Theme.GetColorContent(this.color)}" d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
+											</svg>
+											<div class="font-bold text-md">/</div>
+											<!--mdi:lock-open-variant source: https://icon-sets.iconify.design-->
+											<svg xmlns="http://www.w3.org/2000/svg" width="23" height="24" viewBox="0 0 24 24">
+												<path fill="${Theme.GetColorContent(this.color)}" d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
+											</svg>
+										</div>
+									</div>
+								</button>
+								${(() => {
+									if (this._showHintID === 'header-menu-lock-columns') {
+										return html`<div class="relative">
+											<div
+												class="z-50 absolute top-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
+													? 'bg-primary text-primary-content'
+													: this.color === Theme.Color.SECONDARY
+														? 'bg-secondary text-secondary-content'
+														: 'bg-accent text-accent-content'}"
+											>
+												freeze/unfreeze selected columns
+											</div>
+										</div> `
+									}
+
+									return nothing
+								})()}
+							</div>
 							<div class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-copy-selected-data')} @mouseout=${() => (this._showHintID = '')}>
 								<button
 									class="join-item btn btn-ghost self-start w-fit h-fit min-h-fit p-1"

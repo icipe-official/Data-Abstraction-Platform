@@ -4,10 +4,7 @@
 package json
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"reflect"
 	"regexp"
 	"strings"
 )
@@ -30,49 +27,3 @@ func GetPathObjectKeyArrayIndexes(path string) []string {
 }
 
 var ErrValueNotFoundError = fmt.Errorf("ValueNotFound")
-
-// Expects value to a pointer.
-func JSONStringifyParse(value any) (any, error) {
-	if reflect.TypeOf(value).Kind() != reflect.Pointer {
-		return nil, errors.New("argument value is not a pointer")
-	}
-	if jsonString, err := JSONStringify(value); err != nil {
-		return nil, err
-	} else {
-		if jsonParsed, err := JSONParse(jsonString); err != nil {
-			return nil, err
-		} else {
-			return jsonParsed, nil
-		}
-	}
-}
-
-// Expects value to a pointer.
-func JSONStringify(value any) (string, error) {
-	if reflect.TypeOf(value).Kind() != reflect.Pointer {
-		return "", errors.New("argument value is not a pointer")
-	}
-	if json, err := json.Marshal(value); err != nil {
-		return "", err
-	} else {
-		return string(json), nil
-	}
-}
-
-// Expects value to a pointer.
-func JSONStringifyNoError(value any) any {
-	if json, err := json.Marshal(value); err != nil {
-		return value
-	} else {
-		return string(json)
-	}
-}
-
-func JSONParse(value string) (any, error) {
-	var parsedValue any
-	if err := json.Unmarshal([]byte(value), &parsedValue); err != nil {
-		return nil, err
-	} else {
-		return parsedValue, nil
-	}
-}

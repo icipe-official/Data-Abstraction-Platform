@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/barkimedes/go-deepcopy"
+	"github.com/brunoga/deep"
 )
 
 // Extracts fields that can be used for working with data in 2D array form like in excel or csv.
@@ -124,10 +124,8 @@ func (n *Extract2DFields) extract(mmGroup any, mmGroupSkipDataExtraction bool, m
 
 				if value, ok := fgMap[FIELD_GROUP_PROP_GROUP_EXTRACT_AS_SINGLE_FIELD].(bool); ok && value {
 					var newField map[string]any = fgMap
-					if value, err := deepcopy.Anything(fgMap); err == nil {
-						if valueMap, ok := value.(map[string]any); ok {
-							newField = valueMap
-						}
+					if value, err := deep.Copy(fgMap); err == nil {
+						newField = value
 					}
 
 					n.fields = append(n.fields, newField)
@@ -148,10 +146,8 @@ func (n *Extract2DFields) extract(mmGroup any, mmGroupSkipDataExtraction bool, m
 							}
 
 							var newField map[string]any = gfMap
-							if value, err := deepcopy.Anything(gfMap); err == nil {
-								if valueMap, ok := value.(map[string]any); ok {
-									newField = valueMap
-								}
+							if value, err := deep.Copy(gfMap); err == nil {
+								newField = value
 							}
 
 							n.updateSeparateColumnsField(newField, mmGroupSkipDataExtraction, mmGroupViewDisable, columnIndex)
@@ -170,10 +166,8 @@ func (n *Extract2DFields) extract(mmGroup any, mmGroupSkipDataExtraction bool, m
 		if fgViewMaxNoOfValuesInSeparateColumns := FgGet2DConversion(fgMap); fgViewMaxNoOfValuesInSeparateColumns > 1 {
 			for columnIndex := 0; columnIndex < fgViewMaxNoOfValuesInSeparateColumns; columnIndex++ {
 				var newField map[string]any = fgMap
-				if value, err := deepcopy.Anything(newField); err == nil {
-					if valueMap, ok := value.(map[string]any); ok {
-						newField = valueMap
-					}
+				if value, err := deep.Copy(newField); err == nil {
+					newField = value
 				}
 
 				n.updateSeparateColumnsField(newField, mmGroupSkipDataExtraction, mmGroupViewDisable, columnIndex)
@@ -185,10 +179,8 @@ func (n *Extract2DFields) extract(mmGroup any, mmGroupSkipDataExtraction bool, m
 		}
 
 		var newField map[string]any = fgMap
-		if value, err := deepcopy.Anything(fgMap); err == nil {
-			if valueMap, ok := value.(map[string]any); ok {
-				newField = valueMap
-			}
+		if value, err := deep.Copy(fgMap); err == nil {
+			newField = value
 		}
 
 		if value := Get2DFieldViewPosition(newField); value != nil {
@@ -210,6 +202,7 @@ func (n *Extract2DFields) extract(mmGroup any, mmGroupSkipDataExtraction bool, m
 }
 
 func (n *Extract2DFields) updateSeparateColumnsField(field map[string]any, mmGroupSkipDataExtraction bool, mmGroupViewDisable bool, columnIndex int) {
+	field[FIELD_2D_POSITION_PROP_FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] = columnIndex
 	if mmGroupSkipDataExtraction {
 		field[FIELD_GROUP_PROP_DATABASE_SKIP_DATA_EXTRACTION] = true
 	}
@@ -337,7 +330,7 @@ func (n *Reorder2DFields) Reorder(data [][]any) error {
 		targetDatum := make([]any, len(n.sourceToTargetReadOrderOfFields))
 		for stIndex, stValue := range n.sourceToTargetReadOrderOfFields {
 			tDatumData := data[dIndex][stValue]
-			if value, err := deepcopy.Anything(data[dIndex][stValue]); err == nil {
+			if value, err := deep.Copy(data[dIndex][stValue]); err == nil {
 				tDatumData = value
 			}
 			targetDatum[stIndex] = tDatumData
@@ -361,26 +354,32 @@ func RemoveSkipped2DFields(fields []any, skipIfFgDisabled bool, skipIfDataExtrac
 			return nil, err
 		}
 
-		if removePrimaryKey {
-			if value, ok := fValueMap[FIELD_GROUP_PROP_FIELD_GROUP_IS_PRIMARY_KEY].(bool); ok && value {
-				continue
-			}
-		}
-
 		if skipIfFgDisabled {
 			if value, ok := fValueMap[FIELD_GROUP_PROP_FIELD_GROUP_VIEW_DISABLE].(bool); ok && value {
-				continue
+				if value, ok := fValueMap[FIELD_GROUP_PROP_FIELD_GROUP_IS_PRIMARY_KEY].(bool); ok && value {
+					if removePrimaryKey {
+						continue
+					}
+				} else {
+					continue
+				}
 			}
 		}
 
 		if skipIfDataExtraction {
 			if value, ok := fValueMap[FIELD_GROUP_PROP_DATABASE_SKIP_DATA_EXTRACTION].(bool); ok && value {
-				continue
+				if value, ok := fValueMap[FIELD_GROUP_PROP_FIELD_GROUP_IS_PRIMARY_KEY].(bool); ok && value {
+					if removePrimaryKey {
+						continue
+					}
+				} else {
+					continue
+				}
 			}
 		}
 
 		newField := fValue
-		if value, err := deepcopy.Anything(fValue); err == nil {
+		if value, err := deep.Copy(fValue); err == nil {
 			newField = value
 		}
 		newFields = append(newFields, newField)
@@ -393,13 +392,11 @@ func RemoveSkipped2DFields(fields []any, skipIfFgDisabled bool, skipIfDataExtrac
 //
 // Returns error if deep copy of fields2D.Fields fails or repositionedFields is not valid.
 func Reposition2DFields(fields2D Field2DsWithReposition) ([]any, error) {
-	repositionedFields := fields2D.Fields
-	if value, err := deepcopy.Anything(fields2D.Fields); err != nil {
+	var repositionedFields []any
+	if value, err := deep.Copy(fields2D.Fields); err != nil {
 		return nil, err
 	} else {
-		if valueSlice, ok := value.([]any); ok {
-			repositionedFields = valueSlice
-		}
+		repositionedFields = value
 	}
 
 	for sourceIndex, rValue := range fields2D.Reposition {

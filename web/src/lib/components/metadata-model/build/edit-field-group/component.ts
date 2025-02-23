@@ -228,6 +228,30 @@ class Component extends LitElement {
 											return nothing
 										})()}
 									</section>
+									<div class="join max-md:join-vertical">
+										<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+											<span class="h-fit self-center break-words">Join symbol for field with multiple values</span>
+											<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-join-symbol')} @mouseout=${() => (this._showHintID = '')}>
+												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+												</svg>
+											</div>
+										</span>
+										<input
+											class="flex-1 join-item input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
+											type="text"
+											placeholder="Enter join symbol..."
+											.value=${this.fieldgroup[MetadataModel.FgProperties.FIELD_MULTIPLE_VALUES_JOIN_SYMBOL] || ''}
+											@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+												if (e.currentTarget.value.length > 0) {
+													this.fieldgroup[MetadataModel.FgProperties.FIELD_MULTIPLE_VALUES_JOIN_SYMBOL] = e.currentTarget.value
+												} else {
+													delete this.fieldgroup[MetadataModel.FgProperties.FIELD_MULTIPLE_VALUES_JOIN_SYMBOL]
+												}
+											}}
+										/>
+									</div>
 									<section class="flex flex-col space-y-1">
 										<div class="relative w-full h-0">
 											${(() => {
