@@ -99,12 +99,12 @@ class _ {
 
 				const fieldColumnName = mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME]
 				if (typeof fieldColumnName !== 'string' || fieldColumnName.length === 0) {
-					console.warn(`field column name for key ${fgKey} not found or empty!`, structuredClone(mmGroupFields[fgKey]))
+					console.error(`field column name for key ${fgKey} not found or empty!`, structuredClone(mmGroupFields[fgKey]))
 					continue
 				}
 
 				if (typeof this._databaseColumnFields.fields[fieldColumnName] === 'object') {
-					console.warn(`duplicate field column name ${fieldColumnName} detected!`, structuredClone(this._databaseColumnFields), structuredClone(mmGroup))
+					console.error(`duplicate field column name ${fieldColumnName} detected!`, structuredClone(this._databaseColumnFields), structuredClone(mmGroup))
 					continue
 				}
 

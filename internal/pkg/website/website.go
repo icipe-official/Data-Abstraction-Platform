@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/aymerick/raymond"
-	intpkgdatabasemodels "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/database/models"
+	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intpkglib "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/lib"
 )
 
@@ -62,7 +62,7 @@ type RoutesGroupidContext struct {
 	}
 }
 
-func GetRoutesLayout(ctx context.Context, webService *intpkglib.WebService, iamCredential *intpkgdatabasemodels.IamCredentials) (*raymond.Template, string, error) {
+func GetRoutesLayout(ctx context.Context, webService *intpkglib.WebService, iamCredential *intdoment.IamCredentials) (*raymond.Template, string, error) {
 	template, err := GetTemplate(ctx, webService, HTMLTMPL_ROUTES_LAYOUT)
 	if err != nil {
 		return nil, "", err

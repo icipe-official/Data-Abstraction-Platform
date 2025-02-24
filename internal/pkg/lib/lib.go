@@ -11,7 +11,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/httplog/v2"
-	intpkgdatabasemodels "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/database/models"
+	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intpkgiamopenid "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/iam/open_id"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -21,7 +21,7 @@ type SessionData struct {
 		LoginEndpoint        string `json:"login_endpoint,omitempty"`
 		RegistrationEndpoint string `json:"registration_endpoint,omitempty"`
 	} `json:"openid_endpoints,omitempty"`
-	IamCredential *intpkgdatabasemodels.IamCredentials `json:"iam_credential,omitempty"`
+	IamCredential *intdoment.IamCredentials `json:"iam_credential,omitempty"`
 }
 
 func DecryptData(encryptionKey string, data string) (string, error) {

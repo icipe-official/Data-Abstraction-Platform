@@ -3,7 +3,7 @@ package home
 import (
 	"context"
 
-	intpkgdatabasemodels "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/database/models"
+	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intpkgiamopenid "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/iam/open_id"
 	intpkglib "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/lib"
 	intpkgwebsite "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/website"
@@ -19,7 +19,7 @@ type requestResponseContextData struct {
 	RedirectData         *intpkgiamopenid.RedirectParams
 	OpenidUserInfo       *intpkgiamopenid.UserInfo
 	OpenidToken          *intpkgiamopenid.Token
-	IamCredential        *intpkgdatabasemodels.IamCredentials
+	IamCredential        *intdoment.IamCredentials
 }
 
 const (
