@@ -48,15 +48,17 @@ type Convert2DArrayToObjects struct {
 //
 //   - skipIfDataExtraction - Do not include field group if property FIELD_GROUP_PROP_DATABASE_SKIP_DATA_EXTRACTION($DATABASE_SKIP_DATA_EXTRACTION) is true.
 //
+//   - databaseColumnNames - only pick fields with FIELD_GROUP_PROP_DATABASE_FIELD_COLUMN_NAME in this array. Match order as well.
+//
 // returns error if NewExtract2DFields or Convert2DArrayToObjects.initFgConversion returns an error.
-func NewConvert2DArrayToObjects(metadatamodel any, target2DFields []any, skipIfFGDisabled bool, skipIfDataExtraction bool) (*Convert2DArrayToObjects, error) {
+func NewConvert2DArrayToObjects(metadatamodel any, target2DFields []any, skipIfFGDisabled bool, skipIfDataExtraction bool, databaseColumnNames []string) (*Convert2DArrayToObjects, error) {
 	n := new(Convert2DArrayToObjects)
 	if len(target2DFields) > 0 {
 		n.fields2D = target2DFields
 	} else {
-		extract2DFields, err := NewExtract2DFields(metadatamodel, skipIfFGDisabled, skipIfDataExtraction, true)
+		extract2DFields, err := NewExtract2DFields(metadatamodel, skipIfFGDisabled, skipIfDataExtraction, true, databaseColumnNames)
 		if err != nil {
-			return nil, err
+			return nil, FunctionNameAndError(NewConvert2DArrayToObjects, err)
 		}
 		extract2DFields.Extract()
 		extract2DFields.Reposition()
@@ -64,8 +66,8 @@ func NewConvert2DArrayToObjects(metadatamodel any, target2DFields []any, skipIfF
 		n.fields2D = extract2DFields.Fields()
 	}
 
-	if gConversion, err := n.initgConversion(metadatamodel); err != nil {
-		return nil, err
+	if gConversion, err := n.initgConversion(metadatamodel, databaseColumnNames); err != nil {
+		return nil, FunctionNameAndError(NewConvert2DArrayToObjects, err)
 	} else {
 		n.gConversion = gConversion
 	}
@@ -83,15 +85,15 @@ func (n *Convert2DArrayToObjects) ResetObjects() {
 	n.objects = make([]any, 0)
 }
 
-func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion, error) {
+func (n *Convert2DArrayToObjects) initgConversion(mmGroup any, databaseColumnNames []string) (groupConversion, error) {
 	mmGroupMap, err := GetFieldGroupMap(mmGroup)
 	if err != nil {
-		return groupConversion{}, err
+		return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 	}
 
 	mmGroupKeyString, err := GetValueAsString(mmGroupMap[FIELD_2D_POSITION_PROP_FIELD_GROUP_KEY])
 	if err != nil {
-		return groupConversion{}, err
+		return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 	}
 
 	mmGroupConversion := groupConversion{
@@ -110,12 +112,20 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 	for fIndex, fValue := range n.fields2D {
 		fValueMap, err := GetFieldGroupMap(fValue)
 		if err != nil {
-			return groupConversion{}, err
+			return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
+		}
+
+		if len(databaseColumnNames) > 0 {
+			if dbFieldColumnName, ok := fValueMap[FIELD_GROUP_PROP_DATABASE_FIELD_COLUMN_NAME].(string); ok {
+				if !slices.Contains(databaseColumnNames, dbFieldColumnName) {
+					continue
+				}
+			}
 		}
 
 		fValueMapKey, err := GetValueAsString(fValueMap[FIELD_GROUP_PROP_FIELD_GROUP_KEY])
 		if err != nil {
-			return groupConversion{}, err
+			return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 		}
 
 		relativePath := strings.Split(fValueMapKey, fmt.Sprintf("%s.%s%s.", mmGroupKeyString, FIELD_GROUP_PROP_GROUP_FIELDS, ARRAY_PATH_PLACEHOLDER))
@@ -136,23 +146,31 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 
 	mmGroupFields, err := GetGroupFields(mmGroupMap)
 	if err != nil {
-		return groupConversion{}, err
+		return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 	}
 
 	mmGroupReadOrderOfFields, err := GetGroupReadOrderOfFields(mmGroup)
 	if err != nil {
-		return groupConversion{}, err
+		return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 	}
 
 	for _, fgKeySuffix := range mmGroupReadOrderOfFields {
 		fgKeySuffixString, err := GetValueAsString(fgKeySuffix)
 		if err != nil {
-			return groupConversion{}, err
+			return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 		}
 
 		fgMap, err := GetFieldGroupMap(mmGroupFields[fgKeySuffixString])
 		if err != nil {
-			return groupConversion{}, err
+			return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
+		}
+
+		if len(databaseColumnNames) > 0 {
+			if dbFieldColumnName, ok := fgMap[FIELD_GROUP_PROP_DATABASE_FIELD_COLUMN_NAME].(string); ok {
+				if !slices.Contains(databaseColumnNames, dbFieldColumnName) {
+					continue
+				}
+			}
 		}
 
 		newFieldConversion := fieldConversion{
@@ -167,16 +185,16 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 
 		fgMapKey, err := GetValueAsString(fgMap[FIELD_GROUP_PROP_FIELD_GROUP_KEY])
 		if err != nil {
-			return groupConversion{}, err
+			return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 		}
 
 		if _, err := GetGroupFields(fgMap); err == nil {
 			if gReadOrderOfFields, err := GetGroupReadOrderOfFields(fgMap); err == nil {
 				if value, ok := fgMap[FIELD_GROUP_PROP_GROUP_EXTRACT_AS_SINGLE_FIELD].(bool); ok && value {
 					if value, err := n.get2DFieldsIndexesFromCurrentGroupIndexes(mmGroupConversion.Fields2DIndexes, fgMapKey); err != nil {
-						return groupConversion{}, err
+						return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 					} else if len(value) == 0 {
-						return groupConversion{}, errors.New("Fields2DIndexes is empty")
+						return groupConversion{}, FunctionNameAndError(n.initgConversion, fmt.Errorf("Fields2DIndexes is empty | %s | %v", fgMapKey, mmGroupConversion.Fields2DIndexes))
 					} else {
 						newFieldConversion.Fields2DIndexes = value
 						mmGroupConversion.Fields = append(mmGroupConversion.Fields, newFieldConversion)
@@ -196,23 +214,23 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 						}
 						return gReadOrderOfFieldsString, nil
 					}(); err != nil {
-						return groupConversion{}, err
+						return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 					} else {
 						newFieldConversion.ReadOrderOfFields = g
 					}
 
 					newFieldConversion.ColumnIndexesThatMatchIndexHeader = make([][]int, fgViewMaxNoOfValuesInSeparateColumns)
-					for columnIndex := 0; columnIndex < fgViewMaxNoOfValuesInSeparateColumns; columnIndex++ {
+					for columnIndex := range fgViewMaxNoOfValuesInSeparateColumns {
 						columnIndexHeaders := make([]int, 0)
 						for fIndex, fValue := range n.fields2D {
 							fMap, err := GetFieldGroupMap(fValue)
 							if err != nil {
-								return groupConversion{}, err
+								return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 							}
 
 							fKeyString, err := GetValueAsString(fMap[FIELD_GROUP_PROP_FIELD_GROUP_KEY])
 							if err != nil {
-								return groupConversion{}, err
+								return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 							}
 
 							if strings.HasPrefix(fKeyString, fgMapKey) {
@@ -228,8 +246,8 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 					continue
 				}
 
-				if gConversion, err := n.initgConversion(fgMap); err != nil {
-					return groupConversion{}, err
+				if gConversion, err := n.initgConversion(fgMap, databaseColumnNames); err != nil {
+					return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 				} else {
 					mmGroupConversion.Groups = append(mmGroupConversion.Groups, gConversion)
 					continue
@@ -238,9 +256,9 @@ func (n *Convert2DArrayToObjects) initgConversion(mmGroup any) (groupConversion,
 		}
 
 		if value, err := n.get2DFieldsIndexesFromCurrentGroupIndexes(mmGroupConversion.Fields2DIndexes, fgMapKey); err != nil {
-			return groupConversion{}, err
+			return groupConversion{}, FunctionNameAndError(n.initgConversion, err)
 		} else if len(value) == 0 {
-			return groupConversion{}, errors.New("Fields2DIndexes is empty")
+			return groupConversion{}, FunctionNameAndError(n.initgConversion, fmt.Errorf("Fields2DIndexes is empty | %s | %v", fgMapKey, mmGroupConversion.Fields2DIndexes))
 		} else {
 			newFieldConversion.Fields2DIndexes = value
 			mmGroupConversion.Fields = append(mmGroupConversion.Fields, newFieldConversion)
@@ -294,7 +312,7 @@ func (n *Convert2DArrayToObjects) Convert(data any) error {
 	n.current2DArray = cleanedData
 
 	if newObjects, err := n.convert(n.gConversion, currentDataIndexes); err != nil {
-		return err
+		return FunctionNameAndError(n.Convert, err)
 	} else if len(newObjects) > 0 {
 		n.objects = append(n.objects, newObjects...)
 	}
@@ -305,7 +323,7 @@ func (n *Convert2DArrayToObjects) Convert(data any) error {
 func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2DArrayRowIndexes []int) ([]any, error) {
 	groupedDataIndexes, err := n.groupDataByPrimaryKeys(gConversion, current2DArrayRowIndexes)
 	if err != nil {
-		return nil, err
+		return nil, FunctionNameAndError(n.convert, err)
 	}
 
 	objects := make([]any, len(groupedDataIndexes))
@@ -323,7 +341,7 @@ func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2D
 					for citmihIndex, citmihIndexValue := range ci2dhIndex {
 						fieldValue, err := n.extractFieldValueFromGroupedData(gdValue, []int{citmihIndexValue}, field.FieldJoinSymbol)
 						if err != nil {
-							return nil, err
+							return nil, FunctionNameAndError(n.convert, err)
 						}
 
 						if len(fieldValue) > 0 {
@@ -346,7 +364,7 @@ func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2D
 			if len(field.Fields2DIndexes) > 0 {
 				fieldValue, err := n.extractFieldValueFromGroupedData(gdValue, field.Fields2DIndexes, field.FieldJoinSymbol)
 				if err != nil {
-					return nil, err
+					return nil, FunctionNameAndError(n.convert, err)
 				}
 				if len(fieldValue) > 0 {
 					object[field.FgKeySuffix] = fieldValue
@@ -358,7 +376,7 @@ func (n *Convert2DArrayToObjects) convert(gConversion groupConversion, current2D
 			for _, gc := range gConversion.Groups {
 				newObjectValue, err := n.convert(gc, gdValue)
 				if err != nil {
-					return nil, err
+					return nil, FunctionNameAndError(n.convert, err)
 				}
 
 				if len(newObjectValue) > 0 {
@@ -393,7 +411,7 @@ func (n *Convert2DArrayToObjects) extractFieldValueFromGroupedData(groupedDataIn
 
 		for _, cIndex := range columnIndexes {
 			if n.current2DArray[gdIndex] == nil || cIndex >= len(n.current2DArray[gdIndex]) {
-				return nil, fmt.Errorf("n.current2DArray[gdIndex] and/or column at index %d not valid", cIndex)
+				return nil, FunctionNameAndError(n.extractFieldValueFromGroupedData, fmt.Errorf("n.current2DArray[gdIndex] and/or column at index %d not valid", cIndex))
 			}
 
 			if rowDataSlice, ok := n.current2DArray[gdIndex][cIndex].([]any); ok {
@@ -414,7 +432,7 @@ func (n *Convert2DArrayToObjects) extractFieldValueFromGroupedData(groupedDataIn
 	if len(duplicatedRowValues) > 0 {
 		for _, drValue := range duplicatedRowValues {
 			if !reflect.DeepEqual(duplicatedRowValues[0], drValue) {
-				return nil, fmt.Errorf("duplicateRowValues not equal")
+				return nil, FunctionNameAndError(n.extractFieldValueFromGroupedData, fmt.Errorf("duplicateRowValues not equal"))
 			}
 		}
 	}
@@ -473,12 +491,12 @@ func (n *Convert2DArrayToObjects) groupDataByPrimaryKeys(gConversion groupConver
 
 			cdPrimaryKeyValues, err := n.getPrimaryKeysValuesFromDataRow(gConversion.Fields2DPrimaryKeyIndexes, cdIndex)
 			if err != nil {
-				return nil, err
+				return nil, FunctionNameAndError(n.groupDataByPrimaryKeys, err)
 			}
 
 			compCdPrimaryKeyValues, err := n.getPrimaryKeysValuesFromDataRow(gConversion.Fields2DPrimaryKeyIndexes, compCdIndex)
 			if err != nil {
-				return nil, err
+				return nil, FunctionNameAndError(n.groupDataByPrimaryKeys, err)
 			}
 
 			if reflect.DeepEqual(cdPrimaryKeyValues, compCdPrimaryKeyValues) {
@@ -501,15 +519,15 @@ func (n *Convert2DArrayToObjects) getPrimaryKeysValuesFromDataRow(fieldPrimaryKe
 			primaryKeysValues = append(primaryKeysValues, n.current2DArray[dataRowIndex][fcpkIndex])
 			continue
 		}
-		return nil, errors.New("n.current2DArray[dataRowIndex] is not valid")
+		return nil, FunctionNameAndError(n.getPrimaryKeysValuesFromDataRow, errors.New("n.current2DArray[dataRowIndex] is not valid"))
 	}
 
 	if jsonData, err := json.Marshal(primaryKeysValues); err != nil {
-		return nil, fmt.Errorf("convert primaryKeysValues to json failed, error: %v", err)
+		return nil, FunctionNameAndError(n.getPrimaryKeysValuesFromDataRow, fmt.Errorf("convert primaryKeysValues to json failed, error: %v", err))
 	} else {
 		var jsonParsed []any
 		if err := json.Unmarshal(jsonData, &jsonParsed); err != nil {
-			return nil, fmt.Errorf("convert primaryKeysValues from json failed, error: %v", err)
+			return nil, FunctionNameAndError(n.getPrimaryKeysValuesFromDataRow, fmt.Errorf("convert primaryKeysValues from json failed, error: %v", err))
 		}
 		return jsonParsed, nil
 	}
@@ -521,7 +539,7 @@ func (n *Convert2DArrayToObjects) get2DFieldsIndexesFromCurrentGroupIndexes(curr
 	for _, cgIndex := range currentGroupIndexes {
 		cgMap, err := GetFieldGroupMap(n.fields2D[cgIndex])
 		if err != nil {
-			return nil, err
+			return nil, FunctionNameAndError(n.get2DFieldsIndexesFromCurrentGroupIndexes, err)
 		}
 
 		if cgMap[FIELD_GROUP_PROP_FIELD_GROUP_KEY] == fgKey {
@@ -535,17 +553,17 @@ func (n *Convert2DArrayToObjects) get2DFieldsIndexesFromCurrentGroupIndexes(curr
 func (n *Convert2DArrayToObjects) getPrimaryKey2DFieldsIndexes(mmGroup any) ([]int, error) {
 	mmGroupMap, err := GetFieldGroupMap(mmGroup)
 	if err != nil {
-		return nil, err
+		return nil, FunctionNameAndError(n.getPrimaryKey2DFieldsIndexes, err)
 	}
 
 	mmGroupFields, err := GetGroupFields(mmGroupMap)
 	if err != nil {
-		return nil, err
+		return nil, FunctionNameAndError(n.getPrimaryKey2DFieldsIndexes, err)
 	}
 
 	mmGroupReadOrderOfFields, err := GetGroupReadOrderOfFields(mmGroupMap)
 	if err != nil {
-		return nil, err
+		return nil, FunctionNameAndError(n.getPrimaryKey2DFieldsIndexes, err)
 	}
 
 	primaryKeyIndexes := make([]int, 0)
@@ -553,19 +571,19 @@ func (n *Convert2DArrayToObjects) getPrimaryKey2DFieldsIndexes(mmGroup any) ([]i
 	for _, fgKey := range mmGroupReadOrderOfFields {
 		fgKeyString, err := GetValueAsString(fgKey)
 		if err != nil {
-			return nil, err
+			return nil, FunctionNameAndError(n.getPrimaryKey2DFieldsIndexes, err)
 		}
 
 		fgMap, err := GetFieldGroupMap(mmGroupFields[fgKeyString])
 		if err != nil {
-			return nil, err
+			return nil, FunctionNameAndError(n.getPrimaryKey2DFieldsIndexes, err)
 		}
 
 		if value, ok := fgMap[FIELD_GROUP_PROP_FIELD_GROUP_IS_PRIMARY_KEY].(bool); ok && value {
 			if _, err := GetGroupFields(fgMap); err == nil {
 				if _, err := GetGroupReadOrderOfFields(fgMap); err == nil {
 					if pKeyIndexes, err := n.getPrimaryKey2DFieldsIndexes(fgMap); err != nil {
-						return nil, err
+						return nil, FunctionNameAndError(n.getPrimaryKey2DFieldsIndexes, err)
 					} else {
 						primaryKeyIndexes = append(primaryKeyIndexes, pKeyIndexes...)
 					}
@@ -576,7 +594,7 @@ func (n *Convert2DArrayToObjects) getPrimaryKey2DFieldsIndexes(mmGroup any) ([]i
 			for fIndex, fValue := range n.fields2D {
 				fValueMap, err := GetFieldGroupMap(fValue)
 				if err != nil {
-					return nil, err
+					return nil, FunctionNameAndError(n.getPrimaryKey2DFieldsIndexes, err)
 				}
 
 				if fgMap[FIELD_GROUP_PROP_FIELD_GROUP_KEY] == fValueMap[FIELD_GROUP_PROP_FIELD_GROUP_KEY] {

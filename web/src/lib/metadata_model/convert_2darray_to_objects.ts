@@ -51,19 +51,19 @@ export class Convert2DArrayToObjects {
 		this._objects = []
 	}
 
-	constructor(metadatamodel: any, target2DFields: any[] | undefined = undefined, skipIfFGDisabled: boolean = true, skipIfDataExtraction: boolean = true, removePrimaryKey: boolean = true) {
+	constructor(metadatamodel: any, target2DFields: any[] | undefined = undefined, skipIfFGDisabled: boolean = true, skipIfDataExtraction: boolean = true, removePrimaryKey: boolean = true, databaseColumnNames: string[] | undefined = undefined) {
 		try {
 			if (Array.isArray(target2DFields)) {
 				this._2DFields = target2DFields
 			} else {
-				let extract2DFields = new MetadataModel.Extract2DFields(metadatamodel, skipIfFGDisabled, skipIfDataExtraction, removePrimaryKey)
+				let extract2DFields = new MetadataModel.Extract2DFields(metadatamodel, skipIfFGDisabled, skipIfDataExtraction, removePrimaryKey, databaseColumnNames)
 				extract2DFields.Extract()
 				extract2DFields.Reposition()
 				extract2DFields.RemoveSkipped()
 				this._2DFields = extract2DFields.Fields
 			}
 
-			this._fgConversion = this._initFgConversion(metadatamodel)
+			this._fgConversion = this._initFgConversion(metadatamodel, databaseColumnNames)
 		} catch (e) {
 			throw e
 		}
@@ -79,7 +79,7 @@ export class Convert2DArrayToObjects {
 	 * @param mmGroup Current metadata model Group to get conversion information.
 	 * @returns
 	 */
-	private _initFgConversion(mmGroup: MetadataModel.IMetadataModel | any) {
+	private _initFgConversion(mmGroup: MetadataModel.IMetadataModel | any, databaseColumnNames: string[] | undefined) {
 		if (!MetadataModel.IsFieldGroupKeyValid(mmGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
 			throw [this._initFgConversion.name, `mmGroup.${MetadataModel.FgProperties.FIELD_GROUP_KEY} is not a string`, mmGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]]
 		}
@@ -101,6 +101,12 @@ export class Convert2DArrayToObjects {
 
 			if (!MetadataModel.IsFieldGroupKeyValid(this._2DFields[fieldIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
 				throw [this._initFgConversion.name, `this._2DFields[${fieldIndex}][${MetadataModel.FgProperties.FIELD_GROUP_KEY}] is not a string`, this._2DFields[fieldIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY]]
+			}
+
+			if (Array.isArray(databaseColumnNames) && databaseColumnNames.length > 0) {
+				if (typeof this._2DFields[fieldIndex][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME] !== 'string' || !databaseColumnNames.includes(this._2DFields[fieldIndex][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME])) {
+					continue
+				}
 			}
 
 			const relativePath = (this._2DFields[fieldIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY] as string).split(`${mmGroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]}.${MetadataModel.FgProperties.GROUP_FIELDS}${MetadataModel.ARRAY_INDEX_PLACEHOLDER}.`)
@@ -132,6 +138,12 @@ export class Convert2DArrayToObjects {
 
 			if (!MetadataModel.IsFieldGroupKeyValid(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_KEY])) {
 				throw [this._initFgConversion.name, `mmGroupFields[${fgKeySuffix}][${MetadataModel.FgProperties.FIELD_GROUP_KEY}] is not a string`, structuredClone(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.FIELD_GROUP_KEY])]
+			}
+
+			if (Array.isArray(databaseColumnNames) && databaseColumnNames.length > 0) {
+				if (typeof mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME] !== 'string' || !databaseColumnNames.includes(mmGroupFields[fgKeySuffix][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME])) {
+					continue
+				}
 			}
 
 			let newField: IFieldConversion = {
@@ -187,7 +199,7 @@ export class Convert2DArrayToObjects {
 					continue
 				}
 
-				mmGroupConversion.groups.push(this._initFgConversion(mmGroupFields[fgKeySuffix]))
+				mmGroupConversion.groups.push(this._initFgConversion(mmGroupFields[fgKeySuffix], databaseColumnNames))
 				continue
 			}
 
@@ -254,7 +266,7 @@ export class Convert2DArrayToObjects {
 							if (Object.keys(newFieldValue).length > 0) {
 								groupFieldValue.push(newFieldValue)
 							}
-						}			
+						}
 
 						if (groupFieldValue.length > 0) {
 							object[field.fg_key_suffix] = groupFieldValue
@@ -414,7 +426,7 @@ export class Convert2DArrayToObjects {
 	 * @param dataRowIndex
 	 * @returns
 	 */
-	private _getPrimaryKeysValuesFromDataRow(fieldPrimaryKeysIndexes: number[], dataRowIndex: number) {
+	private _getPrimaryKeysValuesFromDataRow(fieldPrimaryKeysIndexes: number[], dataRowIndex: number): any[] {
 		let primaryKeysValues: any[] = []
 
 		for (const fcpkIndex of fieldPrimaryKeysIndexes) {
@@ -426,7 +438,11 @@ export class Convert2DArrayToObjects {
 			throw [this._getPrimaryKeysValuesFromDataRow.name, 'current2DArrayRow is not valid', structuredClone(current2DArrayRow)]
 		}
 
-		return primaryKeysValues
+		try {
+			return JSON.parse(JSON.stringify(primaryKeysValues))
+		} catch (e) {
+			throw [this._getPrimaryKeysValuesFromDataRow.name, 'convert primaryKeysValues to json and back failed', e]
+		}
 	}
 
 	private _get2DFieldsIndexesFromCurrentGroupIndexes(currentGroupIndexes: number[], fgKey: string) {

@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/go-chi/httplog/v2"
 	embedded "github.com/icipe-official/Data-Abstraction-Platform/database"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 )
 
-func (n *CmdInitDatabaseService) ServiceGroupAuthorizationRulesCreate(ctx context.Context) (int, error) {
+func (n *CmdInitDatabaseService) ServiceGroupAuthorizationRulesCreate(ctx context.Context, logger *httplog.Logger) (int, error) {
 	entries, err := fs.ReadDir(embedded.GroupAuthorizationRules, "group_authorization_rules")
 	if err != nil {
 		return 0, fmt.Errorf("read group_authorization_rules directory failed, err: %v", err)
@@ -28,7 +29,7 @@ func (n *CmdInitDatabaseService) ServiceGroupAuthorizationRulesCreate(ctx contex
 			return successfulUpserts, fmt.Errorf("marshal file content %v from json failed, err: %v", entry.Name(), err)
 		}
 
-		if noOfRulesInserted, err := n.repo.RepoGroupAuthorizationRulesInsertMany(ctx, newAuthorizationRules); err != nil {
+		if noOfRulesInserted, err := n.repo.RepoGroupAuthorizationRulesInsertMany(ctx, logger, newAuthorizationRules); err != nil {
 			return successfulUpserts, fmt.Errorf("insert rule for file content %v failed, err: %v", entry.Name(), err)
 		} else {
 			successfulUpserts += noOfRulesInserted

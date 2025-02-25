@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/go-chi/httplog/v2"
 	embedded "github.com/icipe-official/Data-Abstraction-Platform/database"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intpkgmetadatamodel "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/metadata_model"
 )
 
-func (n *CmdInitDatabaseService) ServiceStorageTypesCreate(ctx context.Context) (int, error) {
+func (n *CmdInitDatabaseService) ServiceStorageTypesCreate(ctx context.Context, logger *httplog.Logger) (int, error) {
 	storageTypesEntries, err := fs.ReadDir(embedded.StorageTypes, "storage_types")
 	if err != nil {
 		return 0, fmt.Errorf("read storage_types directory failed, err: %v", err)
@@ -42,7 +43,7 @@ func (n *CmdInitDatabaseService) ServiceStorageTypesCreate(ctx context.Context) 
 			return successfulUpserts, fmt.Errorf("storage metadata-model does not contain %v", intpkgmetadatamodel.FIELD_GROUP_PROP_FIELD_GROUP_DESCRIPTION)
 		}
 
-		if err := n.repo.RepoStorageTypesInsertOne(ctx, storageDriveType); err != nil {
+		if err := n.repo.RepoStorageTypesInsertOne(ctx, logger, storageDriveType); err != nil {
 			return successfulUpserts, err
 		}
 		successfulUpserts += 1

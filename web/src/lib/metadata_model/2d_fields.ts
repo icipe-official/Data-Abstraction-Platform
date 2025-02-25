@@ -16,6 +16,7 @@ export class Extract2DFields {
 	private _removePrimaryKey: boolean = true
 	private _metadataModel: any
 	private _repositionFields: MetadataModel.RepositionFields = {}
+	private _databaseColumnNames: string[] | undefined = undefined
 
 	/**
 	 *
@@ -26,7 +27,7 @@ export class Extract2DFields {
 	 * @param skipIfDataExtraction Do not include field group if property {@linkcode MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION}($DATABASE_SKIP_DATA_EXTRACTION) is true. Default true.
 	 * @param removePrimaryKey Remove field if {@linkcode skipIfFGDisabled} or {@linkcode skipIfDataExtraction} even if {@linkcode MetadataModel.FgProperties.FIELD_GROUP_IS_PRIMARY_KEY} field property is true. Default true.
 	 */
-	constructor(metadatamodel: any, skipIfFGDisabled: boolean = true, skipIfDataExtraction: boolean = true, removePrimaryKey: boolean = true) {
+	constructor(metadatamodel: any, skipIfFGDisabled: boolean = true, skipIfDataExtraction: boolean = true, removePrimaryKey: boolean = true, databaseColumnNames: string[] | undefined = undefined) {
 		if (!MetadataModel.IsGroupFieldsValid(metadatamodel)) {
 			throw [Extract2DFields.name, 'argument metadatamodel is not an object']
 		}
@@ -35,6 +36,7 @@ export class Extract2DFields {
 		this._skipIfFGDisabled = skipIfFGDisabled
 		this._skipIfDataExtraction = skipIfDataExtraction
 		this._removePrimaryKey = removePrimaryKey
+		this._databaseColumnNames = databaseColumnNames
 	}
 
 	/**
@@ -64,6 +66,19 @@ export class Extract2DFields {
 	Extract() {
 		try {
 			this._extract(this._metadataModel)
+			if (Array.isArray(this._databaseColumnNames) && this._databaseColumnNames.length > 0) {
+				let newFields: any[] = []
+				for (const dbFieldColumnName of this._databaseColumnNames) {
+					for (const field of this._fields) {
+						if (dbFieldColumnName === field[MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME]) {
+							newFields.push(field)
+						}
+					}
+				}
+				if (newFields.length === this._databaseColumnNames.length) {
+					this._fields = newFields
+				}
+			}
 		} catch (e) {
 			throw e
 		}
@@ -126,7 +141,7 @@ export class Extract2DFields {
 
 							this._updateSeparateColumnsField(newField, mmGroupSkipDataExtraction, mmGroupViewDisable, columnIndex)
 
-							this._fields.push(newField)
+							this._appendField(newField)
 						}
 					}
 					continue
@@ -148,7 +163,7 @@ export class Extract2DFields {
 
 					this._updateSeparateColumnsField(newField, mmGroupSkipDataExtraction, mmGroupViewDisable, columnIndex)
 
-					this._fields.push(newField)
+					this._appendField(newField)
 				}
 
 				continue
@@ -168,13 +183,23 @@ export class Extract2DFields {
 				newField[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
 			}
 
-			this._fields.push(newField)
+			this._appendField(newField)
+		}
+	}
+
+	private _appendField(field: any) {
+		if (Array.isArray(this._databaseColumnNames) && this._databaseColumnNames.length > 0) {
+			if (typeof field[MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME] === 'string' && this._databaseColumnNames.includes(field[MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME])) {
+				this._fields.push(field)
+			}
+		} else {
+			this._fields.push(field)
 		}
 	}
 
 	private _updateSeparateColumnsField(fg: any, mmGroupSkipDataExtraction: boolean, mmGroupViewDisable: boolean, columnIndex: number) {
 		fg[MetadataModel.FgProperties.FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX] = columnIndex
-		
+
 		if (mmGroupSkipDataExtraction) {
 			fg[MetadataModel.FgProperties.DATABASE_SKIP_DATA_EXTRACTION] = true
 		}
