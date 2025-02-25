@@ -46,7 +46,7 @@ CREATE TABLE public.iam_credentials
     id uuid NOT NULL DEFAULT uuid_generate_v7(),
     directory_id uuid,
     openid_sub uuid NOT NULL UNIQUE,
-    openid_preferred_username text NOT NULL UNIQUE,
+    openid_preferred_username text NOT NULL,
     openid_email text NOT NULL,
     openid_email_verified bool,
     openid_given_name text,
