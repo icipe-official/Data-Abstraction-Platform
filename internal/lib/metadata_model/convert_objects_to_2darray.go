@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/brunoga/deep"
-	intpkgjson "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/json"
+	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 )
 
 type fieldGroupConversion struct {
@@ -247,7 +247,7 @@ func (n *ConvertObjectsTo2DArray) convert(datumObject2DArray [][]any, gConversio
 		if pathToValue, err := PreparePathToValueInObject(*fgConversion.FgKey, arrayIndexes); err != nil {
 			return nil, FunctionNameAndError(n.convert, err)
 		} else {
-			valueInObject = intpkgjson.GetValueInObject(n.currentDatum, pathToValue)
+			valueInObject = intlibjson.GetValueInObject(n.currentDatum, pathToValue)
 		}
 
 		if len(fgConversion.GroupReadOrderOfFields) > 0 {
@@ -261,7 +261,7 @@ func (n *ConvertObjectsTo2DArray) convert(datumObject2DArray [][]any, gConversio
 							break
 						}
 						for _, fgKeySuffix := range fgConversion.GroupReadOrderOfFields {
-							newValueInObject[startIndexOfValueInObject] = n.getNewFieldValueInObject(intpkgjson.GetValueInObject(valueInObject, fmt.Sprintf("$.%d.%s", vioIndex, fgKeySuffix)), fgConversion.FieldJoinSymbol)
+							newValueInObject[startIndexOfValueInObject] = n.getNewFieldValueInObject(intlibjson.GetValueInObject(valueInObject, fmt.Sprintf("$.%d.%s", vioIndex, fgKeySuffix)), fgConversion.FieldJoinSymbol)
 							startIndexOfValueInObject += 1
 						}
 					}

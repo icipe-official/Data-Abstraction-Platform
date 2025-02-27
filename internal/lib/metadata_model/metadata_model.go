@@ -9,11 +9,11 @@ import (
 	"runtime"
 	"strings"
 
-	intpkgutils "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/utils"
+	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 )
 
 func argumentsError(function any, variableName string, expectedType string, valueFound any) error {
-	return fmt.Errorf("%s->%v", "ErrArgumentsInvalid", intpkgutils.GetFunctionNameAndErrorMessage(function, fmt.Sprintf("Expected %s to be of type %s, found %T", variableName, expectedType, valueFound)))
+	return fmt.Errorf("%s->%v", "ErrArgumentsInvalid", intlib.FunctionNameAndError(function, fmt.Errorf("expected %s to be of type %s, found %T", variableName, expectedType, valueFound)))
 }
 
 const ErrArgumentsInvalid string = "ErrArgumentsInvalid"

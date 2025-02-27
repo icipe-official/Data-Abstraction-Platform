@@ -29,7 +29,7 @@ type groupRuleAuthorizationRepository struct {
 	DeactivatedOn                string
 }
 
-func GroupRuleAuthorizationRepository() groupRuleAuthorizationRepository {
+func GroupRuleAuthorizationsRepository() groupRuleAuthorizationRepository {
 	return groupRuleAuthorizationRepository{
 		RepositoryName: "group_rule_authorizations",
 

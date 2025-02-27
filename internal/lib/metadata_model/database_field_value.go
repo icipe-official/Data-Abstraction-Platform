@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	intpkgjson "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/json"
+	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 )
 
 func DatabaseGetColumnFieldValue(metadatamodel any, columnFieldName string, tableCollectionName string, valueToGetFrom any, tableCollectionUID string, skipIfFGDisabled bool, skipIfDataExtraction bool) (any, error) {
@@ -29,7 +29,7 @@ func DatabaseGetColumnFieldValue(metadatamodel any, columnFieldName string, tabl
 			pathToColumnFieldValue = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
 			pathToColumnFieldValue = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte(ARRAY_PATH_PLACEHOLDER)))
 
-			return intpkgjson.GetValueInObject(valueToGetFrom, pathToColumnFieldValue), nil
+			return intlibjson.GetValueInObject(valueToGetFrom, pathToColumnFieldValue), nil
 		} else {
 			return nil, argumentsError(DatabaseGetColumnFieldValue, "columnFieldMap", "map[string]any", columnField)
 		}
@@ -59,7 +59,7 @@ func DatabaseDeleteColumnFieldValue(metadatamodel any, columnFieldName string, t
 			pathToColumnFieldValue = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
 			pathToColumnFieldValue = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte(ARRAY_PATH_PLACEHOLDER)))
 
-			return intpkgjson.DeleteValueInObject(valueToDeleteIn, pathToColumnFieldValue), nil
+			return intlibjson.DeleteValueInObject(valueToDeleteIn, pathToColumnFieldValue), nil
 		} else {
 			return nil, argumentsError(DatabaseDeleteColumnFieldValue, "columnFieldMap", "map[string]any", columnField)
 		}
@@ -90,10 +90,10 @@ func DatabaseSetColumnFieldValue(metadatamodel any, columnFieldName string, tabl
 			pathToColumnFieldValue = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte(ARRAY_PATH_PLACEHOLDER)))
 
 			if reflect.TypeOf(value).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Array {
-				return intpkgjson.SetValueInObject(valueToGetIn, pathToColumnFieldValue, value)
+				return intlibjson.SetValueInObject(valueToGetIn, pathToColumnFieldValue, value)
 			}
 
-			return intpkgjson.SetValueInObject(valueToGetIn, pathToColumnFieldValue, []any{value})
+			return intlibjson.SetValueInObject(valueToGetIn, pathToColumnFieldValue, []any{value})
 		} else {
 			return nil, argumentsError(DatabaseSetColumnFieldValue, "columnFieldMap", "map[string]any", columnField)
 		}

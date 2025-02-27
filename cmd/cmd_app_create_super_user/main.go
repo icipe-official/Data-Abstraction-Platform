@@ -4,30 +4,39 @@ import (
 	"context"
 	"log"
 
+	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intcmdappcreatesuperuser "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/cmd_app_create_super_user"
 	intrepopostgres "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/repository/postgres"
-	intliblog "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/log"
+	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 )
 
 func main() {
 	ctx := context.TODO()
 
-	logger := intliblog.NewHttpLogger()
+	logger := intlib.LogNewHttpLogger()
 
-	repository, err := intrepopostgres.NewPostgresRepository(ctx)
+	repository, err := intrepopostgres.NewPostgresRepository(ctx, logger)
 	if err != nil {
-		log.Fatal("Failed to establish repository connection, error: ", err)
+		log.Fatal("ERROR: Failed to establish repository connection, error: ", err)
 	}
 
-	service := intcmdappcreatesuperuser.NewCmdCreateSuperUserService(repository)
-	iamCredential, err := service.ServiceGetIamCredentials(ctx, logger)
+	service := intcmdappcreatesuperuser.NewCmdCreateSuperUserService(repository, logger)
+
+	var iamCredential *intdoment.IamCredentials
+	for {
+		if value, err := service.ServiceGetIamCredentials(ctx); err != nil {
+			log.Fatal("ERROR: Get iam credential failed, error: ", err)
+		} else if value == nil {
+			log.Println("ERROR: iam credential not found")
+		} else {
+			iamCredential = value
+			break
+		}
+	}
+
+	successfulInserts, err := service.ServiceAssignSystemRolesToIamCredential(ctx, iamCredential)
 	if err != nil {
-		log.Fatal("get iam credential failed, error: ", err)
+		log.Fatal("ERROR: Assign system roles to  iam credential failed, error: ", err)
 	}
-
-	if err := service.ServiceAssignSystemRolesToIamCredential(ctx, logger, iamCredential); err != nil {
-		log.Fatal("assign system roles to  iam credential failed, error: ", err)
-	}
-
-	log.Println("System roles successfully assigned to iam credential")
+	log.Printf("SUCCESS: %d system roles successfully assigned to iam credential with id: %v", successfulInserts, iamCredential.ID[0])
 }

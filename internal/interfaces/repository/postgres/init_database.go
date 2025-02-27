@@ -8,14 +8,13 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/go-chi/httplog/v2"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
 	"github.com/jackc/pgx/v5"
 )
 
-func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.Context, logger *httplog.Logger, columns []string) (*intdoment.DirectoryGroups, error) {
+func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.Context, columns []string) (*intdoment.DirectoryGroups, error) {
 	directoryGroupsMModel, err := intlib.MetadataModelGetDatum(intdoment.DirectoryGroupsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
@@ -44,7 +43,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 		intdoment.DirectoryGroupsRepository().Data,           //2
 		strings.Join(columns, ","),                           //3
 	)
-	logger.Log(ctx, slog.LevelDebug, "query", query)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsCreateSystemGroup))
 
 	rows, err := transaction.Query(ctx, query)
 	if err != nil {
@@ -95,7 +94,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 		intdoment.GroupAuthorizationRulesRepository().RuleGroup,      //2
 		intdoment.GroupAuthorizationRulesRepository().RepositoryName, //3
 	)
-	logger.Log(ctx, slog.LevelDebug, "query", query)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsCreateSystemGroup))
 
 	rows, err = transaction.Query(ctx, query, intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATION, intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION, intdoment.AUTH_RULE_GROUP_DIRECTORY, intdoment.AUTH_RULE_GROUP_IAM_CREDENTIALS, intdoment.AUTH_RULE_GROUP_DIRECTORY_GROUPS)
 	if err != nil {
@@ -140,12 +139,12 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 	for _, gar := range groupAuthorizationRules {
 		query = fmt.Sprintf(
 			"SELECT * FROM %[1]s WHERE %[2]s = $1 AND %[3]s = $2 AND %[4]s = $3;",
-			intdoment.GroupRuleAuthorizationRepository().RepositoryName,               //1
-			intdoment.GroupRuleAuthorizationRepository().DirectoryGroupsID,            //2
-			intdoment.GroupRuleAuthorizationRepository().GroupAuthorizationsRuleID,    //3
-			intdoment.GroupRuleAuthorizationRepository().GroupAuthorizationsRuleGroup, //4
+			intdoment.GroupRuleAuthorizationsRepository().RepositoryName,               //1
+			intdoment.GroupRuleAuthorizationsRepository().DirectoryGroupsID,            //2
+			intdoment.GroupRuleAuthorizationsRepository().GroupAuthorizationsRuleID,    //3
+			intdoment.GroupRuleAuthorizationsRepository().GroupAuthorizationsRuleGroup, //4
 		)
-		logger.Log(ctx, slog.LevelDebug, "query", query)
+		n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsCreateSystemGroup))
 
 		if rows := transaction.QueryRow(
 			ctx,
@@ -156,20 +155,20 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 		); rows.Scan() == pgx.ErrNoRows {
 			query = fmt.Sprintf(
 				"INSERT INTO %[1]s (%[2]s, %[3]s, %[4]s) VALUES ($1, $2, $3);",
-				intdoment.GroupRuleAuthorizationRepository().RepositoryName,               //1
-				intdoment.GroupRuleAuthorizationRepository().DirectoryGroupsID,            //2
-				intdoment.GroupRuleAuthorizationRepository().GroupAuthorizationsRuleID,    //3
-				intdoment.GroupRuleAuthorizationRepository().GroupAuthorizationsRuleGroup, //4
+				intdoment.GroupRuleAuthorizationsRepository().RepositoryName,               //1
+				intdoment.GroupRuleAuthorizationsRepository().DirectoryGroupsID,            //2
+				intdoment.GroupRuleAuthorizationsRepository().GroupAuthorizationsRuleID,    //3
+				intdoment.GroupRuleAuthorizationsRepository().GroupAuthorizationsRuleGroup, //4
 			)
-			logger.Log(ctx, slog.LevelDebug, "query", query)
+			n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsCreateSystemGroup))
 
 			if _, err := transaction.Exec(ctx, query, systemGroup.ID[0], gar.GroupAuthorizationRulesID[0].ID[0], gar.GroupAuthorizationRulesID[0].RuleGroup[0]); err != nil {
 				transaction.Rollback(ctx)
-				return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsCreateSystemGroup, fmt.Errorf("insert %s failed, err: %v", intdoment.GroupRuleAuthorizationRepository().RepositoryName, err))
+				return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsCreateSystemGroup, fmt.Errorf("insert %s failed, err: %v", intdoment.GroupRuleAuthorizationsRepository().RepositoryName, err))
 			}
 		} else {
 			transaction.Rollback(ctx)
-			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsCreateSystemGroup, fmt.Errorf("get individual %s failed, err: %v", intdoment.GroupRuleAuthorizationRepository().RepositoryName, rows.Scan()))
+			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsCreateSystemGroup, fmt.Errorf("get individual %s failed, err: %v", intdoment.GroupRuleAuthorizationsRepository().RepositoryName, rows.Scan()))
 		}
 	}
 
@@ -180,14 +179,14 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 	return systemGroup, nil
 }
 
-func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroup(ctx context.Context, logger *httplog.Logger, columns []string) (*intdoment.DirectoryGroups, error) {
-	directoryGroupsMetadataModel, err := intlib.MetadataModelGetDatum(intdoment.DirectoryGroupsRepository().RepositoryName)
+func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroup(ctx context.Context, columns []string) (*intdoment.DirectoryGroups, error) {
+	directoryGroupsMModel, err := intlib.MetadataModelGetDatum(intdoment.DirectoryGroupsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 	}
 
 	if len(columns) == 0 {
-		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(directoryGroupsMetadataModel, intdoment.DirectoryGroupsRepository().RepositoryName, intdoment.DirectoryGroupsRepository().RepositoryName, false, false); err != nil {
+		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(directoryGroupsMModel, intdoment.DirectoryGroupsRepository().RepositoryName, intdoment.DirectoryGroupsRepository().RepositoryName, false, false); err != nil {
 			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 		} else {
 			columns = dbColumnFields.ColumnFieldsReadOrder
@@ -200,7 +199,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroup(ctx context.Con
 		intdoment.DirectoryGroupsRepository().RepositoryName, //2
 		intdoment.DirectoryGroupsRepository().Data,           //3
 	)
-	logger.Log(ctx, slog.LevelDebug, "query", query)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsFindSystemGroup))
 
 	rows, err := n.db.Query(ctx, query)
 	if err != nil {
@@ -210,18 +209,18 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroup(ctx context.Con
 	dataRows := make([]any, 0)
 	for rows.Next() {
 		if r, err := rows.Values(); err != nil {
-			return nil, err
+			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 		} else {
 			dataRows = append(dataRows, r)
 		}
 	}
 
-	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(directoryGroupsMetadataModel, nil, false, false, columns)
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(directoryGroupsMModel, nil, false, false, columns)
 	if err != nil {
-		return nil, err
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 	}
 	if err := array2DToObject.Convert(dataRows); err != nil {
-		return nil, err
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 	}
 
 	if len(array2DToObject.Objects()) == 0 {
@@ -229,40 +228,40 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroup(ctx context.Con
 	}
 
 	if len(array2DToObject.Objects()) > 1 {
-		logger.Log(ctx, slog.LevelError, "length of array2DToObject.Objects()", len(array2DToObject.Objects()))
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())))
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, fmt.Errorf("more than one system %s found", intdoment.DirectoryGroupsRepository().RepositoryName))
 	}
 
 	systemGroup := new(intdoment.DirectoryGroups)
 	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
-		return nil, err
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 	} else {
-		logger.Log(ctx, slog.LevelDebug, "systemGroup", systemGroup)
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing systemGroup", "systemGroup", string(jsonData), "function", intlib.FunctionName(n.RepoDirectoryGroupsFindSystemGroup))
 		if err := json.Unmarshal(jsonData, systemGroup); err != nil {
-			return nil, err
+			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 		}
 	}
 
 	return systemGroup, nil
 }
 
-func (n *PostrgresRepository) RepoStorageTypesInsertOne(ctx context.Context, logger *httplog.Logger, data *intdoment.StorageDrivesTypes) error {
+func (n *PostrgresRepository) RepoStorageTypesUpsertOne(ctx context.Context, data *intdoment.StorageDrivesTypes) error {
 	query := fmt.Sprintf(
 		"INSERT INTO %[1]s (%[2]s, %[3]s) VALUES ($1, $2) ON CONFLICT (%[2]s) DO UPDATE SET %[3]s = $2;",
 		intdoment.StorageDrivesTypesRepository().RepositoryName, //1
 		intdoment.StorageDrivesTypesRepository().ID,             //2
 		intdoment.StorageDrivesTypesRepository().Description,    //3
 	)
-	logger.Log(ctx, slog.LevelDebug, "query", query)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoStorageTypesUpsertOne))
 
 	if _, err := n.db.Exec(ctx, query, data.ID[0], data.Description[0]); err != nil {
-		return fmt.Errorf("insert storage_drive_type failed, err: %v", err)
+		return intlib.FunctionNameAndError(n.RepoStorageTypesUpsertOne, fmt.Errorf("insert storage_drive_type failed, err: %v", err))
 	}
 
 	return nil
 }
 
-func (n *PostrgresRepository) RepoGroupAuthorizationRulesInsertMany(ctx context.Context, logger *httplog.Logger, data []intdoment.GroupAuthorizationRules) (int, error) {
+func (n *PostrgresRepository) RepoGroupAuthorizationRulesUpsertMany(ctx context.Context, data []intdoment.GroupAuthorizationRules) (int, error) {
 	query := fmt.Sprintf(
 		"INSERT INTO %[1]s (%[2]s, %[3]s, %[4]s) VALUES ($1, $2, $3) ON CONFLICT(%[2]s, %[3]s) DO UPDATE SET %[4]s = $3;",
 		intdoment.GroupAuthorizationRulesRepository().RepositoryName, //1
@@ -270,12 +269,12 @@ func (n *PostrgresRepository) RepoGroupAuthorizationRulesInsertMany(ctx context.
 		intdoment.GroupAuthorizationRulesRepository().RuleGroup,      //3
 		intdoment.GroupAuthorizationRulesRepository().Description,    //4
 	)
-	logger.Log(ctx, slog.LevelDebug, "query", query)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoGroupAuthorizationRulesUpsertMany))
 
 	successfulUpserts := 0
 	for _, datum := range data {
 		if _, err := n.db.Exec(ctx, query, datum.GroupAuthorizationRulesID[0].ID[0], datum.GroupAuthorizationRulesID[0].RuleGroup[0], datum.Description[0]); err != nil {
-			return successfulUpserts, err
+			return successfulUpserts, intlib.FunctionNameAndError(n.RepoGroupAuthorizationRulesUpsertMany, err)
 		}
 		successfulUpserts += 1
 	}
@@ -283,20 +282,20 @@ func (n *PostrgresRepository) RepoGroupAuthorizationRulesInsertMany(ctx context.
 	return successfulUpserts, nil
 }
 
-func (n *PostrgresRepository) RepoMetadataModelDefaultsInsertMany(ctx context.Context, logger *httplog.Logger, data []intdoment.MetadataModelsDefaults) (int, error) {
+func (n *PostrgresRepository) RepoMetadataModelDefaultsUpsertMany(ctx context.Context, data []intdoment.MetadataModelsDefaults) (int, error) {
 	query := fmt.Sprintf(
 		"INSERT INTO %[1]s (%[2]s, %[3]s) VALUES ($1, $2) ON CONFLICT (%[2]s) DO UPDATE SET %[3]s = $2;",
 		intdoment.MetadataModelsDefaultsRepository().RepositoryName, //1
 		intdoment.MetadataModelsDefaultsRepository().ID,             //2
 		intdoment.MetadataModelsDefaultsRepository().Description,    //3
 	)
-	logger.Log(ctx, slog.LevelDebug, "query", query)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelDefaultsUpsertMany))
 
 	successfulUpserts := 0
 	for _, datum := range data {
 		_, err := n.db.Exec(ctx, query, datum.ID[0], datum.Description[0])
 		if err != nil && err != pgx.ErrNoRows {
-			return successfulUpserts, fmt.Errorf("insert metadata_model_defaults failed, err: %v", err)
+			return successfulUpserts, intlib.FunctionNameAndError(n.RepoMetadataModelDefaultsUpsertMany, fmt.Errorf("insert metadata_model_defaults failed, err: %v", err))
 		}
 		successfulUpserts += 1
 	}

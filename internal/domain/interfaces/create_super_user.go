@@ -3,7 +3,6 @@ package interfaces
 import (
 	"context"
 
-	"github.com/go-chi/httplog/v2"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 )
 
@@ -12,15 +11,20 @@ type CreateSuperUserRepository interface {
 	// Parameters:
 	//
 	// - columnfields - columns/field data to obtain. Leave empty or nil to get all columns/fields
-	RepoIamCredentialsFindOneByID(ctx context.Context, logger *httplog.Logger, columnField string, value any, columnfields []string) (*intdoment.IamCredentials, error)
+	RepoIamCredentialsFindOneByID(ctx context.Context, columnField string, value any, columnfields []string) (*intdoment.IamCredentials, error)
 	// Parameters:
 	//
 	// - columnfields - columns/field data to obtain. Leave empty or nil to get all columns/fields
-	RepoDirectoryGroupsFindSystemGroup(ctx context.Context, logger *httplog.Logger, columnfields []string) (*intdoment.DirectoryGroups, error)
-	RepoDirectoryGroupsFindSystemGroupRuleAuthorizations(ctx context.Context, logger *httplog.Logger) ([]intdoment.GroupRuleAuthorization, error)
+	RepoDirectoryGroupsFindSystemGroup(ctx context.Context, columnfields []string) (*intdoment.DirectoryGroups, error)
+	RepoDirectoryGroupsFindSystemGroupRuleAuthorizations(ctx context.Context) ([]intdoment.GroupRuleAuthorization, error)
+	// returns no of successful inserts.
+	//
+	// will not check if role exists as it only anticipates finding intdoment.GroupRuleAuthorization.ID having been set.
+	RepoIamGroupAuthorizationsSystemRolesInsertMany(ctx context.Context, iamCredenial *intdoment.IamCredentials, groupRuleAuthorizations []intdoment.GroupRuleAuthorization) (int, error)
 }
 
 type CreateSuperUserService interface {
-	ServiceGetIamCredentials(ctx context.Context, logger *httplog.Logger) (*intdoment.IamCredentials, error)
-	ServiceAssignSystemRolesToIamCredential(ctx context.Context, logger *httplog.Logger, iamCredential *intdoment.IamCredentials) error
+	ServiceGetIamCredentials(ctx context.Context) (*intdoment.IamCredentials, error)
+	// return no of system roles assign to iam credential
+	ServiceAssignSystemRolesToIamCredential(ctx context.Context, iamCredential *intdoment.IamCredentials) (int, error)
 }

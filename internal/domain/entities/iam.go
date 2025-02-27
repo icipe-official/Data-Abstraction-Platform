@@ -1,5 +1,29 @@
 package entities
 
+import (
+	"github.com/gofrs/uuid/v5"
+)
+
+type IamGroupAuthorizationRule struct {
+	ID        string `json:"id"`
+	RuleGroup string `json:"rule_group"`
+}
+
+type IamAuthInfo struct {
+	IamCredentials
+	SessionID string
+}
+
+// formed by joining fields in iamGroupAuthorizationsRepository and groupAuthorizationRulesRepository.
+type IamAuthorizationRule struct {
+	ID                          uuid.UUID `json:"id,omitempty"`
+	DirectoryGroupID            uuid.UUID `json:"directory_group_id,omitempty"`
+	GroupAuthorizationRuleID    string    `json:"group_authorization_rule_id,omitempty"`
+	GroupAuthorizationRuleGroup string    `json:"group_authorization_rule_group,omitempty"`
+}
+
+type IamAuthorizationRules map[string]*IamAuthorizationRule
+
 const (
 	AUTH_RULE_GROUP_APP_INSTANCES                 string = "app_instances"
 	AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATION      string = "group_rule_authorization"

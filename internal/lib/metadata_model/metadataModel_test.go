@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/brunoga/deep"
-	intpkgjson "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/json"
+	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 )
 
 func TestPreparePathToValueInObject(t *testing.T) {
@@ -111,7 +111,7 @@ func TestMetadataModelAndDataManipulation(t *testing.T) {
 	}
 	someRowsNotEqual = false
 	for index, value := range testData["test_data"].data.([]any) {
-		if !intpkgjson.AreValuesEqual(array2DToObject.Objects()[index], testData["test_data"].data.([]any)[index]) {
+		if !intlibjson.AreValuesEqual(array2DToObject.Objects()[index], testData["test_data"].data.([]any)[index]) {
 			someRowsNotEqual = true
 			fmt.Printf("%d original |-> %+v\n\n", index, value)
 			fmt.Printf("%d converted |-> %+v\n\n", index, array2DToObject.Objects()[index])
@@ -132,7 +132,7 @@ func TestMetadataModelAndDataManipulation(t *testing.T) {
 
 	someRowsNotEqual = false
 	for index, value := range testData["test_data"].data.([]any) {
-		if !intpkgjson.AreValuesEqual(array2DToObject.Objects()[index], testData["test_data"].data.([]any)[index]) {
+		if !intlibjson.AreValuesEqual(array2DToObject.Objects()[index], testData["test_data"].data.([]any)[index]) {
 			someRowsNotEqual = true
 			fmt.Printf("%d original |-> %+v\n\n", index, value)
 			fmt.Printf("%d converted |-> %+v\n\n", index, array2DToObject.Objects()[index])

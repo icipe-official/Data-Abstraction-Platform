@@ -1,11 +1,17 @@
 package cmdappcreatesuperuser
 
-import intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
+import (
+	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
+)
 
 type CmdCreateSuperUserService struct {
-	repo intdomint.CreateSuperUserRepository
+	repo   intdomint.CreateSuperUserRepository
+	logger intdomint.Logger
 }
 
-func NewCmdCreateSuperUserService(repo intdomint.CreateSuperUserRepository) *CmdCreateSuperUserService {
-	return &CmdCreateSuperUserService{repo: repo}
+func NewCmdCreateSuperUserService(repo intdomint.CreateSuperUserRepository, logger intdomint.Logger) *CmdCreateSuperUserService {
+	return &CmdCreateSuperUserService{
+		repo:   repo,
+		logger: logger,
+	}
 }

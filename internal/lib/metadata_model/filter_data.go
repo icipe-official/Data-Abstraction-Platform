@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	intpkgjson "github.com/icipe-official/Data-Abstraction-Platform/internal/pkg/json"
+	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 )
 
 // Executes filter conditions against data.
@@ -60,7 +60,7 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 						andConditionTrue := false
 
 						var err error
-						loopSuccessful := intpkgjson.ForEachValueInObject(dValue, fgKey, func(_ []any, valueFound any) bool {
+						loopSuccessful := intlibjson.ForEachValueInObject(dValue, fgKey, func(_ []any, valueFound any) bool {
 							switch andCondition.Condition {
 							case FILTER_CONDTION_NO_OF_ENTRIES_GREATER_THAN:
 							case FILTER_CONDTION_NO_OF_ENTRIES_LESS_THAN:
