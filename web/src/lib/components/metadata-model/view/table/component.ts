@@ -1,14 +1,14 @@
-import Theme from '$src/lib/theme'
+import Theme from '@lib/theme'
 import { html, LitElement, nothing, PropertyValues, TemplateResult, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import MetadataModel from '$src/lib/metadata_model'
+import MetadataModel from '@lib/metadata_model'
 import Papa from 'papaparse'
 import { cache } from 'lit/directives/cache.js'
 import { keyed } from 'lit/directives/keyed.js'
-import '$src/lib/components/drop-down/component'
-import Json from '$src/lib/json'
+import '@lib/components/drop-down/component'
+import Json from '@lib/json'
 
 @customElement('metadata-model-view-table')
 class Component extends LitElement {

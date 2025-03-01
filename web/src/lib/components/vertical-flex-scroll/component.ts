@@ -1,8 +1,8 @@
 import { html, LitElement, nothing, PropertyValues, TemplateResult, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Log from '$src/lib/log'
+import Log from '@lib/log'
 
 interface RenderTracker {
 	ContentIntersectionObserved: boolean

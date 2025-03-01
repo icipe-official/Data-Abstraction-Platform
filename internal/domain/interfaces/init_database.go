@@ -12,7 +12,7 @@ type InitDatabaseRepository interface {
 	// return no of data upserted successfully.
 	RepoGroupAuthorizationRulesUpsertMany(ctx context.Context, data []intdoment.GroupAuthorizationRules) (int, error)
 	// return no of data upserted successfully.
-	RepoStorageTypesUpsertOne(ctx context.Context, data *intdoment.StorageDrivesTypes) error
+	RepoStorageDrivesTypesUpsertOne(ctx context.Context, data *intdoment.StorageDrivesTypes) error
 	// Parameters:
 	//
 	// - columnfields - columns/field data to obtain. Leave empty or nil to get all columns/fields

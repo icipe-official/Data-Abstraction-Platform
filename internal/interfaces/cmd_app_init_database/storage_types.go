@@ -42,7 +42,7 @@ func (n *CmdInitDatabaseService) ServiceStorageTypesCreate(ctx context.Context) 
 			return successfulUpserts, fmt.Errorf("storage metadata-model does not contain %v", intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_DESCRIPTION)
 		}
 
-		if err := n.repo.RepoStorageTypesUpsertOne(ctx, storageDriveType); err != nil {
+		if err := n.repo.RepoStorageDrivesTypesUpsertOne(ctx, storageDriveType); err != nil {
 			return successfulUpserts, err
 		}
 		successfulUpserts += 1

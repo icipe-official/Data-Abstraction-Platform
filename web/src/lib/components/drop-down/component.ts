@@ -1,6 +1,6 @@
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 
 @customElement('drop-down')
 class Component extends LitElement {

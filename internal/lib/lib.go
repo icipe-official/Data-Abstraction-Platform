@@ -21,8 +21,35 @@ import (
 
 	mathrand "math/rand"
 
+	"github.com/gofrs/uuid/v5"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 )
+
+const (
+	URL_SEARCH_PARAM_TARGET_JOIN_DEPTH               string = "target_join_depth"
+	URL_SEARCH_PARAM_VERBOSE_RESPONSE                string = "verbose"
+	URL_SEARCH_PARAM_SKIP_IF_DATA_EXTRACTION         string = "skip_if_data_extraction"
+	URL_SEARCH_PARAM_SKIP_IF_FG_DISABLED             string = "skip_if_fg_disabled"
+	URL_SEARCH_PARAM_SUB_QUERY                       string = "sub_query"
+	URL_SEARCH_PARAM_START_SEARCH_DIRECTORY_GROUP_ID string = "start_search_directory_group_id"
+	URL_SEARCH_PARAM_AUTH_CONTEXT_DIRECTORY_GROUP_ID string = "auth_context_directory_group_id"
+)
+
+func UrlSearchParamGetInt(r *http.Request, param string) (int, error) {
+	if value, err := strconv.Atoi(r.URL.Query().Get(param)); err == nil {
+		return value, nil
+	} else {
+		return 0, err
+	}
+}
+
+func UrlSearchParamGetUuid(r *http.Request, param string) (uuid.UUID, error) {
+	if value, err := uuid.FromString(r.URL.Query().Get(param)); err != nil {
+		return value, err
+	} else {
+		return value, nil
+	}
+}
 
 type SessionData struct {
 	OpenidEndpoints struct {
@@ -158,7 +185,7 @@ func CheckRequiredEnvVariables(envVars []string) []string {
 func WebServiceAppPrefix() string {
 	appPrefix := os.Getenv("WEB_SERVICE_APP_PREFIX")
 	if len(appPrefix) == 0 {
-		return "rahab_platform"
+		return "dap"
 	}
 	return appPrefix
 }

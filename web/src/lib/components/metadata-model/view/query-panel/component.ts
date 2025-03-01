@@ -1,13 +1,13 @@
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Theme from '$src/lib/theme'
-import Json from '$src/lib/json'
-import MetadataModel from '$src/lib/metadata_model'
+import Theme from '@lib/theme'
+import Json from '@lib/json'
+import MetadataModel from '@lib/metadata_model'
 import './field-group/component'
 import './field-group/query-condition/component'
-import Log from '$src/lib/log'
+import Log from '@lib/log'
 
 @customElement('metadata-model-view-query-panel')
 class Component extends LitElement {
@@ -111,6 +111,43 @@ class Component extends LitElement {
 		super.connectedCallback()
 		if (!Array.isArray(this.queryconditions) || this.queryconditions.length === 0) {
 			this.queryconditions = [{}]
+		}
+	}
+
+	private _isQueryConditionEmpty(querycondition: any) {
+		if (Object.keys(querycondition).length === 0) {
+			return true
+		}
+
+		if (Object.keys(querycondition).length === 2) {
+			let keysNotDTableCollectionOnly = false
+			for (const key of Object.keys(querycondition)) {
+				if (key !== MetadataModel.QcProperties.D_FIELD_COLUMN_NAME && key !== MetadataModel.QcProperties.D_TABLE_COLLECTION_NAME && key !== MetadataModel.QcProperties.D_TABLE_COLLECTION_UID) {
+					keysNotDTableCollectionOnly = true
+					break
+				}
+			}
+
+			if (!keysNotDTableCollectionOnly) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	private _addDatabasePropsToQueryCondition(fgKey: string, querycondition: any) {
+		const fieldGroup = Json.GetValueInObject(this.metadatamodel, fgKey.replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]'))
+		if (MetadataModel.IsGroupFieldsValid(fieldGroup)) {
+			if (typeof fieldGroup[MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME] === 'string') {
+				querycondition[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME] = fieldGroup[MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME]
+			}
+			if (typeof fieldGroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME] === 'string') {
+				querycondition[MetadataModel.QcProperties.D_TABLE_COLLECTION_NAME] = fieldGroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME]
+			}
+			if (typeof fieldGroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID] === 'string') {
+				querycondition[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID] = fieldGroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID]
+			}
 		}
 	}
 
@@ -304,8 +341,11 @@ class Component extends LitElement {
 										.fieldgroup=${fieldGroup}
 										.updatemetadatamodel=${this._updatemetadatamodel}
 										.handleupdatefieldgroupquerycondition=${(fieldGroupKey: string, querycondition: MetadataModel.IQueryCondition) => {
-											fieldGroupKey = this._getQueryConditionFgKey(fieldGroupKey)
-											if (Object.keys(querycondition).length > 0) {
+											if (this._isQueryConditionEmpty(querycondition)) {
+												this._deletequeryconditions(this._selectedFieldGroupQueryConditionIndex, this._selectedFieldGroupKey)
+											} else {
+												this._addDatabasePropsToQueryCondition(fieldGroupKey, querycondition)
+												fieldGroupKey = this._getQueryConditionFgKey(fieldGroupKey)
 												if (typeof this.queryconditions[this._selectedFieldGroupQueryConditionIndex] === 'undefined') {
 													this.queryconditions[this._selectedFieldGroupQueryConditionIndex] = {}
 												}
@@ -317,8 +357,6 @@ class Component extends LitElement {
 														}
 													})
 												)
-											} else {
-												this._deletequeryconditions(this._selectedFieldGroupQueryConditionIndex, this._selectedFieldGroupKey)
 											}
 										}}
 									></metadata-model-view-query-panel-field-group-query-condition>
@@ -352,8 +390,11 @@ class Component extends LitElement {
 									.handlegetfieldgroupquerycondition=${this._getquerycondition}
 									.handledeletefieldgroupquerycondition=${this._deletequeryconditions}
 									.handleupdatefieldgroupquerycondition=${(queryconditionindex: number, fieldGroupKey: string, querycondition: MetadataModel.IQueryCondition) => {
-										fieldGroupKey = this._getQueryConditionFgKey(fieldGroupKey)
-										if (Object.keys(querycondition).length > 0) {
+										if (this._isQueryConditionEmpty(querycondition)) {
+											this._deletequeryconditions(queryconditionindex, fieldGroupKey)
+										} else {
+											this._addDatabasePropsToQueryCondition(fieldGroupKey, querycondition)
+											fieldGroupKey = this._getQueryConditionFgKey(fieldGroupKey)
 											if (typeof this.queryconditions[queryconditionindex] === 'undefined') {
 												this.queryconditions[queryconditionindex] = {}
 											}
@@ -365,8 +406,6 @@ class Component extends LitElement {
 													}
 												})
 											)
-										} else {
-											this._deletequeryconditions(queryconditionindex, fieldGroupKey)
 										}
 									}}
 								></metadata-model-view-query-panel-field-group>

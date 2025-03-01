@@ -22,7 +22,9 @@ body:form-urlencoded {
 script:post-response {
   let data = res.getBody()
   bru.setEnvVar('access_token',data.access_token)
+  bru.setEnvVar('access_token_expires_in',data.expires_in)
   bru.setEnvVar('refresh_token',data.refresh_token)
+  bru.setEnvVar('refresh_token_expires_in',data.refresh_expires_in)
 }
 
 docs {

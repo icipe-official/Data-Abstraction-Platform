@@ -1,0 +1,18 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{web_service_api_core_url}}/iam/login
+  body: none
+  auth: none
+}
+
+headers {
+  OpenID-Access-Token: {{access_token}}
+  OpenID-Access-Token-Expires-In: {{access_token_expires_in}}
+  OpenID-Refresh-Token: {{refresh_token}}
+  OpenID-Refresh-Token-Expires-In: {{refresh_token_expires_in}}
+}

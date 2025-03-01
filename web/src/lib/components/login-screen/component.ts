@@ -1,10 +1,10 @@
-import Interface from '$src/lib/interface'
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import logoPng from '$src/assets/logo.png'
-import Misc from '$src/lib/miscellaneous'
-import indexCss from '$src/assets/index.css?inline'
+import logoPng from '@assets/logo.png'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
+import { OpenidContextConsumer } from '@interfaces/context/openid'
+import { IOpenidContextConsumer } from '@dominterfaces/context/openid'
 
 enum PageTab {
 	LOGIN = 'LOGIN',
@@ -19,19 +19,7 @@ class Component extends LitElement {
 
 	@state() private _currentPageTab: PageTab = PageTab.LOGIN
 
-	private _sessionData: Interface.SessionData | null = null
-
-	connectedCallback(): void {
-		super.connectedCallback()
-		Misc.AddHistoryState(import.meta.env.VITE_LAYOUT_ROUTES, window.location.pathname)
-		const sessionData = sessionStorage.getItem(Misc.SharedStorageKey.SESSION_DATA)
-		if (sessionData === null) {
-			this._sessionData = sessionData
-			this._currentPageTab = PageTab.ABOUT_US
-		} else {
-			this._sessionData = JSON.parse(sessionData)
-		}
-	}
+	private _openidCtxProvider: IOpenidContextConsumer = new OpenidContextConsumer(this)
 
 	protected render(): unknown {
 		return html`
@@ -41,7 +29,7 @@ class Component extends LitElement {
 				</div>
 				<section class="flex-[9.5] flex justify-center">
 					<div role="tablist" class="tabs tabs-boxed w-fit">
-						${this._sessionData !== null ? html`<button role="tab" class="tab btn${this._currentPageTab === PageTab.LOGIN ? ' tab-active btn-primary' : ''}" @click=${() => (this._currentPageTab = PageTab.LOGIN)}>Login/Register</button>` : nothing}
+						${this._openidCtxProvider.openidendpoints?.login_endpoint ? html`<button role="tab" class="tab btn${this._currentPageTab === PageTab.LOGIN ? ' tab-active btn-primary' : ''}" @click=${() => (this._currentPageTab = PageTab.LOGIN)}>Login/Register</button>` : nothing}
 						<button role="tab" class="tab btn${this._currentPageTab === PageTab.ABOUT_US ? ' tab-active btn-primary' : ''}" @click=${() => (this._currentPageTab = PageTab.ABOUT_US)}>About us</button>
 					</div>
 				</section>
@@ -54,15 +42,15 @@ class Component extends LitElement {
 								<div class="flex-[0.5] font-bold text-2xl text-center">${this.logintitle}</div>
 								<div class="flex-1 join join-horizontal w-full">
 									${(() => {
-										if (this._sessionData?.openid_endpoints.login_endpoint) {
-											return html` <a class="join-item flex-1 btn btn-primary flex self-center md:w-[70%]" href="${this._sessionData?.openid_endpoints.login_endpoint}"> login </a> `
+										if (this._openidCtxProvider.openidendpoints?.login_endpoint) {
+											return html` <a class="join-item flex-1 btn btn-primary flex self-center md:w-[70%]" href="${this._openidCtxProvider.openidendpoints.login_endpoint}"> login </a> `
 										} else {
 											return nothing
 										}
 									})()}
 									${(() => {
-										if (this._sessionData?.openid_endpoints.registration_endpoint) {
-											return html` <a class="join-item flex-1 btn btn-secondary flex self-center md:w-[70%]" href="${this._sessionData?.openid_endpoints.registration_endpoint}"> register </a> `
+										if (this._openidCtxProvider.openidendpoints?.registration_endpoint) {
+											return html` <a class="join-item flex-1 btn btn-secondary flex self-center md:w-[70%]" href="${this._openidCtxProvider.openidendpoints.registration_endpoint}"> register </a> `
 										} else {
 											return nothing
 										}

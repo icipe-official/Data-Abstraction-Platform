@@ -68,15 +68,15 @@ func RedirectRouter(webService *inthttp.WebService) *chi.Mux {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
 		}
 
-		if token, err := intlib.IamMinifyOpenIDToken(webService.Env, openIDToken); err != nil {
-			webService.Logger.Log(ctx, slog.LevelError, fmt.Sprintf("Minify access refresh token failed, error: %v", err), ctx.Value(intlib.LOG_ATTR_CTX_KEY))
+		if token, err := intlib.IamPrepOpenIDTokenForClient(webService.Env, openIDToken); err != nil {
+			webService.Logger.Log(ctx, slog.LevelError, fmt.Sprintf("Prepare access refresh token for client failed, error: %v", err), ctx.Value(intlib.LOG_ATTR_CTX_KEY))
 			if err := s.ServiceOpenIDRevokeToken(ctx, webService.OpenID, openIDToken); err != nil {
 				intlib.SendJsonErrorResponse(err, w)
 				return
 			}
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
 		} else {
-			http.SetCookie(w, intlib.GetTokenCookie(webService.IamCookie, token, int(openIDToken.ExpiresIn)))
+			intlib.IamSetCookieInResponse(w, webService.IamCookie, token, int(openIDToken.ExpiresIn), int(openIDToken.RefreshExpiresIn))
 			http.Redirect(w, r, webService.Env.Get(intlib.ENV_WEB_SERVICE_BASE_PATH), http.StatusSeeOther)
 			webService.Logger.Log(ctx, slog.LevelInfo+2, fmt.Sprintf("login by %v", iamCredential.ID), ctx.Value(intlib.LOG_ATTR_CTX_KEY))
 		}
@@ -96,8 +96,10 @@ func WebsiteRouter(webService *inthttp.WebService, acceptedHTMLPartialNames []st
 			return
 		}
 
+		authedIamCredential, _ := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
+
 		isPartialRequest, partialName := intlib.WebsiteValidateHTMLPartialRequest(r, acceptedHTMLPartialNames)
-		if htmlContent, err := s.ServiceGetHomePageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName); err != nil {
+		if htmlContent, err := s.ServiceGetHomePageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential); err != nil {
 			intlib.SendJsonErrorResponse(err, w)
 		} else {
 			intlib.WebsiteSendHTMLResponse(htmlContent, w)

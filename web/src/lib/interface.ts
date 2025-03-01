@@ -1,5 +1,3 @@
-import Database from './database'
-
 namespace Interface {
 	export interface ItemID {
 		id: string
@@ -31,11 +29,6 @@ namespace Interface {
 	export interface OpenidEndpoints {
 		login_endpoint: string
 		registration_endpoint?: string
-	}
-
-	export interface SessionData {
-		openid_endpoints: OpenidEndpoints
-		iam_credential?: Database.IamCredentials.Interface
 	}
 }
 

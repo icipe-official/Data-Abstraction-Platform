@@ -1,10 +1,10 @@
 import { html, LitElement, unsafeCSS } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Theme from '$src/lib/theme'
-import MetadataModel from '$src/lib/metadata_model'
-import '$src/lib/components/multi-select/component'
+import Theme from '@lib/theme'
+import MetadataModel from '@lib/metadata_model'
+import '@lib/components/multi-select/component'
 
 @customElement('metadata-model-datum-input-column-field-select')
 class Component extends LitElement {

@@ -8,6 +8,11 @@ const (
 	OPENID_GRANT_TYPE_PASSWORD           string = "password"
 
 	OPENID_RESPONSE_TYPE_CODE string = "code"
+
+	OPENID_HEADER_ACCESS_TOKEN             string = "OpenID-Access-Token"
+	OPENID_HEADER_ACCESS_TOKEN_EXPIRES_IN  string = "OpenID-Access-Token-Expires-In"
+	OPENID_HEADER_REFRESH_TOKEN            string = "OpenID-Refresh-Token"
+	OPENID_HEADER_REFRESH_TOKEN_EXPIRES_IN string = "OpenID-Refresh-Token-Expires-In"
 )
 
 type OpenIDRedirectParams struct {

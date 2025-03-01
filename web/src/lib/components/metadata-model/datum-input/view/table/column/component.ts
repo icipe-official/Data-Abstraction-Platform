@@ -1,15 +1,15 @@
 import { html, LitElement, nothing, TemplateResult, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Theme from '$src/lib/theme'
+import Theme from '@lib/theme'
 import '../../column-field/text/component'
 import '../../column-field/number/component'
 import '../../column-field/checkbox/component'
 import '../../column-field/date-time/component'
 import '../../column-field/select/component'
-import MetadataModel from '$src/lib/metadata_model'
-import '$src/lib/components/drop-down/component'
+import MetadataModel from '@lib/metadata_model'
+import '@lib/components/drop-down/component'
 
 @customElement('metadata-model-datum-input-table-column')
 class Component extends LitElement {

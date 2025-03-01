@@ -27,8 +27,8 @@ type DatabaseColumnFields struct {
 //   - skipIfDataExtraction - Do not include field group if property FIELD_GROUP_PROP_DATABASE_SKIP_DATA_EXTRACTION($DATABASE_SKIP_DATA_EXTRACTION) is true.
 //
 // returns error if metadatamodel or tableCollectionName is not valid.
-func DatabaseGetColumnFields(metadatamodel any, tableCollectionName string, tableCollectionUID string, skipIfFGDisabled bool, skipIfDataExtraction bool) (DatabaseColumnFields, error) {
-	x, err := newdatabaseGetColumnFields(tableCollectionName, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
+func DatabaseGetColumnFields(metadatamodel any, tableCollectionUID string, skipIfFGDisabled bool, skipIfDataExtraction bool) (DatabaseColumnFields, error) {
+	x, err := newdatabaseGetColumnFields(tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
 	if err != nil {
 		return DatabaseColumnFields{}, FunctionNameAndError(DatabaseGetColumnFields, err)
 	}
@@ -41,8 +41,7 @@ func DatabaseGetColumnFields(metadatamodel any, tableCollectionName string, tabl
 
 type databaseGetColumnFields struct {
 	databaseColumnFields DatabaseColumnFields
-	tableCollectionName  string
-	tableCollectionUID   *string
+	tableCollectionUID   string
 	skipIfFgDisabled     bool
 	skipIfDataExtraction bool
 }
@@ -51,19 +50,15 @@ func (n *databaseGetColumnFields) DatabaseColumnFields() DatabaseColumnFields {
 	return n.databaseColumnFields
 }
 
-func newdatabaseGetColumnFields(tableCollectionName string, tableCollectionUID string, skipIfFGDisabled bool, skipIfDataExtraction bool) (*databaseGetColumnFields, error) {
+func newdatabaseGetColumnFields(tableCollectionUID string, skipIfFGDisabled bool, skipIfDataExtraction bool) (*databaseGetColumnFields, error) {
 	n := new(databaseGetColumnFields)
 
-	if len(tableCollectionName) == 0 {
+	if len(tableCollectionUID) == 0 {
 		return nil, FunctionNameAndError(newdatabaseGetColumnFields, errors.New("tableCollectionName is empty"))
 	}
+	n.tableCollectionUID = tableCollectionUID
 	n.skipIfFgDisabled = skipIfFGDisabled
 	n.skipIfDataExtraction = skipIfDataExtraction
-
-	if len(tableCollectionUID) > 0 {
-		n.tableCollectionUID = new(string)
-		*n.tableCollectionUID = tableCollectionUID
-	}
 
 	n.databaseColumnFields = DatabaseColumnFields{
 		ColumnFieldsReadOrder: make([]string, 0),
@@ -112,35 +107,31 @@ func (n *databaseGetColumnFields) GetDatabaseColumnFields(mmGroup any) error {
 			}
 		}
 
-		if fgTableCollectionName, ok := fgMap[FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_NAME].(string); ok && fgTableCollectionName == n.tableCollectionName {
-			if n.tableCollectionUID != nil {
-				if value, ok := fgMap[FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID].(string); !ok || value != *n.tableCollectionUID {
-					continue
-				}
+		if fgTableCollectionUid, ok := fgMap[FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID].(string); !ok || fgTableCollectionUid != n.tableCollectionUID {
+			continue
+		}
+
+		if _, err := GetGroupFields(fgMap); err == nil {
+			if _, err := GetGroupReadOrderOfFields(fgMap); err == nil {
+				n.GetDatabaseColumnFields(fgMap)
+				continue
+			}
+		}
+
+		if fieldColumnName, ok := fgMap[FIELD_GROUP_PROP_DATABASE_FIELD_COLUMN_NAME].(string); ok && len(fieldColumnName) > 0 {
+			if _, ok := n.databaseColumnFields.Fields[fieldColumnName]; ok {
+				return FunctionNameAndError(n.GetDatabaseColumnFields, fmt.Errorf("duplciate fieldColumnName '%s' found", fieldColumnName))
 			}
 
-			if _, err := GetGroupFields(fgMap); err == nil {
-				if _, err := GetGroupReadOrderOfFields(fgMap); err == nil {
-					n.GetDatabaseColumnFields(fgMap)
-					continue
-				}
+			var newField map[string]any = fgMap
+			if value, err := deep.Copy(fgMap); err == nil {
+				newField = value
 			}
 
-			if fieldColumnName, ok := fgMap[FIELD_GROUP_PROP_DATABASE_FIELD_COLUMN_NAME].(string); ok && len(fieldColumnName) > 0 {
-				if _, ok := n.databaseColumnFields.Fields[fieldColumnName]; ok {
-					return FunctionNameAndError(n.GetDatabaseColumnFields, fmt.Errorf("duplciate fieldColumnName '%s' found", fieldColumnName))
-				}
-
-				var newField map[string]any = fgMap
-				if value, err := deep.Copy(fgMap); err == nil {
-					newField = value
-				}
-
-				n.databaseColumnFields.ColumnFieldsReadOrder = append(n.databaseColumnFields.ColumnFieldsReadOrder, fieldColumnName)
-				n.databaseColumnFields.Fields[fieldColumnName] = newField
-			} else {
-				return FunctionNameAndError(n.GetDatabaseColumnFields, errors.New("fieldColumnName is empty"))
-			}
+			n.databaseColumnFields.ColumnFieldsReadOrder = append(n.databaseColumnFields.ColumnFieldsReadOrder, fieldColumnName)
+			n.databaseColumnFields.Fields[fieldColumnName] = newField
+		} else {
+			return FunctionNameAndError(n.GetDatabaseColumnFields, errors.New("fieldColumnName is empty"))
 		}
 	}
 

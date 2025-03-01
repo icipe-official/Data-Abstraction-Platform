@@ -35,7 +35,12 @@ class EntryPoints {
 
 	writeHtmlPages() {
 		Object.keys(this.rollupOptionsInputs).forEach((key) => {
-			this.htmlPages[key] = `${key}.hbs.html`
+			let path = key
+			if (key.startsWith('interfaces/templates/')) {
+				let regex = new RegExp(/interfaces\/templates\/(.+)/).exec(key)
+				key = regex[1]
+			}
+			this.htmlPages[key] = `${path}.hbs.html`
 		})
 	}
 }

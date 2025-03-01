@@ -14,13 +14,13 @@ import MetadataModel from '.'
  * @param skipIfDataExtraction Do not include field if property {@linkcode FgProperties.FIELD_GROUP_SKIP_DATA_EXTRACTION}($FG_SKIP_DATA_EXTRACTION) is true. Default false.
  * @returns Database column fields with their properties as well as their read order.DatabaseSetFieldValue
  */
-export function DatabaseGetColumnFields(metadatamodel: MetadataModel.IMetadataModel | any, tableCollectionName: string, tableCollectionUID: string | undefined, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false): MetadataModel.IDatabaseColumnFields {
-	if (typeof tableCollectionName !== 'string') {
-		throw 'argument tableCollectionName is not a string.'
+export function DatabaseGetColumnFields(metadatamodel: MetadataModel.IMetadataModel | any, tableCollectionUID: string, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false): MetadataModel.IDatabaseColumnFields {
+	if (typeof tableCollectionUID !== 'string') {
+		throw 'argument tableCollectionUID is not a string.'
 	}
 
 	try {
-		let x = new _(tableCollectionName, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
+		let x = new _(tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
 		x.GetDatabaseColumnFields(metadatamodel)
 		return x.DatabaseColumnFields
 	} catch (e) {
@@ -33,13 +33,11 @@ class _ {
 		column_fields_read_order: [],
 		fields: {}
 	}
-	private _tableCollectionName: string
-	private _tableCollectionUID: string | undefined
+	private _tableCollectionUID: string
 	private _skipIfFGDisabled: boolean = true
 	private _skipIfDataExtraction: boolean = true
 
-	constructor(tableCollectionName: string, tableCollectionUID: string | undefined, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
-		this._tableCollectionName = tableCollectionName
+	constructor(tableCollectionUID: string, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
 		this._tableCollectionUID = tableCollectionUID
 		this._skipIfFGDisabled = skipIfFGDisabled
 		this._skipIfDataExtraction = skipIfDataExtraction
@@ -85,32 +83,28 @@ class _ {
 				continue
 			}
 
-			if (typeof mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME] === 'string' && mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME] === this._tableCollectionName) {
-				if (typeof this._tableCollectionUID === 'string') {
-					if (typeof mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID] !== 'string' || mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID] !== this._tableCollectionUID) {
-						continue
-					}
-				}
-
-				if (Array.isArray(mmGroupFields[fgKey][MetadataModel.FgProperties.GROUP_FIELDS]) && typeof mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME] === 'undefined') {
-					this.GetDatabaseColumnFields(mmGroupFields[fgKey])
-					continue
-				}
-
-				const fieldColumnName = mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME]
-				if (typeof fieldColumnName !== 'string' || fieldColumnName.length === 0) {
-					console.error(`field column name for key ${fgKey} not found or empty!`, structuredClone(mmGroupFields[fgKey]))
-					continue
-				}
-
-				if (typeof this._databaseColumnFields.fields[fieldColumnName] === 'object') {
-					console.error(`duplicate field column name ${fieldColumnName} detected!`, structuredClone(this._databaseColumnFields), structuredClone(mmGroup))
-					continue
-				}
-
-				this._databaseColumnFields.column_fields_read_order.push(fieldColumnName)
-				this._databaseColumnFields.fields[fieldColumnName] = structuredClone(mmGroupFields[fgKey])
+			if (typeof mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID] !== 'string' || mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID] !== this._tableCollectionUID) {
+				continue
 			}
+
+			if (Array.isArray(mmGroupFields[fgKey][MetadataModel.FgProperties.GROUP_FIELDS]) && typeof mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME] === 'undefined') {
+				this.GetDatabaseColumnFields(mmGroupFields[fgKey])
+				continue
+			}
+
+			const fieldColumnName = mmGroupFields[fgKey][MetadataModel.FgProperties.DATABASE_FIELD_COLUMN_NAME]
+			if (typeof fieldColumnName !== 'string' || fieldColumnName.length === 0) {
+				console.error(`field column name for key ${fgKey} not found or empty!`, structuredClone(mmGroupFields[fgKey]))
+				continue
+			}
+
+			if (typeof this._databaseColumnFields.fields[fieldColumnName] === 'object') {
+				console.error(`duplicate field column name ${fieldColumnName} detected!`, structuredClone(this._databaseColumnFields), structuredClone(mmGroup))
+				continue
+			}
+
+			this._databaseColumnFields.column_fields_read_order.push(fieldColumnName)
+			this._databaseColumnFields.fields[fieldColumnName] = structuredClone(mmGroupFields[fgKey])
 		}
 	}
 }

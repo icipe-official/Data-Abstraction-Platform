@@ -1,19 +1,22 @@
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import Misc from '$src/lib/miscellaneous'
-import indexCss from '$src/assets/index.css?inline'
-import '$src/lib/components/metadata-model/view/query-panel/component'
-import '$src/lib/components/metadata-model/view/table/component'
-import Theme from '$src/lib/theme'
-import MetadataModel from '$src/lib/metadata_model'
+import Lib from '@lib/lib'
+import indexCss from '@assets/index.css?inline'
+import '@lib/components/metadata-model/view/query-panel/component'
+import '@lib/components/metadata-model/view/table/component'
+import Theme from '@lib/theme'
+import MetadataModel from '@lib/metadata_model'
+import Entities from '@domentities'
+import { OpenidContextProvider } from '@interfaces/context/openid'
+import { IOpenidContextProvider } from '@dominterfaces/context/openid'
 
 /**
  * Provides the following functions:
- * * Displays a toast at the bottom of the screen when the event {@linkcode Misc.CustomEvents.TOAST_NOTIFY} is fired.
- * * Displays a loading screen when the event {@linkcode Misc.CustomEvents.SHOW_LOADING_SCREEN} is fired.
+ * * Displays a toast at the bottom of the screen when the event {@linkcode Lib.CustomEvents.TOAST_NOTIFY} is fired.
+ * * Displays a loading screen when the event {@linkcode Lib.CustomEvents.SHOW_LOADING_SCREEN} is fired.
  * 
- * @listens {@linkcode Misc.CustomEvents.TOAST_NOTIFY} - Takes in event of type {@linkcode ToastNotifyEvent}.
- * @listens {@linkcode Misc.CustomEvents.SHOW_LOADING_SCREEN} - Takes in event of type {@linkcode ShowLoadingScreenEvent}.
+ * @listens {@linkcode Lib.CustomEvents.TOAST_NOTIFY} - Takes in event of type {@linkcode ToastNotifyEvent}.
+ * @listens {@linkcode Lib.CustomEvents.SHOW_LOADING_SCREEN} - Takes in event of type {@linkcode ShowLoadingScreenEvent}.
  */
 @customElement('app-context')
 class Component extends LitElement {
@@ -73,11 +76,23 @@ class Component extends LitElement {
 		this._windowWidth = window.innerWidth //1000
 	}
 
+	private _openidCtxProvider: IOpenidContextProvider = new OpenidContextProvider(undefined)
+
 	connectedCallback(): void {
 		super.connectedCallback()
 
-		window.addEventListener(Misc.CustomEvents.SHOW_LOADING_SCREEN, this._showLoadingScreenListener as EventListenerOrEventListenerObject)
-		window.addEventListener(Misc.CustomEvents.TOAST_NOTIFY, this._toastNotifyListener as EventListenerOrEventListenerObject)
+		if (this.data.openid_endpoints && typeof this.data.openid_endpoints.login_endpoint === 'string') {
+			let newOpenID: Entities.AppContext.Openid = {
+				login_endpoint: this.data.openid_endpoints.login_endpoint
+			}
+			if (this.data.openid_endpoints.registration_endpoint) {
+				newOpenID.registration_endpoint = this.data.openid_endpoints.registration_endpoint
+			}
+			this._openidCtxProvider.Setopenidendpoints(newOpenID)
+		}
+
+		window.addEventListener(Lib.CustomEvents.SHOW_LOADING_SCREEN, this._showLoadingScreenListener as EventListenerOrEventListenerObject)
+		window.addEventListener(Lib.CustomEvents.TOAST_NOTIFY, this._toastNotifyListener as EventListenerOrEventListenerObject)
 		window.addEventListener('resize', this._handleWindowResize)
 	}
 
@@ -85,8 +100,8 @@ class Component extends LitElement {
 		super.disconnectedCallback()
 
 		window.clearTimeout(this._closeToastTimeout)
-		window.removeEventListener(Misc.CustomEvents.SHOW_LOADING_SCREEN, this._showLoadingScreenListener as EventListenerOrEventListenerObject)
-		window.removeEventListener(Misc.CustomEvents.TOAST_NOTIFY, this._toastNotifyListener as EventListenerOrEventListenerObject)
+		window.removeEventListener(Lib.CustomEvents.SHOW_LOADING_SCREEN, this._showLoadingScreenListener as EventListenerOrEventListenerObject)
+		window.removeEventListener(Lib.CustomEvents.TOAST_NOTIFY, this._toastNotifyListener as EventListenerOrEventListenerObject)
 		window.removeEventListener('resize', this._handleWindowResize)
 	}
 
@@ -98,7 +113,7 @@ class Component extends LitElement {
 					this._closeToastTimeout = window.setTimeout(() => this._closeToast(), typeof this._toastMessage === 'string' ? 3000 : 10000)
 					return html`
 						<div class="z-[2] toast max-sm:toast-center max-sm:w-full sm:toast-end">
-							<div role="alert" class="alert shadow-sm shadow-slate-600 flex ${this._toastType === Misc.ToastType.ERROR ? 'alert-error' : this._toastType === Misc.ToastType.WARNING ? 'alert-warning' : this._toastType === Misc.ToastType.SUCCESS ? 'alert-success' : 'alert-info'}">
+							<div role="alert" class="alert shadow-sm shadow-slate-600 flex ${this._toastType === Lib.ToastType.ERROR ? 'alert-error' : this._toastType === Lib.ToastType.WARNING ? 'alert-warning' : this._toastType === Lib.ToastType.SUCCESS ? 'alert-success' : 'alert-info'}">
 								<div class="flex w-full h-fit space-x-1">
 									${(() => {
 										if (typeof this._toastMessage === 'string') {
@@ -137,7 +152,7 @@ class Component extends LitElement {
 										<!--mdi:close source: https://icon-sets.iconify.design-->
 										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
 											<path
-												fill="${this._toastType === Misc.ToastType.ERROR ? Theme.Color.ERROR_CONTENT : this._toastType === Misc.ToastType.WARNING ? Theme.Color.WARNING_CONTENT : Theme.Color.INFO_CONTENT}"
+												fill="${this._toastType === Lib.ToastType.ERROR ? Theme.Color.ERROR_CONTENT : this._toastType === Lib.ToastType.WARNING ? Theme.Color.WARNING_CONTENT : Theme.Color.INFO_CONTENT}"
 												d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"
 											/>
 										</svg>
@@ -273,7 +288,7 @@ type ShowLoadingScreenEvent = CustomEvent & {
 		/**
 		 * Determines background of toast message.
 		 */
-		loading: Misc.ToastType
+		loading: Lib.ToastType
 		/**
 		 * If toast message is an array of string, each element will be displayed in a numbered list.
 		 */
@@ -289,7 +304,7 @@ type ToastNotifyEvent = CustomEvent & {
 		/**
 		 * Determines background of toast message.
 		 */
-		toastType: Misc.ToastType
+		toastType: Lib.ToastType
 		/**
 		 * If toast message is an array of string, each element will be displayed in a numbered list.
 		 */

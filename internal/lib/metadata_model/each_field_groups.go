@@ -46,7 +46,7 @@ func FilterFieldGroups(mmGroup any, callback func(property map[string]any) bool)
 	return mmGroupMap
 }
 
-func ForEachFieldGroup(mmGroup any, callback func(property map[string]any)) {
+func ForEachFieldGroup(mmGroup any, callback func(property map[string]any) bool) {
 	mmGroupMap, err := GetFieldGroupMap(mmGroup)
 	if err != nil {
 		return
@@ -72,7 +72,10 @@ func ForEachFieldGroup(mmGroup any, callback func(property map[string]any)) {
 			return
 		}
 
-		callback(fgMap)
+		if value := callback(fgMap); value {
+			return
+		}
+
 		if _, err := GetGroupFields(fgMap); err == nil {
 			if _, err := GetGroupReadOrderOfFields(fgMap); err == nil {
 				ForEachFieldGroup(fgMap, callback)

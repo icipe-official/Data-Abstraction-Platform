@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest'
 import MetadataModel from '.'
 import Json from '../json'
-import test_data_2darray from '$project/test_data/test_data_2darray.json'
-import test_data from '$project/test_data/test_data.json'
-import test_metadatamodel from '$project/test_data/test_metadatamodel.json'
+import test_data_2darray from '@testdata/test_data_2darray.json'
+import test_data from '@testdata/test_data.json'
+import test_metadatamodel from '@testdata/test_metadatamodel.json'
 
 test('Converts objects to 2D array, expects value to be equal to test_data_2darray', () => {
 	let objectTo2DArray = new MetadataModel.ConvertObjectsTo2DArray(test_metadatamodel)

@@ -1,11 +1,11 @@
 import { html, LitElement, nothing, PropertyValues, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Theme from '$src/lib/theme'
+import Theme from '@lib/theme'
 import { Task } from '@lit/task'
-import MetadataModel from '$src/lib/metadata_model'
-import Json from '$src/lib/json'
+import MetadataModel from '@lib/metadata_model'
+import Json from '@lib/json'
 
 @customElement('metadata-model-view-datum')
 class Component extends LitElement {
@@ -27,14 +27,14 @@ class Component extends LitElement {
 
 	private _importVirtualFlexScrollTask = new Task(this, {
 		task: async () => {
-			await import('$src/lib/components/vertical-flex-scroll/component')
+			await import('@lib/components/vertical-flex-scroll/component')
 		},
 		args: () => []
 	})
 
 	private _importMMTableTask = new Task(this, {
 		task: async () => {
-			await import('$src/lib/components/metadata-model/view/table/component')
+			await import('@lib/components/metadata-model/view/table/component')
 		},
 		args: () => []
 	})

@@ -19,7 +19,7 @@ func InitWebServiceWebsiteRouter(router *chi.Mux, webService *inthttp.WebService
 	router.Mount(webService.Env.Get(intlib.ENV_WEB_SERVICE_BASE_PATH)+"redirect", home.RedirectRouter(webService))
 
 	router.Route(webService.Env.Get(intlib.ENV_WEB_SERVICE_BASE_PATH), func(baseRouter chi.Router) {
-		baseRouter.Use(intlib.IamAuthenticationMiddleware(webService.Logger, webService.Env, webService.OpenID))
+		baseRouter.Use(intlib.IamAuthenticationMiddleware(webService.Logger, webService.Env, webService.OpenID, webService.IamCookie, webService.PostgresRepository))
 
 		baseRouter.Mount("/", home.WebsiteRouter(webService, []string{intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES}))
 		baseRouter.Mount("/metadata-models", metadatamodels.WebsiteRouter(webService, []string{intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID}))

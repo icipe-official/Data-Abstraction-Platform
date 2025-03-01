@@ -19,7 +19,9 @@ func argumentsError(function any, variableName string, expectedType string, valu
 const ErrArgumentsInvalid string = "ErrArgumentsInvalid"
 
 const (
-	QUERY_CONDITION_PROP_FG_PROPERTY              string = "$FG_PROPERTY"
+	QUERY_CONDITION_PROP_D_TABLE_COLLECTION_UID   string = FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID
+	QUERY_CONDITION_PROP_D_TABLE_COLLECTION_NAME  string = FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_NAME
+	QUERY_CONDITION_PROP_D_FIELD_COLUMN_NAME      string = FIELD_GROUP_PROP_DATABASE_FIELD_COLUMN_NAME
 	QUERY_CONDITION_PROP_FG_FILTER_CONDITION      string = "$FG_FILTER_CONDITION"
 	QUERY_CONDITION_PROP_D_SORT_BY_ASC            string = "$D_SORT_BY_ASC"
 	QUERY_CONDITION_PROP_D_FULL_TEXT_SEARCH_QUERY string = "$D_FULL_TEXT_SEARCH_QUERY"
@@ -144,9 +146,14 @@ const (
 	ARRAY_PATH_PLACEHOLDER string = "[*]"
 )
 
+type MetadataModelSearch struct {
+	MetadataModel   map[string]any    `json:"metadata_model,omitempty"`
+	QueryConditions []QueryConditions `json:"query_conditions,omitempty"`
+}
+
 type MetadataModelSearchResults struct {
-	MetadataModel any `json:"metadata_model"`
-	Data          any `json:"data"`
+	MetadataModel map[string]any `json:"metadata_model,omitempty"`
+	Data          []any          `json:"data,omitempty"`
 }
 
 var ErrPathContainsIndexPlaceHolders = errors.New("PathContainsIndexPlaceHolders")
@@ -247,6 +254,15 @@ func IsFieldAField(f any) bool {
 	}
 
 	return false
+}
+
+func GetPathToValue(fgKey string, removeGroupFIelds bool) string {
+	if removeGroupFIelds {
+		fgKey = strings.Replace(fgKey, ".$GROUP_FIELDS[*]", "", 1)
+		fgKey = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(fgKey), []byte("")))
+	}
+	fgKey = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(fgKey), []byte("[0]")))
+	return fgKey
 }
 
 func Get2DFieldViewPosition(f map[string]any) *I2DFieldViewPosition {
@@ -357,6 +373,9 @@ type RepositionFields map[int]*I2DFieldViewPosition
 type QueryConditions map[string]QueryCondition
 
 type QueryCondition struct {
+	DatabaseTableCollectionUid  *string             `json:"$DATABASE_TABLE_COLLECTION_UID,omitempty"`
+	DatabaseTableCollectionName *string             `json:"$DATABASE_TABLE_COLLECTION_NAME,omitempty"`
+	DatabaseFieldColumnName     *string             `json:"$DATABASE_FIELD_COLUMN_NAME,omitempty"`
 	FilterCondition             [][]FilterCondition `json:"$FG_FILTER_CONDITION,omitempty"`
 	DatabaseSortByAsc           *bool               `json:"$D_SORT_BY_ASC,omitempty"`
 	DatabaseFullTextSearchQuery *string             `json:"$D_FULL_TEXT_SEARCH_QUERY,omitempty"`

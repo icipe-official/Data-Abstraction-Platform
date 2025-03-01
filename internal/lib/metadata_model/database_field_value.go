@@ -3,17 +3,16 @@ package metadatamodel
 import (
 	"errors"
 	"reflect"
-	"strings"
 
 	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 )
 
-func DatabaseGetColumnFieldValue(metadatamodel any, columnFieldName string, tableCollectionName string, valueToGetFrom any, tableCollectionUID string, skipIfFGDisabled bool, skipIfDataExtraction bool) (any, error) {
+func DatabaseGetColumnFieldValue(metadatamodel any, columnFieldName string, tableCollectionUID string, valueToGetFrom any, skipIfFGDisabled bool, skipIfDataExtraction bool) (any, error) {
 	if len(columnFieldName) == 0 {
 		return nil, FunctionNameAndError(DatabaseGetColumnFieldValue, errors.New("columnFieldName is empty"))
 	}
 
-	databaseColumnFields, err := DatabaseGetColumnFields(metadatamodel, tableCollectionName, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
+	databaseColumnFields, err := DatabaseGetColumnFields(metadatamodel, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
 	if err != nil {
 		return nil, FunctionNameAndError(DatabaseGetColumnFieldValue, err)
 	}
@@ -24,10 +23,7 @@ func DatabaseGetColumnFieldValue(metadatamodel any, columnFieldName string, tabl
 			if err != nil {
 				return nil, FunctionNameAndError(DatabaseGetColumnFieldValue, err)
 			}
-
-			pathToColumnFieldValue = strings.Replace(pathToColumnFieldValue, ".$GROUP_FIELDS[*]", "", 1)
-			pathToColumnFieldValue = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
-			pathToColumnFieldValue = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte(ARRAY_PATH_PLACEHOLDER)))
+			pathToColumnFieldValue = GetPathToValue(pathToColumnFieldValue, true)
 
 			return intlibjson.GetValueInObject(valueToGetFrom, pathToColumnFieldValue), nil
 		} else {
@@ -38,12 +34,12 @@ func DatabaseGetColumnFieldValue(metadatamodel any, columnFieldName string, tabl
 	}
 }
 
-func DatabaseDeleteColumnFieldValue(metadatamodel any, columnFieldName string, tableCollectionName string, valueToDeleteIn any, tableCollectionUID string, skipIfFGDisabled bool, skipIfDataExtraction bool) (any, error) {
+func DatabaseDeleteColumnFieldValue(metadatamodel any, columnFieldName string, tableCollectionUID string, valueToDeleteIn any, skipIfFGDisabled bool, skipIfDataExtraction bool) (any, error) {
 	if len(columnFieldName) == 0 {
 		return nil, FunctionNameAndError(DatabaseDeleteColumnFieldValue, errors.New("columnField is empty"))
 	}
 
-	databaseColumnFields, err := DatabaseGetColumnFields(metadatamodel, tableCollectionName, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
+	databaseColumnFields, err := DatabaseGetColumnFields(metadatamodel, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
 	if err != nil {
 		return nil, FunctionNameAndError(DatabaseDeleteColumnFieldValue, err)
 	}
@@ -54,10 +50,7 @@ func DatabaseDeleteColumnFieldValue(metadatamodel any, columnFieldName string, t
 			if err != nil {
 				return nil, FunctionNameAndError(DatabaseDeleteColumnFieldValue, err)
 			}
-
-			pathToColumnFieldValue = strings.Replace(pathToColumnFieldValue, ".$GROUP_FIELDS[*]", "", 1)
-			pathToColumnFieldValue = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
-			pathToColumnFieldValue = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte(ARRAY_PATH_PLACEHOLDER)))
+			pathToColumnFieldValue = GetPathToValue(pathToColumnFieldValue, true)
 
 			return intlibjson.DeleteValueInObject(valueToDeleteIn, pathToColumnFieldValue), nil
 		} else {
@@ -68,12 +61,12 @@ func DatabaseDeleteColumnFieldValue(metadatamodel any, columnFieldName string, t
 	}
 }
 
-func DatabaseSetColumnFieldValue(metadatamodel any, columnFieldName string, tableCollectionName string, valueToGetIn any, value any, tableCollectionUID string, skipIfFGDisabled bool, skipIfDataExtraction bool) (any, error) {
+func DatabaseSetColumnFieldValue(metadatamodel any, columnFieldName string, tableCollectionUID string, valueToGetIn any, value any, skipIfFGDisabled bool, skipIfDataExtraction bool) (any, error) {
 	if len(columnFieldName) == 0 {
 		return nil, FunctionNameAndError(DatabaseSetColumnFieldValue, errors.New("columnField is empty"))
 	}
 
-	databaseColumnFields, err := DatabaseGetColumnFields(metadatamodel, tableCollectionName, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
+	databaseColumnFields, err := DatabaseGetColumnFields(metadatamodel, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
 	if err != nil {
 		return nil, FunctionNameAndError(DatabaseSetColumnFieldValue, err)
 	}
@@ -84,10 +77,7 @@ func DatabaseSetColumnFieldValue(metadatamodel any, columnFieldName string, tabl
 			if err != nil {
 				return nil, FunctionNameAndError(DatabaseSetColumnFieldValue, err)
 			}
-
-			pathToColumnFieldValue = strings.Replace(pathToColumnFieldValue, ".$GROUP_FIELDS[*]", "", 1)
-			pathToColumnFieldValue = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte("")))
-			pathToColumnFieldValue = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(pathToColumnFieldValue), []byte(ARRAY_PATH_PLACEHOLDER)))
+			pathToColumnFieldValue = GetPathToValue(pathToColumnFieldValue, true)
 
 			if reflect.TypeOf(value).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Array {
 				return intlibjson.SetValueInObject(valueToGetIn, pathToColumnFieldValue, value)

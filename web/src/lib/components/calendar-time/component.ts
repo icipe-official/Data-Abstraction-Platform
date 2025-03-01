@@ -1,11 +1,11 @@
 import { LitElement, TemplateResult, html, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import '$src/lib/components/error-section/component'
-import indexCss from '$src/assets/index.css?inline'
+import '@lib/components/error-section/component'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Theme from '$src/lib/theme'
-import Log from '$src/lib/log'
-import '$src/lib/components/drop-down/component'
+import Theme from '@lib/theme'
+import Log from '@lib/log'
+import '@lib/components/drop-down/component'
 
 type DateTime = number | null
 type InputDateTime = string | null

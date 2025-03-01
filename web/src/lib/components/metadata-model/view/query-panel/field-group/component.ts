@@ -1,10 +1,10 @@
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Theme from '$src/lib/theme'
-import MetadataModel from '$src/lib/metadata_model'
-import Json from '$src/lib/json'
+import Theme from '@lib/theme'
+import MetadataModel from '@lib/metadata_model'
+import Json from '@lib/json'
 
 @customElement('metadata-model-view-query-panel-field-group')
 class Component extends LitElement {

@@ -1,13 +1,13 @@
-import Json from '$src/lib/json'
-import MetadataModel from '$src/lib/metadata_model'
-import Theme from '$src/lib/theme'
+import Json from '@lib/json'
+import MetadataModel from '@lib/metadata_model'
+import Theme from '@lib/theme'
 import { LitElement, unsafeCSS, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Log from '$src/lib/log'
+import Log from '@lib/log'
 import Papa from 'papaparse'
-import '$src/lib/components/vertical-flex-scroll/component'
+import '@lib/components/vertical-flex-scroll/component'
 
 @customElement('metadata-model-build-edit-field-group')
 class Component extends LitElement {

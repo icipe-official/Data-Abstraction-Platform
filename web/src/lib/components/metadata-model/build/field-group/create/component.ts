@@ -1,7 +1,7 @@
-import Theme from '$src/lib/theme'
+import Theme from '@lib/theme'
 import { LitElement, unsafeCSS, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
 
 @customElement('metadata-model-build-field-group-create')

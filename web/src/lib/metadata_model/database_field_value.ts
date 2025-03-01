@@ -16,7 +16,7 @@ import MetadataModel from '.'
  * @param skipIfDataExtraction Do not include field if property {@linkcode FgProperties.FIELD_GROUP_SKIP_DATA_EXTRACTION}($FG_SKIP_DATA_EXTRACTION) is true. Default false.
  * @returns Updated {@linkcode valueToSetIn}
  */
-export function DatabaseSetColumnFieldValue(metadatamodel: any, columnFieldName: string, tableCollectionName: string, valueToSetIn: any, value: any, tableCollectionUID: string | undefined, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
+export function DatabaseSetColumnFieldValue(metadatamodel: any, columnFieldName: string, tableCollectionUID: string, valueToSetIn: any, value: any, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
 	if (!MetadataModel.IsGroupFieldsValid(metadatamodel)) {
 		throw [DatabaseSetColumnFieldValue.name, 'argument metadatamodel is not an object']
 	}
@@ -25,13 +25,13 @@ export function DatabaseSetColumnFieldValue(metadatamodel: any, columnFieldName:
 		throw [DatabaseSetColumnFieldValue.name, 'argument columnFieldName is not a string']
 	}
 
-	if (typeof tableCollectionName !== 'string') {
-		throw [DatabaseSetColumnFieldValue.name, 'argument tableCollectionName is not a string']
+	if (typeof tableCollectionUID !== 'string') {
+		throw [DatabaseSetColumnFieldValue.name, 'argument tableCollectionUID is not a string']
 	}
 
 	let databseColumnFields: MetadataModel.IDatabaseColumnFields
 	try {
-		databseColumnFields = MetadataModel.DatabaseGetColumnFields(metadatamodel, tableCollectionName, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
+		databseColumnFields = MetadataModel.DatabaseGetColumnFields(metadatamodel, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
 	} catch (e) {
 		throw e
 	}
@@ -53,7 +53,7 @@ export function DatabaseSetColumnFieldValue(metadatamodel: any, columnFieldName:
 	}
 }
 
-export function DatabaseGetColumnFieldValue(metadatamodel: any, columnFieldName: string, tableCollectionName: string, valueToGetFrom: any, tableCollectionUID: string | undefined, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
+export function DatabaseGetColumnFieldValue(metadatamodel: any, columnFieldName: string, tableCollectionUID: string, valueToGetFrom: any, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
     if (!MetadataModel.IsGroupFieldsValid(metadatamodel)) {
         throw 'argument metadatamodel is not an object.'
     }
@@ -62,13 +62,13 @@ export function DatabaseGetColumnFieldValue(metadatamodel: any, columnFieldName:
         throw 'argument columnFieldName is not a string.'
     }
 
-    if (typeof tableCollectionName !== 'string') {
-        throw 'argument tableCollectionName is not a string.'
+    if (typeof tableCollectionUID !== 'string') {
+        throw 'argument tableCollectionUID is not a string.'
     }
 
     let databseColumnFields: MetadataModel.IDatabaseColumnFields
     try {
-        databseColumnFields = MetadataModel.DatabaseGetColumnFields(metadatamodel, tableCollectionName, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
+        databseColumnFields = MetadataModel.DatabaseGetColumnFields(metadatamodel,tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
     } catch (e) {
         throw e
     }
@@ -90,7 +90,7 @@ export function DatabaseGetColumnFieldValue(metadatamodel: any, columnFieldName:
     }
 }
 
-export function DatabaseDeleteColumnFieldValue(metadatamodel: any, columnFieldName: string, tableCollectionName: string, valueToGetIn: any, tableCollectionUID: string | undefined, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
+export function DatabaseDeleteColumnFieldValue(metadatamodel: any, columnFieldName: string, tableCollectionUID: string, valueToGetIn: any, skipIfFGDisabled: boolean = false, skipIfDataExtraction: boolean = false) {
     if (!MetadataModel.IsGroupFieldsValid(metadatamodel)) {
         throw 'argument metadatamodel is not an object.'
     }
@@ -99,13 +99,13 @@ export function DatabaseDeleteColumnFieldValue(metadatamodel: any, columnFieldNa
         throw 'argument columnFieldName is not a string.'
     }
 
-    if (typeof tableCollectionName !== 'string') {
-        throw 'argument tableCollectionName is not a string.'
+    if (typeof tableCollectionUID !== 'string') {
+        throw 'argument tableCollectionUID is not a string.'
     }
 
     let databseColumnFields: MetadataModel.IDatabaseColumnFields
     try {
-        databseColumnFields = MetadataModel.DatabaseGetColumnFields(metadatamodel, tableCollectionName, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
+        databseColumnFields = MetadataModel.DatabaseGetColumnFields(metadatamodel, tableCollectionUID, skipIfFGDisabled, skipIfDataExtraction)
     } catch (e) {
         throw e
     }

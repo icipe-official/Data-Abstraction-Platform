@@ -1,10 +1,10 @@
 import { LitElement, html, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import Theme from '$src/lib/theme'
-import '$src/lib/components/vertical-flex-scroll/component'
-import '$src/lib/components/drop-down/component'
+import Theme from '@lib/theme'
+import '@lib/components/vertical-flex-scroll/component'
+import '@lib/components/drop-down/component'
 
 interface SelectOption {
 	label: string

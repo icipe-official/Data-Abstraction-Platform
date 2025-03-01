@@ -1,10 +1,10 @@
 import { html, LitElement, nothing, PropertyValues, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import MetadataModel from '$src/lib/metadata_model'
-import Theme from '$src/lib/theme'
-import '$src/lib/components/drop-down/component'
+import MetadataModel from '@lib/metadata_model'
+import Theme from '@lib/theme'
+import '@lib/components/drop-down/component'
 
 @customElement('metadata-model-datum-input-header')
 class Component extends LitElement {

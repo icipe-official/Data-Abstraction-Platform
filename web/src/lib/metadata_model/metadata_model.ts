@@ -10,60 +10,6 @@ export interface IDatabaseColumnFields {
 	fields: { [key: string]: IMetadataModel }
 }
 
-export type QueryConditions = { [key: string]: IQueryCondition }
-
-export interface ISearchResults {
-	metadata_model?: IMetadataModel
-	data?: any[]
-}
-
-export interface IQueryCondition {
-	[QcProperties.FG_PROPERTY]?: IMetadataModel
-	[QcProperties.FG_FILTER_CONDITION]?: IFilterCondition[][]
-	[QcProperties.D_SORT_BY_ASC]?: boolean
-	[QcProperties.D_FULL_TEXT_SEARCH_QUERY]?: string
-}
-
-export enum QcProperties {
-	FG_PROPERTY = '$FG_PROPERTY',
-	FG_FILTER_CONDITION = '$FG_FILTER_CONDITION',
-	D_SORT_BY_ASC = '$D_SORT_BY_ASC',
-	D_FULL_TEXT_SEARCH_QUERY = '$D_FULL_TEXT_SEARCH_QUERY'
-}
-
-export interface IFilterCondition {
-	[FConditionProperties.NEGATE]?: boolean
-	[FConditionProperties.CONDITION]?: FilterCondition
-	[FConditionProperties.DATE_TIME_FORMAT]?: FieldDateTimeFormat
-	[FConditionProperties.VALUE]?: any[] | any
-}
-
-export interface IFConditionFilterEqualToValue {
-	[FSelectProperties.TYPE]?: FSelectType
-	[FSelectProperties.VALUE]?: any | any[]
-}
-
-export enum FConditionProperties {
-	NEGATE = '$FILTER_NEGATE',
-	CONDITION = '$FILTER_CONDITION',
-	DATE_TIME_FORMAT = '$FILTER_DATE_TIME_FORMAT',
-	VALUE = '$FILTER_VALUE'
-}
-
-export enum FilterCondition {
-	NO_OF_ENTRIES_GREATER_THAN = 'NO_OF_ENTRIES_GREATER_THAN',
-	NO_OF_ENTRIES_LESS_THAN = 'NO_OF_ENTRIES_LESS_THAN',
-	NO_OF_ENTRIES_EQUAL_TO = 'NO_OF_ENTRIES_EQUAL_TO',
-	NUMBER_GREATER_THAN = 'NUMBER_GREATER_THAN',
-	NUMBER_LESS_THAN = 'NUMBER_LESS_THAN',
-	TIMESTAMP_GREATER_THAN = 'TIMESTAMP_GREATER_THAN',
-	TIMESTAMP_LESS_THAN = 'TIMESTAMP_LESS_THAN',
-	EQUAL_TO = 'EQUAL_TO',
-	TEXT_BEGINS_WITH = 'TEXT_BEGINS_WITH',
-	TEXT_ENDS_WITH = 'TEXT_ENDS_WITH',
-	TEXT_CONTAINS = 'TEXT_CONTAINS'
-}
-
 export const EmptyMetadataModel = () =>
 	({
 		[FgProperties.FIELD_GROUP_KEY]: '$',
@@ -214,6 +160,71 @@ export enum FgProperties {
 	FIELD_2D_VIEW_POSITION = '$FIELD_2D_VIEW_POSITION',
 	FIELD_MULTIPLE_VALUES_JOIN_SYMBOL = '$FIELD_MULTIPLE_VALUES_JOIN_SYMBOL',
 	FIELD_2D_DATA_REMOVE_EMPTY_VALUES = '$FIELD_2D_DATA_REMOVE_EMPTY_VALUES'
+}
+
+
+export type QueryConditions = { [key: string]: IQueryCondition }
+
+export interface ISearch {
+	metadata_model?: IMetadataModel
+	query_conditions?: QueryConditions[]
+}
+
+export interface ISearchResults {
+	metadata_model?: IMetadataModel
+	data?: any[]
+}
+
+export interface IQueryCondition {
+	[QcProperties.D_TABLE_COLLECTION_UID]?: string
+	[QcProperties.D_TABLE_COLLECTION_NAME]?: string
+	[QcProperties.D_FIELD_COLUMN_NAME]?: string
+	[QcProperties.FG_FILTER_CONDITION]?: IFilterCondition[][]
+	[QcProperties.D_SORT_BY_ASC]?: boolean
+	[QcProperties.D_FULL_TEXT_SEARCH_QUERY]?: string
+}
+
+export enum QcProperties {
+	FG_PROPERTY = '$FG_PROPERTY',
+	D_TABLE_COLLECTION_UID = FgProperties.DATABASE_TABLE_COLLECTION_UID,
+	D_TABLE_COLLECTION_NAME = FgProperties.DATABASE_TABLE_COLLECTION_NAME,
+	D_FIELD_COLUMN_NAME = FgProperties.DATABASE_FIELD_COLUMN_NAME,
+	FG_FILTER_CONDITION = '$FG_FILTER_CONDITION',
+	D_SORT_BY_ASC = '$D_SORT_BY_ASC',
+	D_FULL_TEXT_SEARCH_QUERY = '$D_FULL_TEXT_SEARCH_QUERY'
+}
+
+export interface IFilterCondition {
+	[FConditionProperties.NEGATE]?: boolean
+	[FConditionProperties.CONDITION]?: FilterCondition
+	[FConditionProperties.DATE_TIME_FORMAT]?: FieldDateTimeFormat
+	[FConditionProperties.VALUE]?: any[] | any
+}
+
+export interface IFConditionFilterEqualToValue {
+	[FSelectProperties.TYPE]?: FSelectType
+	[FSelectProperties.VALUE]?: any | any[]
+}
+
+export enum FConditionProperties {
+	NEGATE = '$FILTER_NEGATE',
+	CONDITION = '$FILTER_CONDITION',
+	DATE_TIME_FORMAT = '$FILTER_DATE_TIME_FORMAT',
+	VALUE = '$FILTER_VALUE'
+}
+
+export enum FilterCondition {
+	NO_OF_ENTRIES_GREATER_THAN = 'NO_OF_ENTRIES_GREATER_THAN',
+	NO_OF_ENTRIES_LESS_THAN = 'NO_OF_ENTRIES_LESS_THAN',
+	NO_OF_ENTRIES_EQUAL_TO = 'NO_OF_ENTRIES_EQUAL_TO',
+	NUMBER_GREATER_THAN = 'NUMBER_GREATER_THAN',
+	NUMBER_LESS_THAN = 'NUMBER_LESS_THAN',
+	TIMESTAMP_GREATER_THAN = 'TIMESTAMP_GREATER_THAN',
+	TIMESTAMP_LESS_THAN = 'TIMESTAMP_LESS_THAN',
+	EQUAL_TO = 'EQUAL_TO',
+	TEXT_BEGINS_WITH = 'TEXT_BEGINS_WITH',
+	TEXT_ENDS_WITH = 'TEXT_ENDS_WITH',
+	TEXT_CONTAINS = 'TEXT_CONTAINS'
 }
 
 export enum Field2dPositionProperties {

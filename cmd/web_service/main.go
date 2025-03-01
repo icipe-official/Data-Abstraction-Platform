@@ -43,7 +43,7 @@ func main() {
 	} else {
 		webService.Env = value
 	}
-	webService.IamCookie = intlib.InitIamCookie(webService.Env)
+	webService.IamCookie = intlib.IamInitCookie(webService.Env)
 
 	webService.Logger.Log(context.TODO(), slog.Level(2), "Setting up open id configuration...")
 	if value, err := intopenidkeycloak.NewKeycloakOpenID(webService.Logger, webService.Env.Get(intlib.ENV_WEBSITE_BASE_URL), webService.Env.Get(intlib.ENV_WEB_SERVICE_BASE_PATH)); err != nil {
@@ -107,6 +107,7 @@ func main() {
 	}))
 
 	inthttprouters.InitWebServiceWebsiteRouter(router, webService)
+	inthttprouters.InitApiCoreRouter(router, webService)
 
 	// Start http server
 	webService.Logger.Log(context.TODO(), slog.Level(2), fmt.Sprintf("Server will be listening on port: %v at base path '%v'", os.Getenv("WEB_SERVICE_PORT"), webService.Env.Get(intlib.ENV_WEB_SERVICE_BASE_PATH)), slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("startup")})

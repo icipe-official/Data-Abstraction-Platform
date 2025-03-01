@@ -1,12 +1,12 @@
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
-import MetadataModel from '$src/lib/metadata_model'
-import Theme from '$src/lib/theme'
-import Misc from '$src/lib/miscellaneous'
-import Json from '$src/lib/json'
-import Log from '$src/lib/log'
+import MetadataModel from '@lib/metadata_model'
+import Theme from '@lib/theme'
+import Lib from '@lib/lib'
+import Json from '@lib/json'
+import Log from '@lib/log'
 import './field-group/component'
 import './edit-field-group/component'
 
@@ -307,7 +307,7 @@ class Component extends LitElement {
 											this.dispatchEvent(
 												new CustomEvent('metadata-model-build:notification', {
 													detail: {
-														type: Misc.ToastType.INFO,
+														type: Lib.ToastType.INFO,
 														value: 'Field/group updated'
 													}
 												})

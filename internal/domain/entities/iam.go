@@ -9,11 +9,6 @@ type IamGroupAuthorizationRule struct {
 	RuleGroup string `json:"rule_group"`
 }
 
-type IamAuthInfo struct {
-	IamCredentials
-	SessionID string
-}
-
 // formed by joining fields in iamGroupAuthorizationsRepository and groupAuthorizationRulesRepository.
 type IamAuthorizationRule struct {
 	ID                          uuid.UUID `json:"id,omitempty"`

@@ -1,13 +1,13 @@
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
-import indexCss from '$src/assets/index.css?inline'
+import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
 import { customElement, state } from 'lit/decorators.js'
-import Theme from '$src/lib/theme'
-import icipeLogoPng from '$src/assets/icipe_logo.png'
-import uooLogoPng from '$src/assets/university_of_oxford_logo.png'
-import vaLogoPng from '$src/assets/vector_atlas_logo.png'
-import mapLogoPng from '$src/assets/malaria_atlas_project_logo.png'
-import bamgLogoPng from '$src/assets/bill_and_melinda_gates_logo.png'
+import Theme from '@lib/theme'
+import icipeLogoPng from '@assets/icipe_logo.png'
+import uooLogoPng from '@assets/university_of_oxford_logo.png'
+import vaLogoPng from '@assets/vector_atlas_logo.png'
+import mapLogoPng from '@assets/malaria_atlas_project_logo.png'
+import bamgLogoPng from '@assets/bill_and_melinda_gates_logo.png'
 
 @customElement('intro-poster')
 class Component extends LitElement {

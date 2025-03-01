@@ -42,7 +42,7 @@ func NewService(webService *inthttp.WebService) (*service, error) {
 	return n, nil
 }
 
-func (n *service) ServiceGetHomePageHtml(ctx context.Context, websiteTemplate intdomint.WebsiteTemplates, openid intdomint.OpenID, partialRequest bool, partialName string) (*string, error) {
+func (n *service) ServiceGetHomePageHtml(ctx context.Context, websiteTemplate intdomint.WebsiteTemplates, openid intdomint.OpenID, partialRequest bool, partialName string, iamCredential *intdoment.IamCredentials) (*string, error) {
 	websiteTemplate.WebsiteTemplateResetBaseTemplate()
 	var data any
 
@@ -62,7 +62,7 @@ func (n *service) ServiceGetHomePageHtml(ctx context.Context, websiteTemplate in
 			return nil, intlib.NewError(http.StatusBadRequest, "Invalid inline section")
 		}
 	} else {
-		if baseTemplate, routesData, err := intlib.WebsiteGetRoutesLayout(ctx, openid, websiteTemplate, nil); err != nil {
+		if baseTemplate, routesData, err := intlib.WebsiteGetRoutesLayout(ctx, openid, websiteTemplate, iamCredential); err != nil {
 			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetHomePageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		} else {
@@ -104,7 +104,7 @@ func (n *service) ServiceGetIamCredentialsByOpenIDSub(ctx context.Context, openI
 	}
 
 	if iamCredentials != nil {
-		if !iamCredentials.DeactivatedOn[0].IsZero() {
+		if len(iamCredentials.DeactivatedOn) == 1 && !iamCredentials.DeactivatedOn[0].IsZero() {
 			return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 		}
 		return iamCredentials, nil
@@ -121,7 +121,7 @@ func (n *service) ServiceGetIamCredentialsByOpenIDSub(ctx context.Context, openI
 
 func (n *service) ServiceOpenIDRevokeToken(ctx context.Context, openid intdomint.OpenID, token *intdoment.OpenIDToken) error {
 	if err := openid.OpenIDRevokeToken(token); err != nil {
-		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("revoke open id token failed, error: %v", err), intlib.FunctionName(n.ServiceGetOpenIDUserInfo))
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("revoke open id token failed, error: %v", err), intlib.FunctionName(n.ServiceOpenIDRevokeToken))
 		return intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 	return nil
