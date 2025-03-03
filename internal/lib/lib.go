@@ -43,6 +43,17 @@ func UrlSearchParamGetInt(r *http.Request, param string) (int, error) {
 	}
 }
 
+func UrlSearchParamGetBool(r *http.Request, param string, defaultValue bool) bool {
+	switch r.URL.Query().Get(param) {
+	case "true":
+		return true
+	case "false":
+		return false
+	default:
+		return defaultValue
+	}
+}
+
 func UrlSearchParamGetUuid(r *http.Request, param string) (uuid.UUID, error) {
 	if value, err := uuid.FromString(r.URL.Query().Get(param)); err != nil {
 		return value, err

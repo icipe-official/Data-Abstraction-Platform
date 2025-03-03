@@ -43,10 +43,18 @@ func (n *MetadataModelRetrieve) DirectoryGroupsGetMetadataModel(ctx context.Cont
 
 		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.DirectoryGroupsRepository().RepositoryName, intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName)]; !ok || !skipMMJoin {
 			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.DirectoryGroupsRepository().RepositoryName, intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName)
-			if childMetadataModel, err := n.DefaultAuthorizationIDsGetMetadataModel(ctx, intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName, currentJoinDepth+1, targetJoinDepth, nil); err != nil {
+			if childMetadataModel, err := n.DefaultAuthorizationIDsGetMetadataModel(
+				ctx,
+				intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName,
+				currentJoinDepth+1,
+				targetJoinDepth,
+				nil,
+				intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID,
+				intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID,
+			); err != nil {
 				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.DirectoryGroupsGetMetadataModel))
 			} else {
-				parentMetadataModel, err = n.InjectChildMetadataModelIntoParentMetadataModel(parentMetadataModel, childMetadataModel, "", false, newChildMetadataModelfgSuffix)
+				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(parentMetadataModel, childMetadataModel, "", false, newChildMetadataModelfgSuffix, nil)
 				if err != nil {
 					return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetMetadataModel, err)
 				}

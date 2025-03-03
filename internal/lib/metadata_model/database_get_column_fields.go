@@ -9,7 +9,7 @@ import (
 
 type DatabaseColumnFields struct {
 	ColumnFieldsReadOrder []string
-	Fields                map[string]any
+	Fields                map[string]map[string]any
 }
 
 // Extracts database fields from metadatamodel if tableCollectionName matches.
@@ -17,8 +17,6 @@ type DatabaseColumnFields struct {
 // Parameters:
 //
 //   - metadatamodel - A valid metadata-model of type object (not array). Expected to presented as if converted from JSON.
-//
-//   - tableCollectionName - Extract only fields whose FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_NAME match this value.
 //
 //   - tableCollectionUID - Extract only fields whose FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID match this value.
 //
@@ -62,7 +60,7 @@ func newdatabaseGetColumnFields(tableCollectionUID string, skipIfFGDisabled bool
 
 	n.databaseColumnFields = DatabaseColumnFields{
 		ColumnFieldsReadOrder: make([]string, 0),
-		Fields:                make(map[string]any),
+		Fields:                make(map[string]map[string]any),
 	}
 
 	return n, nil

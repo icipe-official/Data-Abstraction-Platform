@@ -3,17 +3,255 @@ package postgres
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"slices"
 	"strings"
 
+	"github.com/brunoga/deep"
 	"github.com/gofrs/uuid/v5"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
+	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
 	"github.com/jackc/pgx/v5"
 )
+
+func (n *PostrgresRepository) RepoDirectoryGroupsSearch(
+	ctx context.Context,
+	mmsearch *intdoment.MetadataModelSearch,
+	repo intdomint.IamRepository,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	startSearchDirectoryGroupID uuid.UUID,
+	authContextDirectoryGroupID uuid.UUID,
+	skipIfFGDisabled bool,
+	skipIfDataExtraction bool,
+) (*intdoment.MetadataModelSearchResults, error) {
+
+	pSelectQuery := NewPostgresSelectQuery(
+		n.logger,
+		repo,
+		iamCredential,
+		iamAuthorizationRules,
+		startSearchDirectoryGroupID,
+		authContextDirectoryGroupID,
+		mmsearch.QueryConditions,
+		skipIfFGDisabled,
+		skipIfDataExtraction,
+	)
+	selectQuery, err := pSelectQuery.DirectoryGroupsGetSelectQuery(ctx, mmsearch.MetadataModel, "")
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsSearch, err)
+	}
+
+	query, selectQueryExtract := GetSelectQuery(selectQuery)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsSearch))
+
+	rows, err := n.db.Query(ctx, query)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsSearch, fmt.Errorf("retrieve %s failed, err: %v", intdoment.IamCredentialsRepository().RepositoryName, err))
+	}
+	defer rows.Close()
+	dataRows := make([]any, 0)
+	for rows.Next() {
+		if r, err := rows.Values(); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, err)
+		} else {
+			dataRows = append(dataRows, r)
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(mmsearch.MetadataModel, selectQueryExtract.Fields, false, false, nil)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindOneByIamCredentialID, err)
+	}
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindOneByIamCredentialID, err)
+	}
+
+	mmSearchResults := new(intdoment.MetadataModelSearchResults)
+	mmSearchResults.MetadataModel = deep.MustCopy(mmsearch.MetadataModel)
+	if len(array2DToObject.Objects()) > 0 {
+		mmSearchResults.Data = array2DToObject.Objects()
+	} else {
+		mmSearchResults.Data = make([]any, 0)
+	}
+
+	return mmSearchResults, nil
+}
+
+func (n *PostgresSelectQuery) DirectoryGroupsGetSelectQuery(ctx context.Context, metadataModel map[string]any, metadataModelParentPath string) (*SelectQuery, error) {
+	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		n.iamCredential,
+		n.authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_RETRIEVE,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY_GROUPS,
+			},
+			{
+				ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY_GROUPS,
+			},
+		},
+		n.iamAuthorizationRules,
+	); err != nil || iamAuthorizationRule == nil {
+		return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	}
+
+	quoteColumns := true
+	if len(metadataModelParentPath) == 0 {
+		metadataModelParentPath = "$"
+		quoteColumns = false
+	}
+
+	selectQuery := SelectQuery{
+		TableName: intdoment.DirectoryGroupsRepository().RepositoryName,
+		Query:     "",
+		Where:     make(map[string]map[int][][]string),
+		Join:      make(map[string]*SelectQuery),
+		JoinQuery: make([]string, 0),
+	}
+
+	if tableUid, ok := metadataModel[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID].(string); ok && len(tableUid) > 0 {
+		selectQuery.TableUid = tableUid
+	} else {
+		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetSelectQuery, errors.New("tableUid is empty"))
+	}
+
+	directoryGroupsJoinDirectoryGroupAuthorizationIDs := intlib.MetadataModelGenJoinKey(intdoment.DirectoryGroupsRepository().RepositoryName, intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName)
+	if value, err := n.extractChildMetadataModel(metadataModel, directoryGroupsJoinDirectoryGroupAuthorizationIDs); err != nil {
+		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", directoryGroupsJoinDirectoryGroupAuthorizationIDs, err))
+	} else {
+		if sq, err := n.AuthorizationIDsGetSelectQuery(
+			ctx,
+			value,
+			metadataModelParentPath,
+			intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName,
+			[]AuthIDsSelectQueryPKey{{Name: intdoment.DirectoryGroupsAuthorizationIDsRepository().ID, ProcessAs: PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE}},
+			intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID,
+			intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID,
+		); err != nil {
+			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", directoryGroupsJoinDirectoryGroupAuthorizationIDs, err))
+		} else {
+			if len(sq.Where) == 0 {
+				sq.JoinType = JOIN_LEFT
+			} else {
+				sq.JoinType = JOIN_INNER
+			}
+			sq.JoinQuery = make([]string, 1)
+			sq.JoinQuery[0] = fmt.Sprintf(
+				"%[1]s = %[2]s",
+				GetJoinColumnName(sq.TableUid, intdoment.DirectoryGroupsAuthorizationIDsRepository().ID, true), //1
+				GetJoinColumnName(selectQuery.TableUid, intdoment.DirectoryGroupsRepository().ID, false),       //2
+			)
+
+			selectQuery.Join[directoryGroupsJoinDirectoryGroupAuthorizationIDs] = sq
+		}
+	}
+
+	if value, err := intlibmmodel.DatabaseGetColumnFields(metadataModel, selectQuery.TableUid, false, false); err != nil {
+		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetSelectQuery, fmt.Errorf("extract database column fields failed, error: %v", err))
+	} else {
+		selectQuery.Columns = value
+	}
+
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().ID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().ID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().ID] = value
+		}
+	}
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().Data][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().Data, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().Data] = value
+		}
+	}
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().Data][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().Data, fgKeyString, PROCESS_QUERY_CONDITION_AS_JSONB, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().Data] = value
+		}
+	}
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().CreatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().CreatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().CreatedOn] = value
+		}
+	}
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().LastUpdatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().LastUpdatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().LastUpdatedOn] = value
+		}
+	}
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().DeactivatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().DeactivatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().DeactivatedOn] = value
+		}
+	}
+	if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, selectQuery.TableName, "", "", "", intdoment.DirectoryGroupsRepository().FullTextSearch); len(value) > 0 {
+		selectQuery.Where[intdoment.DirectoryGroupsRepository().RepositoryName] = value
+	}
+
+	if !n.startSearchDirectoryGroupID.IsNil() {
+		cteName := fmt.Sprintf("%s_%s", selectQuery.TableUid, RECURSIVE_DIRECTORY_GROUPS_DEFAULT_CTE_NAME)
+		cteWhere := make([]string, 0)
+
+		if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+			ctx,
+			n.iamCredential,
+			n.authContextDirectoryGroupID,
+			[]*intdoment.IamGroupAuthorizationRule{
+				{
+					ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
+					RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY_GROUPS,
+				},
+			},
+			n.iamAuthorizationRules,
+		); err == nil && iamAuthorizationRule != nil {
+			selectQuery.DirectoryGroupsSubGroupsCTEName = cteName
+			selectQuery.DirectoryGroupsSubGroupsCTE = RecursiveDirectoryGroupsSubGroupsCte(n.startSearchDirectoryGroupID, cteName)
+			cteWhere = append(cteWhere, fmt.Sprintf("(%s) IN (SELECT %s FROM %s)", intdoment.DirectoryGroupsRepository().ID, intdoment.DirectoryGroupsSubGroupsRepository().SubGroupID, cteName))
+		}
+
+		if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+			ctx,
+			n.iamCredential,
+			n.authContextDirectoryGroupID,
+			[]*intdoment.IamGroupAuthorizationRule{
+				{
+					ID:        intdoment.AUTH_RULE_RETRIEVE,
+					RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY_GROUPS,
+				},
+			},
+			n.iamAuthorizationRules,
+		); err == nil && iamAuthorizationRule != nil {
+			if len(selectQuery.DirectoryGroupsSubGroupsCTEName) == 0 {
+				selectQuery.DirectoryGroupsSubGroupsCTEName = cteName
+			}
+			if len(selectQuery.DirectoryGroupsSubGroupsCTE) == 0 {
+				selectQuery.DirectoryGroupsSubGroupsCTE = RecursiveDirectoryGroupsSubGroupsCte(n.startSearchDirectoryGroupID, cteName)
+			}
+			cteWhere = append(cteWhere, fmt.Sprintf("%s = '%s'", intdoment.DirectoryGroupsRepository().ID, n.startSearchDirectoryGroupID.String()))
+		}
+
+		if len(cteWhere) > 0 {
+			if len(cteWhere) > 1 {
+				selectQuery.DirectoryGroupsSubGroupsCTECondition = fmt.Sprintf("(%s)", strings.Join(cteWhere, " OR "))
+			} else {
+				selectQuery.DirectoryGroupsSubGroupsCTECondition = cteWhere[0]
+			}
+		}
+
+		n.startSearchDirectoryGroupID = uuid.Nil
+	}
+
+	selectQuery.appendSort()
+	selectQuery.appendLimitOffset(metadataModel)
+
+	return &selectQuery, nil
+}
 
 func (n *PostrgresRepository) RepoDirectoryGroupsFindOneByIamCredentialID(ctx context.Context, iamCredentialID uuid.UUID, columns []string) (*intdoment.DirectoryGroups, error) {
 	directoryGroupsMModel, err := intlib.MetadataModelGetDatum(intdoment.DirectoryGroupsRepository().RepositoryName)

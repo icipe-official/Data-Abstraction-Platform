@@ -368,6 +368,7 @@ class Page extends LitElement {
 									<button
 										class="flex-1 btn ${this._colorTheme === Theme.Color.PRIMARY ? 'btn-primary' : this._colorTheme === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent'}"
 										@click=${() => {
+											console.log(this._datumeinputqueryconditions)
 											console.log(MetadataModel.FilterData(this._datumeinputqueryconditions, this._datuminputsampledata))
 										}}
 									>

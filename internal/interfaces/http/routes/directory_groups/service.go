@@ -35,7 +35,36 @@ func NewService(webService *inthttp.WebService) (*service, error) {
 	return n, nil
 }
 
-func (n *service) ServiceGetDirectoryGroupsMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error) {
+func (n *service) ServiceDirectoryGroupsSearch(
+	ctx context.Context,
+	mmsearch *intdoment.MetadataModelSearch,
+	repo intdomint.IamRepository,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	startSearchDirectoryGroupID uuid.UUID,
+	authContextDirectoryGroupID uuid.UUID,
+	skipIfFGDisabled bool,
+	skipIfDataExtraction bool,
+) (*intdoment.MetadataModelSearchResults, error) {
+	if value, err := n.repo.RepoDirectoryGroupsSearch(
+		ctx,
+		mmsearch,
+		repo,
+		iamCredential,
+		iamAuthorizationRules,
+		startSearchDirectoryGroupID,
+		authContextDirectoryGroupID,
+		skipIfFGDisabled,
+		skipIfDataExtraction,
+	); err != nil {
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsSearch, err).Error())
+		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	} else {
+		return value, nil
+	}
+}
+
+func (n *service) ServiceDirectoryGroupsGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error) {
 	if value, err := metadataModelRetrieve.DirectoryGroupsGetMetadataModel(ctx, 0, targetJoinDepth, nil); err != nil {
 		n.logger.Log(ctx, slog.LevelWarn+1, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsFindOneByIamCredentialID, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))

@@ -1,0 +1,78 @@
+meta {
+  name: Search
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{web_service_api_core_url}}/directory-groups/search?auth_context_directory_group_id=01954140-6d04-7a40-a685-17cd8b786300&start_search_directory_group_id=01954140-6d04-7a40-a685-17cd8b786300&skip_if_fg_disabled=true&skip_if_data_extraction=true
+  body: json
+  auth: none
+}
+
+params:query {
+  auth_context_directory_group_id: 01954140-6d04-7a40-a685-17cd8b786300
+  start_search_directory_group_id: 01954140-6d04-7a40-a685-17cd8b786300
+  skip_if_fg_disabled: true
+  skip_if_data_extraction: true
+}
+
+body:json {
+  {
+    "metadata_model": {{search_metadata_model}},
+    "query_conditions": [
+      {
+        "$": {
+          "$D_FULL_TEXT_SEARCH_QUERY": "some query",
+          "$DATABASE_TABLE_COLLECTION_NAME": "directory_groups",
+          "$DATABASE_TABLE_COLLECTION_UID": "_RLMCbZ"
+        },
+        "$.data[*].id": {
+           "$FG_FILTER_CONDITION": [
+            [
+              {
+                "$FILTER_NEGATE": true,
+                "$FILTER_CONDITION": "NO_OF_ENTRIES_GREATER_THAN",
+                "$FILTER_VALUE": 0
+              },
+              {
+                "$FILTER_NEGATE": false,
+                "$FILTER_CONDITION": "EQUAL_TO",
+                "$FILTER_VALUE": "6789"
+              }
+            ]
+          ],
+          "$DATABASE_FIELD_COLUMN_NAME": "data",
+          "$DATABASE_TABLE_COLLECTION_UID": "_RLMCbZ"
+        },
+        "$.created_on": {
+          "$FG_FILTER_CONDITION": [
+            [
+              {
+                "$FILTER_NEGATE": false,
+                "$FILTER_CONDITION": "TIMESTAMP_GREATER_THAN",
+                "$FILTER_DATE_TIME_FORMAT": "yyyy-mm-dd hh:mm",
+                "$FILTER_VALUE": "2024-03-02T13:50:49.678Z"
+              }
+            ]
+          ],
+          "$DATABASE_FIELD_COLUMN_NAME": "created_on",
+          "$DATABASE_TABLE_COLLECTION_UID": "_RLMCbZ"
+        },
+        "$.directory_groups_join_directory_groups_authorization_ids[*].id": {
+          "$FG_FILTER_CONDITION": [
+            [
+              {
+                "$FILTER_NEGATE": true,
+                "$FILTER_CONDITION": "NO_OF_ENTRIES_GREATER_THAN",
+                "$FILTER_VALUE": 0
+              }
+            ]
+          ],
+          "$DATABASE_FIELD_COLUMN_NAME": "id",
+          "$DATABASE_TABLE_COLLECTION_UID": "_jgkuwQ"
+        }
+      }
+    ]
+  }
+}

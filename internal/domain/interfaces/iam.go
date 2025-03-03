@@ -13,7 +13,13 @@ type IamRepository interface {
 	//
 	// - columnfields - columns/field data to obtain. Leave empty or nil to get all columns/fields
 	RepoIamCredentialsFindOneByID(ctx context.Context, columnField string, value any, columnfields []string) (*intdoment.IamCredentials, error)
-	RepoIamGroupAuthorizationsGetAuthorized(ctx context.Context, iamAuthInfo *intdoment.IamCredentials, authContextDirectoryGroupID uuid.UUID, groupAuthorizationRules []*intdoment.IamGroupAuthorizationRule, currentIamAuthorizationRules *intdoment.IamAuthorizationRules) ([]*intdoment.IamAuthorizationRule, error)
+	RepoIamGroupAuthorizationsGetAuthorized(
+		ctx context.Context,
+		iamAuthInfo *intdoment.IamCredentials,
+		authContextDirectoryGroupID uuid.UUID,
+		groupAuthorizationRules []*intdoment.IamGroupAuthorizationRule,
+		currentIamAuthorizationRules *intdoment.IamAuthorizationRules,
+	) ([]*intdoment.IamAuthorizationRule, error)
 }
 
 type RouteIamRepository interface {

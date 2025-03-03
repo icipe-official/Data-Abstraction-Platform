@@ -131,6 +131,9 @@ const (
 	FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID                         string = "$DATABASE_TABLE_COLLECTION_UID"
 	FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_NAME                        string = "$DATABASE_TABLE_COLLECTION_NAME"
 	FIELD_GROUP_PROP_DATABASE_FIELD_COLUMN_NAME                            string = "$DATABASE_FIELD_COLUMN_NAME"
+	FIELD_GROUP_PROP_DATABASE_SORT_BY_ASC                                  string = "$DATABASE_SORT_BY_ASC"
+	FIELD_GROUP_PROP_DATABASE_LIMIT                                        string = "$DATABASE_LIMIT"
+	FIELD_GROUP_PROP_DATABASE_OFFSET                                       string = "$DATABASE_OFFSET"
 	FIELD_GROUP_PROP_DATUM_INPUT_VIEW                                      string = "$DATUM_INPUT_VIEW"
 	FIELD_GROUP_PROP_FIELD_2D_VIEW_POSITION                                string = "$FIELD_2D_VIEW_POSITION"
 	FIELD_GROUP_PROP_FIELD_MULTIPLE_VALUES_JOIN_SYMBOL                     string = "$FIELD_MULTIPLE_VALUES_JOIN_SYMBOL"
@@ -146,12 +149,12 @@ const (
 	ARRAY_PATH_PLACEHOLDER string = "[*]"
 )
 
-type MetadataModelSearch struct {
+type Search struct {
 	MetadataModel   map[string]any    `json:"metadata_model,omitempty"`
 	QueryConditions []QueryConditions `json:"query_conditions,omitempty"`
 }
 
-type MetadataModelSearchResults struct {
+type SearchResults struct {
 	MetadataModel map[string]any `json:"metadata_model,omitempty"`
 	Data          []any          `json:"data,omitempty"`
 }
@@ -256,12 +259,12 @@ func IsFieldAField(f any) bool {
 	return false
 }
 
-func GetPathToValue(fgKey string, removeGroupFIelds bool) string {
-	if removeGroupFIelds {
+func GetPathToValue(fgKey string, removeGroupFields bool, arrayIndexPlaceholder string) string {
+	if removeGroupFields {
 		fgKey = strings.Replace(fgKey, ".$GROUP_FIELDS[*]", "", 1)
 		fgKey = string(GROUP_FIELDS_REGEX_SEARCH().ReplaceAll([]byte(fgKey), []byte("")))
 	}
-	fgKey = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(fgKey), []byte("[0]")))
+	fgKey = string(ARRAY_PATH_REGEX_SEARCH().ReplaceAll([]byte(fgKey), []byte(arrayIndexPlaceholder)))
 	return fgKey
 }
 
@@ -373,19 +376,19 @@ type RepositionFields map[int]*I2DFieldViewPosition
 type QueryConditions map[string]QueryCondition
 
 type QueryCondition struct {
-	DatabaseTableCollectionUid  *string             `json:"$DATABASE_TABLE_COLLECTION_UID,omitempty"`
-	DatabaseTableCollectionName *string             `json:"$DATABASE_TABLE_COLLECTION_NAME,omitempty"`
-	DatabaseFieldColumnName     *string             `json:"$DATABASE_FIELD_COLUMN_NAME,omitempty"`
+	DatabaseTableCollectionUid  string              `json:"$DATABASE_TABLE_COLLECTION_UID,omitempty"`
+	DatabaseTableCollectionName string              `json:"$DATABASE_TABLE_COLLECTION_NAME,omitempty"`
+	DatabaseFieldColumnName     string              `json:"$DATABASE_FIELD_COLUMN_NAME,omitempty"`
 	FilterCondition             [][]FilterCondition `json:"$FG_FILTER_CONDITION,omitempty"`
 	DatabaseSortByAsc           *bool               `json:"$D_SORT_BY_ASC,omitempty"`
-	DatabaseFullTextSearchQuery *string             `json:"$D_FULL_TEXT_SEARCH_QUERY,omitempty"`
+	DatabaseFullTextSearchQuery string              `json:"$D_FULL_TEXT_SEARCH_QUERY,omitempty"`
 }
 
 type FilterCondition struct {
-	Negate         bool    `json:"$FILTER_NEGATE,omitempty"`
-	Condition      string  `json:"$FILTER_CONDITION,omitempty"`
-	DateTimeFormat *string `json:"$FILTER_DATE_TIME_FORMAT,omitempty"`
-	Value          any     `json:"$FILTER_VALUE,omitempty"`
+	Negate         bool   `json:"$FILTER_NEGATE,omitempty"`
+	Condition      string `json:"$FILTER_CONDITION,omitempty"`
+	DateTimeFormat string `json:"$FILTER_DATE_TIME_FORMAT,omitempty"`
+	Value          any    `json:"$FILTER_VALUE,omitempty"`
 }
 
 type MetadataModel struct {
@@ -429,10 +432,4 @@ type MetadataModelGroup struct {
 	GroupReadOrderOfFields []string                   `json:"$G_READ_ORDER_OF_FIELDS,omitempty"`
 	GroupFieldsIndex       int                        `json:"$GROUP_FIELDS_INDEX,omitempty"`
 	GroupFields            []map[string]MetadataModel `json:"$GROUP_FIELDS,omitempty"`
-}
-
-type MetadataModelDatabase struct {
-	MetadataModel
-	TableCollectionName *string `json:"$D_TABLE_COLLECTION_NAME,omitempty"`
-	FieldColumnName     *string `json:"$D_FIELD_COLUMN_NAME,omitempty"`
 }

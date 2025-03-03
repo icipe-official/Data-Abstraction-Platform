@@ -5,12 +5,104 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"strings"
 
 	"github.com/gofrs/uuid/v5"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
+	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
 )
+
+func (n *PostgresSelectQuery) IamGroupAuthorizationsGetSelectQuery(ctx context.Context, metadataModel map[string]any, metadataModelParentPath string) (*SelectQuery, error) {
+	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		n.iamCredential,
+		n.authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_RETRIEVE_SELF,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+			},
+			{
+				ID:        intdoment.AUTH_RULE_RETRIEVE,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+			},
+			{
+				ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+			},
+		},
+		n.iamAuthorizationRules,
+	); err != nil || iamAuthorizationRule == nil {
+		return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	}
+
+	quoteColumns := true
+	if len(metadataModelParentPath) == 0 {
+		metadataModelParentPath = "$"
+		quoteColumns = false
+	}
+
+	selectQuery := SelectQuery{
+		TableName: intdoment.IamGroupAuthorizationsRepository().RepositoryName,
+		Query:     "",
+		Where:     make(map[string]map[int][][]string),
+		Join:      make(map[string]*SelectQuery),
+		JoinQuery: make([]string, 0),
+	}
+
+	if tableUid, ok := metadataModel[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID].(string); ok && len(tableUid) > 0 {
+		selectQuery.TableUid = tableUid
+	} else {
+		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetSelectQuery, errors.New("tableUid is empty"))
+	}
+
+	if value, err := intlibmmodel.DatabaseGetColumnFields(metadataModel, selectQuery.TableUid, false, false); err != nil {
+		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetSelectQuery, fmt.Errorf("extract database column fields failed, error: %v", err))
+	} else {
+		selectQuery.Columns = value
+	}
+
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.IamGroupAuthorizationsRepository().ID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.IamGroupAuthorizationsRepository().ID, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.IamGroupAuthorizationsRepository().ID] = value
+		}
+	}
+
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.IamGroupAuthorizationsRepository().IamCredentialsID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.IamGroupAuthorizationsRepository().ID, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.IamGroupAuthorizationsRepository().IamCredentialsID] = value
+		}
+	}
+
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.IamGroupAuthorizationsRepository().GroupRuleAuthorizationsID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.IamGroupAuthorizationsRepository().ID, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.IamGroupAuthorizationsRepository().GroupRuleAuthorizationsID] = value
+		}
+	}
+
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.IamGroupAuthorizationsRepository().CreatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.IamGroupAuthorizationsRepository().ID, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.IamGroupAuthorizationsRepository().CreatedOn] = value
+		}
+	}
+
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.IamGroupAuthorizationsRepository().DeactivatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.IamGroupAuthorizationsRepository().ID, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.IamGroupAuthorizationsRepository().DeactivatedOn] = value
+		}
+	}
+
+	//iam credentials
+
+	//group rule authorizations
+
+	selectQuery.appendSort()
+	selectQuery.appendLimitOffset(metadataModel)
+
+	return &selectQuery, nil
+}
 
 func (n *PostrgresRepository) RepoIamGroupAuthorizationsGetAuthorized(ctx context.Context, iamAuthInfo *intdoment.IamCredentials, authContextDirectoryGroupID uuid.UUID, groupAuthorizationRules []*intdoment.IamGroupAuthorizationRule, currentIamAuthorizationRules *intdoment.IamAuthorizationRules) ([]*intdoment.IamAuthorizationRule, error) {
 	if iamAuthInfo == nil {

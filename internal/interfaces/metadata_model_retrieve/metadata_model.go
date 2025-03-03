@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/gofrs/uuid/v5"
@@ -34,9 +36,14 @@ func NewMetadataModelRetrieve(logger intdomint.Logger, repo intdomint.IamReposit
 	return n
 }
 
-func (n *MetadataModelRetrieve) InjectChildMetadataModelIntoParentMetadataModel(parentMetadataModel map[string]any, childMetadataModel map[string]any, targetPositionFieldColumnName string, targetBefore bool, newChildMetadataModelFgKeySuffix string) (map[string]any, error) {
-	newChildTableCollectionUid := intlib.GenRandomString(5, false)
-	childMetadataModel[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID] = newChildTableCollectionUid
+func (n *MetadataModelRetrieve) MetadataModelInsertChildIntoParent(
+	parentMetadataModel map[string]any,
+	childMetadataModel map[string]any,
+	targetPositionFieldColumnName string,
+	targetBefore bool,
+	newChildMetadataModelFgKeySuffix string,
+	fieldsColumnsToDisableSkipDataExtraction []string,
+) (map[string]any, error) {
 	childMetadataModel[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY] = fmt.Sprintf("$.%s%s.%s", intlibmmodel.FIELD_GROUP_PROP_GROUP_FIELDS, intlibmmodel.ARRAY_PATH_PLACEHOLDER, newChildMetadataModelFgKeySuffix)
 	groupReadOrderOfFieldsPath := fmt.Sprintf("$.%s", intlibmmodel.FIELD_GROUP_PROP_GROUP_READ_ORDER_OF_FIELDS)
 	targetGroupReadOrderOfFieldsSuffix := ""
@@ -58,29 +65,45 @@ func (n *MetadataModelRetrieve) InjectChildMetadataModelIntoParentMetadataModel(
 		})
 	}
 
+	if len(fieldsColumnsToDisableSkipDataExtraction) > 0 {
+		if value, ok := intlibmmodel.MapFieldGroups(parentMetadataModel, func(property map[string]any) any {
+			if fcnString, ok := property[intlibmmodel.FIELD_GROUP_PROP_DATABASE_FIELD_COLUMN_NAME].(string); ok {
+				if slices.Contains(fieldsColumnsToDisableSkipDataExtraction, fcnString) {
+					property[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_VIEW_DISABLE] = true
+					property[intlibmmodel.FIELD_GROUP_PROP_DATABASE_SKIP_DATA_EXTRACTION] = true
+				}
+			}
+
+			return property
+		}).(map[string]any); ok {
+			parentMetadataModel = value
+		} else {
+			return nil, intlib.FunctionNameAndError(n.MetadataModelInsertChildIntoParent, errors.New("after disable fieldColumns in parentMetadataModel,  parentMetadataModel is not of type map[string]any"))
+		}
+	}
+
 	if value, ok := intlibmmodel.MapFieldGroups(childMetadataModel, func(property map[string]any) any {
 		if fgString, ok := property[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
 			property[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY] = strings.Replace(fgString, "$", childMetadataModel[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string), 1)
 		}
-		property[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID] = newChildTableCollectionUid
 		return property
 	}).(map[string]any); ok {
 		childMetadataModel = value
 	} else {
-		return nil, intlib.FunctionNameAndError(n.InjectChildMetadataModelIntoParentMetadataModel, errors.New("update parentMetadataModel tableCollectionUid failed"))
+		return nil, intlib.FunctionNameAndError(n.MetadataModelInsertChildIntoParent, errors.New("update parentMetadataModel tableCollectionUid failed"))
 	}
 
-	if value, err := intlibjson.SetValueInObject(parentMetadataModel, intlibmmodel.GetPathToValue(childMetadataModel[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string), false), childMetadataModel); err != nil {
-		return nil, intlib.FunctionNameAndError(n.InjectChildMetadataModelIntoParentMetadataModel, err)
+	if value, err := intlibjson.SetValueInObject(parentMetadataModel, intlibmmodel.GetPathToValue(childMetadataModel[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string), false, "[0]"), childMetadataModel); err != nil {
+		return nil, intlib.FunctionNameAndError(n.MetadataModelInsertChildIntoParent, err)
 	} else {
 		if valueMap, ok := value.(map[string]any); ok {
 			parentMetadataModel = valueMap
 		} else {
-			return nil, intlib.FunctionNameAndError(n.InjectChildMetadataModelIntoParentMetadataModel, errors.New("after childMetadataModel inject into parentMetadataModel,  parentMetadataModel is not of type map[string]anys"))
+			return nil, intlib.FunctionNameAndError(n.MetadataModelInsertChildIntoParent, errors.New("after childMetadataModel insert into parentMetadataModel,  parentMetadataModel is not of type map[string]any"))
 		}
 	}
 
-	if pathReadOrderOfFields, ok := intlibjson.GetValueInObject(parentMetadataModel, intlibmmodel.GetPathToValue(groupReadOrderOfFieldsPath, false)).([]any); ok {
+	if pathReadOrderOfFields, ok := intlibjson.GetValueInObject(parentMetadataModel, intlibmmodel.GetPathToValue(groupReadOrderOfFieldsPath, false, "[0]")).([]any); ok {
 		newPathToGroupReadOrderOfFields := make([]any, 0)
 		for _, value := range pathReadOrderOfFields {
 			if value == targetGroupReadOrderOfFieldsSuffix {
@@ -98,13 +121,13 @@ func (n *MetadataModelRetrieve) InjectChildMetadataModelIntoParentMetadataModel(
 		if len(newPathToGroupReadOrderOfFields) == len(pathReadOrderOfFields) {
 			newPathToGroupReadOrderOfFields = append(newPathToGroupReadOrderOfFields, newChildMetadataModelFgKeySuffix)
 		}
-		if value, err := intlibjson.SetValueInObject(parentMetadataModel, intlibmmodel.GetPathToValue(groupReadOrderOfFieldsPath, false), newPathToGroupReadOrderOfFields); err != nil {
-			return nil, intlib.FunctionNameAndError(n.InjectChildMetadataModelIntoParentMetadataModel, err)
+		if value, err := intlibjson.SetValueInObject(parentMetadataModel, intlibmmodel.GetPathToValue(groupReadOrderOfFieldsPath, false, "[0]"), newPathToGroupReadOrderOfFields); err != nil {
+			return nil, intlib.FunctionNameAndError(n.MetadataModelInsertChildIntoParent, err)
 		} else {
 			if valueMap, ok := value.(map[string]any); ok {
 				parentMetadataModel = valueMap
 			} else {
-				return nil, intlib.FunctionNameAndError(n.InjectChildMetadataModelIntoParentMetadataModel, errors.New("after modify groof in parentMetadataModel,  parentMetadataModel is not of type map[string]anys"))
+				return nil, intlib.FunctionNameAndError(n.MetadataModelInsertChildIntoParent, errors.New("after modify groof in parentMetadataModel,  parentMetadataModel is not of type map[string]any"))
 			}
 		}
 	}
@@ -113,7 +136,7 @@ func (n *MetadataModelRetrieve) InjectChildMetadataModelIntoParentMetadataModel(
 }
 
 func (n *MetadataModelRetrieve) SetTableCollectionUidForMetadataModel(metadataModel map[string]any) (map[string]any, error) {
-	newTableCollectionUid := intlib.GenRandomString(5, false)
+	newTableCollectionUid := "_" + intlib.GenRandomString(6, false)
 	metadataModel[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID] = newTableCollectionUid
 	if value, ok := intlibmmodel.MapFieldGroups(metadataModel, func(property map[string]any) any {
 		property[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID] = newTableCollectionUid
@@ -129,7 +152,15 @@ func (n *MetadataModelRetrieve) GetMetadataModel(tableCollectionName string) (ma
 	return intlib.MetadataModelGetDatum(tableCollectionName)
 }
 
-func (n *MetadataModelRetrieve) DefaultAuthorizationIDsGetMetadataModel(ctx context.Context, tableCollectionName string, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error) {
+func (n *MetadataModelRetrieve) DefaultAuthorizationIDsGetMetadataModel(
+	ctx context.Context,
+	tableCollectionName string,
+	currentJoinDepth int,
+	targetJoinDepth int,
+	skipJoin map[string]bool,
+	creationIamGroupAuthorizationsIDColumnName string,
+	deactivationIamGroupAuthorizationsIDColumnName string,
+) (map[string]any, error) {
 	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
 		ctx,
 		n.iamCredential,
@@ -153,6 +184,56 @@ func (n *MetadataModelRetrieve) DefaultAuthorizationIDsGetMetadataModel(ctx cont
 	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.DefaultAuthorizationIDsGetMetadataModel, err)
+	}
+
+	if currentJoinDepth < targetJoinDepth || targetJoinDepth < 0 {
+		if skipJoin == nil {
+			skipJoin = make(map[string]bool)
+		}
+
+		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(creationIamGroupAuthorizationsIDColumnName, intdoment.IamGroupAuthorizationsRepository().RepositoryName)]; !ok || !skipMMJoin {
+			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(creationIamGroupAuthorizationsIDColumnName, intdoment.IamGroupAuthorizationsRepository().RepositoryName)
+			skipJoin := make(map[string]bool)
+			skipJoin[intlib.MetadataModelGenJoinKey(intdoment.IamGroupAuthorizationsRepository().RepositoryName, intdoment.IamGroupAuthorizationsIDsRepository().RepositoryName)] = true
+			if childMetadataModel, err := n.IamGroupAuthorizationsGetMetadataModel(ctx, currentJoinDepth+1, targetJoinDepth, skipJoin); err != nil {
+				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.DefaultAuthorizationIDsGetMetadataModel))
+			} else {
+				childMetadataModel[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_NAME] = "Creation Iam Group Authorization"
+				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(
+					parentMetadataModel,
+					childMetadataModel,
+					creationIamGroupAuthorizationsIDColumnName,
+					false,
+					newChildMetadataModelfgSuffix,
+					[]string{creationIamGroupAuthorizationsIDColumnName},
+				)
+				if err != nil {
+					return nil, intlib.FunctionNameAndError(n.DefaultAuthorizationIDsGetMetadataModel, err)
+				}
+			}
+		}
+
+		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(deactivationIamGroupAuthorizationsIDColumnName, intdoment.IamGroupAuthorizationsRepository().RepositoryName)]; !ok || !skipMMJoin {
+			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(deactivationIamGroupAuthorizationsIDColumnName, intdoment.IamGroupAuthorizationsRepository().RepositoryName)
+			skipJoin := make(map[string]bool)
+			skipJoin[intlib.MetadataModelGenJoinKey(intdoment.IamGroupAuthorizationsRepository().RepositoryName, intdoment.IamGroupAuthorizationsIDsRepository().RepositoryName)] = true
+			if childMetadataModel, err := n.IamGroupAuthorizationsGetMetadataModel(ctx, currentJoinDepth+1, targetJoinDepth, skipJoin); err != nil {
+				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.DefaultAuthorizationIDsGetMetadataModel))
+			} else {
+				childMetadataModel[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_NAME] = "Deactivation Iam Group Authorization"
+				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(
+					parentMetadataModel,
+					childMetadataModel,
+					deactivationIamGroupAuthorizationsIDColumnName,
+					false,
+					newChildMetadataModelfgSuffix,
+					[]string{deactivationIamGroupAuthorizationsIDColumnName},
+				)
+				if err != nil {
+					return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetMetadataModel, err)
+				}
+			}
+		}
 	}
 
 	return parentMetadataModel, nil

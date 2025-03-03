@@ -314,7 +314,7 @@ class Component extends LitElement {
 																			? 'bg-secondary text-secondary-content'
 																			: 'bg-accent text-accent-content'} p-1 shadow-sm shadow-gray-800 rounded-md"
 																>
-																	Sort order when performing database search. Currently set to: ${this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === true ? 'ASCENDING ORDER' : this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === false ? 'DESCENDING ORDER' : 'NONE'}
+																	Sort order when performing database search. Currently set to: ${this.fieldgroup[MetadataModel.FgProperties.DATABASE_SORT_BY_ASC] === true ? 'ASCENDING ORDER' : this.fieldgroup[MetadataModel.FgProperties.DATABASE_SORT_BY_ASC] === false ? 'DESCENDING ORDER' : 'NONE'}
 																</div>
 															`
 														}
@@ -333,26 +333,25 @@ class Component extends LitElement {
 												<button
 													class="self-center btn min-h-fit h-fit min-w-fit w-fit p-1"
 													@click=${() => {
-														if (this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === true) {
-															this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] = false
-														} else if (this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === false) {
-															delete this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC]
+														if (this.fieldgroup[MetadataModel.FgProperties.DATABASE_SORT_BY_ASC] === true) {
+															this.fieldgroup[MetadataModel.FgProperties.DATABASE_SORT_BY_ASC] = false
+														} else if (this.fieldgroup[MetadataModel.FgProperties.DATABASE_SORT_BY_ASC] === false) {
+															delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_SORT_BY_ASC]
 														} else {
-															this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] = true
+															this.fieldgroup[MetadataModel.FgProperties.DATABASE_SORT_BY_ASC] = true
 														}
-														this.querycondition = structuredClone(this.querycondition)
-														this.handleupdatefieldgroupquerycondition(this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY], this.querycondition)
+														this.updatemetadatamodel(this.fieldgroup)
 													}}
 												>
 													${(() => {
-														if (this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === true) {
+														if (this.fieldgroup[MetadataModel.FgProperties.DATABASE_SORT_BY_ASC] === true) {
 															return html`
 																<!--mdi:sort-ascending source: https://icon-sets.iconify.design-->
 																<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M19 17h3l-4 4l-4-4h3V3h2M2 17h10v2H2M6 5v2H2V5m0 6h7v2H2z" /></svg>
 															`
 														}
 
-														if (this.querycondition[MetadataModel.QcProperties.D_SORT_BY_ASC] === false) {
+														if (this.fieldgroup[MetadataModel.FgProperties.DATABASE_SORT_BY_ASC] === false) {
 															return html`
 																<!--mdi:sort-descending source: https://icon-sets.iconify.design-->
 																<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M19 7h3l-4-4l-4 4h3v14h2M2 17h10v2H2M6 5v2H2V5m0 6h7v2H2z" /></svg>
@@ -367,7 +366,6 @@ class Component extends LitElement {
 												</button>
 											`
 										})()}
-
 										<div class="relative w-full h-0" style="grid-column:span 2;">
 											${(() => {
 												if (this._showHintID === 'd-skip-data-extraction') {
@@ -532,6 +530,100 @@ class Component extends LitElement {
 																this.fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME] = e.currentTarget.value
 															} else {
 																delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME]
+															}
+															this.updatemetadatamodel(this.fieldgroup)
+														}}
+													/>
+
+													<div class="relative w-full h-0" style="grid-column:span 2;">
+														${(() => {
+															if (this._showHintID === 'd-limit') {
+																return html`
+																	<div
+																		class="z-20 absolute bottom-0 w-full min-w-[250px] h-fit ${this.color === Theme.Color.PRIMARY
+																			? 'bg-primary text-primary-content'
+																			: this.color === Theme.Color.SECONDARY
+																				? 'bg-secondary text-secondary-content'
+																				: 'bg-accent text-accent-content'} p-1 shadow-sm shadow-gray-800 rounded-md"
+																	>
+																		Maximum number of results to return from database query.
+																	</div>
+																`
+															}
+															return nothing
+														})()}
+													</div>
+													<span class="flex space-x-1">
+														<span class="h-fit self-center break-words">Database Results Limit</span>
+														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-limit')} @mouseout=${() => (this._showHintID = '')}>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
+														</div>
+													</span>
+													<input
+														class="flex-1 input self-center ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
+														type="number"
+														min="0"
+														placeholder="Enter maximum number of results..."
+														.value=${typeof this.fieldgroup[MetadataModel.FgProperties.DATABASE_LIMIT] === 'number' ? this.fieldgroup[MetadataModel.FgProperties.DATABASE_LIMIT].toString() : ''}
+														@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+															if (e.currentTarget.value.length > 0) {
+																if (!Number.isNaN(e.currentTarget.value)) {
+																	this.fieldgroup[MetadataModel.FgProperties.DATABASE_LIMIT] = Math.round(Number(e.currentTarget.value))
+																} else {
+																	delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_LIMIT]
+																}
+															} else {
+																delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_LIMIT]
+															}
+															this.updatemetadatamodel(this.fieldgroup)
+														}}
+													/>
+
+													<div class="relative w-full h-0" style="grid-column:span 2;">
+														${(() => {
+															if (this._showHintID === 'd-offset') {
+																return html`
+																	<div
+																		class="z-20 absolute bottom-0 w-full min-w-[250px] h-fit ${this.color === Theme.Color.PRIMARY
+																			? 'bg-primary text-primary-content'
+																			: this.color === Theme.Color.SECONDARY
+																				? 'bg-secondary text-secondary-content'
+																				: 'bg-accent text-accent-content'} p-1 shadow-sm shadow-gray-800 rounded-md"
+																	>
+																		Number of results to skip in database query.
+																	</div>
+																`
+															}
+															return nothing
+														})()}
+													</div>
+													<span class="flex space-x-1">
+														<span class="h-fit self-center break-words">Database Results Limit</span>
+														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-offset')} @mouseout=${() => (this._showHintID = '')}>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
+														</div>
+													</span>
+													<input
+														class="flex-1 input self-center ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
+														type="number"
+														min="0"
+														placeholder="Enter maximum number of results..."
+														.value=${typeof this.fieldgroup[MetadataModel.FgProperties.DATABASE_OFFSET] === 'number' ? this.fieldgroup[MetadataModel.FgProperties.DATABASE_OFFSET].toString() : ''}
+														@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+															if (e.currentTarget.value.length > 0) {
+																if (!Number.isNaN(e.currentTarget.value)) {
+																	this.fieldgroup[MetadataModel.FgProperties.DATABASE_OFFSET] = Math.round(Number(e.currentTarget.value))
+																} else {
+																	delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_OFFSET]
+																}
+															} else {
+																delete this.fieldgroup[MetadataModel.FgProperties.DATABASE_OFFSET]
 															}
 															this.updatemetadatamodel(this.fieldgroup)
 														}}
@@ -1139,10 +1231,7 @@ class Component extends LitElement {
 																													}}
 																												>
 																													<option disabled value="" .selected=${(andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] as string).length === 0}>Choose date time format...</option>
-																													<option
-																														value="${MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}"
-																														.selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}
-																													>
+																													<option value="${MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM}>
 																														yyyy-mm-dd HH:MM
 																													</option>
 																													<option value="${MetadataModel.FieldDateTimeFormat.YYYYMMDD}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMMDD}>
@@ -1151,12 +1240,8 @@ class Component extends LitElement {
 																													<option value="${MetadataModel.FieldDateTimeFormat.YYYYMM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYYMM}>
 																														yyyy-mm
 																													</option>
-																													<option value="${MetadataModel.FieldDateTimeFormat.HHMM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.HHMM}>
-																														HH:MM
-																													</option>
-																													<option value="${MetadataModel.FieldDateTimeFormat.YYYY}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYY}>
-																														yyyy
-																													</option>
+																													<option value="${MetadataModel.FieldDateTimeFormat.HHMM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.HHMM}>HH:MM</option>
+																													<option value="${MetadataModel.FieldDateTimeFormat.YYYY}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.YYYY}>yyyy</option>
 																													<option value="${MetadataModel.FieldDateTimeFormat.MM}" .selected=${andFilterCondition[MetadataModel.FConditionProperties.VALUE][MetadataModel.FSelectProperties.DATE_TIME_FORMAT] === MetadataModel.FieldDateTimeFormat.MM}>mm</option>
 																												</select>
 																												<calendar-time

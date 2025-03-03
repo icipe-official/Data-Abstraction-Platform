@@ -151,7 +151,7 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 								}
 							case FILTER_CONDTION_TIMESTAMP_GREATER_THAN:
 							case FILTER_CONDTION_TIMESTAMP_LESS_THAN:
-								if andCondition.DateTimeFormat == nil {
+								if len(andCondition.DateTimeFormat) == 0 {
 									err = argumentsError(FilterData, "andCondition.DateTimeFormat", "string", andCondition.DateTimeFormat)
 									return true
 								}
@@ -161,7 +161,7 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 
 										for _, vFound := range valueFoundSlice {
 											if valueFoundString, ok := vFound.(string); ok {
-												if isTimestampConditionTrue(andCondition.Condition, *andCondition.DateTimeFormat, valueFoundString, valueString) {
+												if isTimestampConditionTrue(andCondition.Condition, andCondition.DateTimeFormat, valueFoundString, valueString) {
 													conditionTrue = true
 													break
 												}
@@ -178,7 +178,7 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 										}
 									} else {
 										if valueFoundString, ok := valueFound.(string); ok {
-											if isTimestampConditionTrue(andCondition.Condition, *andCondition.DateTimeFormat, valueFoundString, valueString) {
+											if isTimestampConditionTrue(andCondition.Condition, andCondition.DateTimeFormat, valueFoundString, valueString) {
 												if andCondition.Negate {
 													return true
 												}
