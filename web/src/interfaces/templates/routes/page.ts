@@ -3,9 +3,7 @@ import { customElement, state } from 'lit/decorators.js'
 import indexCss from '@assets/index.css?inline'
 import pageCss from './page.css?inline'
 import '@lib/components/intro-poster/component'
-import Lib from '@lib/lib'
-import Interface from '@lib/interface'
-import '@lib/components/login-screen/component'
+import '@lib/components/log-in/component'
 
 @customElement('home-page')
 class Page extends LitElement {
@@ -15,8 +13,6 @@ class Page extends LitElement {
 	private _handleWindowResize = (_: UIEvent) => {
 		this._windowWidth = window.innerWidth
 	}
-
-	//open id context
 
 	connectedCallback(): void {
 		super.connectedCallback()
@@ -31,14 +27,14 @@ class Page extends LitElement {
 	protected render(): unknown {
 		return html`
 			<section class="flex-1 flex flex-col justify-center overflow-hidden">
-				<login-screen class="self-center rounded-lg shadow-md shadow-gray-800 md:max-w-[70%]"></login-screen>
+				<log-in class="self-center rounded-lg shadow-md shadow-gray-800 max-w-[95%]"></log-in>
 			</section>
 			${(() => {
-				if (this._windowWidth > 1000) {
+				if (this._windowWidth > 1200) {
 					return html`<section class="flex-1 flex flex-col justify-center overflow-hidden p-1"><intro-poster class="bg-white rounded-lg shadow-md shadow-gray-800"></intro-poster></section>`
-				} else {
-					return nothing
 				}
+				
+				return nothing
 			})()}
 		`
 	}

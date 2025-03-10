@@ -10,3 +10,6 @@ var GroupAuthorizationRules embed.FS
 
 //go:embed storage_types
 var StorageTypes embed.FS
+
+//go:embed metadata_models_misc
+var MiscMetadataModels embed.FS

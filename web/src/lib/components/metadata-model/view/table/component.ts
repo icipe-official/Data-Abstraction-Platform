@@ -9,6 +9,9 @@ import { cache } from 'lit/directives/cache.js'
 import { keyed } from 'lit/directives/keyed.js'
 import '@lib/components/drop-down/component'
 import Json from '@lib/json'
+import { IMetadataModelGetController } from '@dominterfaces/controllers/metadata_model'
+import { MetadataModelGetController } from '@interfaces/controllers/metadata_model'
+import { IFieldAnyMetadataModelGet } from '@dominterfaces/field_any_metadata_model/field_any_metadata_model'
 
 @customElement('metadata-model-view-table')
 class Component extends LitElement {
@@ -21,13 +24,17 @@ class Component extends LitElement {
 	@property({ type: Boolean }) addclickcolumn: boolean = true
 	@property({ type: Boolean }) multiselectcolumns: boolean = true
 	@property({ type: Array }) selecteddataindexes: number[] = []
-	@property({ type: Array }) filterincludeindexes: number[] = []
+	@property({ type: Array }) filterexcludeindexes: number[] = []
 	@property({ type: Array }) selecteddataindexesactions: { actionName: string; action: (selecteddataindexes: number[]) => void }[] = []
 	@property({ type: Object }) scrollelement: Element | undefined
 	@property({ type: Number }) basestickyleft: number = 0
 	@property({ type: Number }) basestickytop: number = 0
 	@property({ type: Number }) scrollelementwidth: number = 0
 	@property({ type: Number }) scrollelementheight: number = 0
+	@property({ type: Object }) metadatamodelgetcontroller: IMetadataModelGetController | undefined
+	@property({ attribute: false }) getmetadatamodel: IFieldAnyMetadataModelGet | undefined
+	@property({ attribute: false }) getmetadatamodeldata: ((path: string, arrayindexes: number[]) => any) | undefined
+	@property({ type: Array }) arrayindexes: number[] = []
 
 	private _dataFields: (MetadataModel.IMetadataModel | any)[] = []
 
@@ -40,7 +47,7 @@ class Component extends LitElement {
 	@state() private _lockedColumnData2DFieldsIndex: number[] = []
 	@state() private _unlockedColumnData2DFieldsIndex: number[] = []
 
-	private readonly NO_OF_RENDER_CONTENT_TO_ADD: number = 10
+	private readonly NO_OF_RENDER_CONTENT_TO_ADD: number = 20
 	private _topHeaderResizeObserved: boolean = false
 	private _columnHeaderLockedResizeObserved: boolean = false
 
@@ -52,7 +59,7 @@ class Component extends LitElement {
 	private _rowRenderTrackerEndObserved: boolean = false
 
 	@state() private _rowStartIndex: number = 0
-	@state() private _rowEndIndex: number = 10
+	@state() private _rowEndIndex: number = 20
 	private _rowItemsOutOfView: number[] = []
 
 	@state() private _rowStartAddContentTimeout?: number
@@ -267,7 +274,7 @@ class Component extends LitElement {
 		return keyed(
 			`${columnIndex}-${dfIndex}`,
 			html`
-				<div id="${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'locked' : 'unlocked'}-column-${columnIndex}" class="flex flex-col self-center h-full ${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] ? '' : 'w-full min-w-fit'}">
+				<div id="${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'locked' : 'unlocked'}-column-${columnIndex}" class="flex flex-col justify-end h-full ${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] ? '' : 'w-full min-w-fit'}">
 					${(() => {
 						if (fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE]) {
 							return nothing
@@ -280,7 +287,7 @@ class Component extends LitElement {
 									this._currentOpenDropdownID = e.detail.value ? columnId : ''
 								}}
 							>
-								<div slot="header" class="min-w-[120px] flex space-x-1 p-1 w-fit h-full sticky ${!fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? ' right-0' : ''}" style="left: ${this.basestickyleft + this._columnHeaderLockedWidth}px;">
+								<div slot="header" class="min-w-[120px] flex gap-x-1 p-1 w-fit h-full sticky ${!fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? ' right-0' : ''}" style="left: ${this.basestickyleft + this._columnHeaderLockedWidth}px;">
 									<button
 										class="w-fit h-fit p-0 self-center"
 										@click=${() => {
@@ -332,7 +339,7 @@ class Component extends LitElement {
 								</div>
 								<div slot="content" class="min-w-[120px] shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black w-full flex flex-col">
 									<button
-										class="flex w-full space-x-1"
+										class="flex w-full gap-x-1"
 										@click=${() => {
 											if (fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]) {
 												delete fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]
@@ -356,7 +363,7 @@ class Component extends LitElement {
 													return html`
 														<!--mdi:lock-open-variant source: https://icon-sets.iconify.design-->
 														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-															<path fill="black" d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
+															<path d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
 														</svg>
 													`
 												}
@@ -364,7 +371,7 @@ class Component extends LitElement {
 												return html`
 													<!--mdi:lock source: https://icon-sets.iconify.design-->
 													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-														<path fill="black" d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
+														<path d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
 													</svg>
 												`
 											})()}
@@ -372,7 +379,7 @@ class Component extends LitElement {
 										<div class="w-fit h-fit self-center">${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'unfreeze' : 'freeze'} column</div>
 									</button>
 									<button
-										class="flex w-full space-x-1"
+										class="flex w-full gap-x-1"
 										@click=${() => {
 											fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
 											this._currentOpenDropdownID = ''
@@ -428,7 +435,70 @@ class Component extends LitElement {
 										.basestickytop=${this.basestickytop + this._topHeaderHeight > this.scrollelementheight / 4 ? this.basestickytop : this.basestickytop + this._topHeaderHeight}
 										.scrollelementheight=${this.scrollelementheight}
 										.scrollelementwidth=${this.scrollelementwidth}
+										.arrayindexes=${[...this.arrayindexes, rowIndex]}
+										.getmetadatamodel=${this.getmetadatamodel}
+										.getmetadatamodeldata=${this.getmetadatamodeldata}
+										.metadatamodelgetcontroller=${this.metadatamodelgetcontroller}
 									></metadata-model-view-table>
+								`
+							}
+
+							if (this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_DATATYPE] === MetadataModel.FieldType.ANY) {
+								if (typeof this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY] == 'string') {
+									if (this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_TYPE_ANY]) {
+										if (typeof this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID] == 'string') {
+											if (typeof this.getmetadatamodel !== 'undefined') {
+												let arg = undefined
+												if (typeof this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT] == 'string' && this.getmetadatamodeldata) {
+													arg = this.getmetadatamodeldata(this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT], this.arrayindexes)
+												}
+												const metadatamodel =
+													this.metadatamodelgetcontroller?.cachemetadatamodels[
+														this.metadatamodelgetcontroller.GetPathToCachedMetadataModel(
+															this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID],
+															this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY],
+															this._dataFields[columnIndex][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
+															arg
+														)
+													]
+
+												if (!metadatamodel) {
+													this.metadatamodelgetcontroller?.GetMetadataModel(
+														this.getmetadatamodel!,
+														this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID],
+														this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY],
+														this._dataFields[columnIndex][MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
+														arg
+													)
+												}
+												if (metadatamodel) {
+													return html`
+														<metadata-model-view-table
+															.metadatamodel=${metadatamodel}
+															.data=${rowdata}
+															.color=${this.color}
+															.addclickcolumn=${false}
+															.scrollelement=${this.scrollelement}
+															.basestickyleft=${this.basestickyleft + this._columnHeaderLockedWidth > this.scrollelementwidth / 4 ? this.basestickyleft : this.basestickyleft + this._columnHeaderLockedWidth}
+															.basestickytop=${this.basestickytop + this._topHeaderHeight > this.scrollelementheight / 4 ? this.basestickytop : this.basestickytop + this._topHeaderHeight}
+															.scrollelementheight=${this.scrollelementheight}
+															.scrollelementwidth=${this.scrollelementwidth}
+															.arrayindexes=${[...this.arrayindexes, rowIndex]}
+															.getmetadatamodel=${this.getmetadatamodel}
+															.getmetadatamodeldata=${this.getmetadatamodeldata}
+															.metadatamodelgetcontroller=${this.metadatamodelgetcontroller}
+														></metadata-model-view-table>
+													`
+												}
+											}
+										}
+									}
+								}
+
+								return html`
+									<pre class="grid bg-gray-700 text-white w-full h-fit shadow-inner shadow-gray-800 p-1 max-h-[300px] max-w-[300px] overflow-auto">
+										<code class="sticky left-0 w-fit h-fit">${JSON.stringify(rowdata, null, 4)}</code>
+									</pre>
 								`
 							}
 
@@ -478,7 +548,7 @@ class Component extends LitElement {
 					(typeof this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE] !== 'undefined' && Json.AreValuesEqual(datum, this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE]))
 				) {
 					return html`
-						<div class="flex space-x-1 justify-center w-fit h-fit">
+						<div class="flex gap-x-1 justify-center w-fit h-fit">
 							<!--mdi:checkbox-marked source: https://icon-sets.iconify.design-->
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="m10 17l-5-5l1.41-1.42L10 14.17l7.59-7.59L19 8m0-5H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2" /></svg>
 							${(() => {
@@ -497,7 +567,7 @@ class Component extends LitElement {
 					(typeof this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE] !== 'undefined' && Json.AreValuesEqual(datum, this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE]))
 				) {
 					return html`
-						<div class="flex space-x-1 justify-center w-fit h-fit">
+						<div class="flex gap-x-1 justify-center w-fit h-fit">
 							<!--mdi:close-box source: https://icon-sets.iconify.design-->
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-3.4 14L12 13.4L8.4 17L7 15.6l3.6-3.6L7 8.4L8.4 7l3.6 3.6L15.6 7L17 8.4L13.4 12l3.6 3.6z" /></svg>
 							${(() => {
@@ -651,7 +721,7 @@ class Component extends LitElement {
 					}}
 				>
 					<!--mdi:chevron-double-up source: https://icon-sets.iconify.design-->
-					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="black" d="M7.41 18.41L6 17l6-6l6 6l-1.41 1.41L12 13.83zm0-6L6 11l6-6l6 6l-1.41 1.41L12 7.83z" /></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M7.41 18.41L6 17l6-6l6 6l-1.41 1.41L12 13.83zm0-6L6 11l6-6l6 6l-1.41 1.41L12 7.83z" /></svg>
 				</button>
 			`
 		}
@@ -733,7 +803,7 @@ class Component extends LitElement {
 				}}
 			>
 				<!--mdi:chevron-double-down source: https://icon-sets.iconify.design-->
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M16.59 5.59L18 7l-6 6l-6-6l1.41-1.41L12 10.17zm0 6L18 13l-6 6l-6-6l1.41-1.41L12 16.17z" /></svg>
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M16.59 5.59L18 7l-6 6l-6-6l1.41-1.41L12 10.17zm0 6L18 13l-6 6l-6-6l1.41-1.41L12 16.17z" /></svg>
 			</button>
 		`
 	}
@@ -750,6 +820,21 @@ class Component extends LitElement {
 
 		if (typeof this.scrollelement !== 'undefined') {
 			this._tableInsideTable = true
+		} else {
+			if (typeof this.getmetadatamodel !== 'undefined' && typeof this.metadatamodelgetcontroller === 'undefined') {
+				this.metadatamodelgetcontroller = new MetadataModelGetController(this)
+			}
+			this.getmetadatamodeldata = (path: string, arrayindexes: number[]) => {
+				try {
+					arrayindexes = [arrayindexes[0], ...arrayindexes]
+					path = path.replace(/\$/, `$.${MetadataModel.ARRAY_INDEX_PLACEHOLDER}`)
+					path = MetadataModel.PreparePathToValueInObject(path, arrayindexes)
+					return Json.GetValueInObject(this.data, path)
+				} catch (e) {
+					console.error(e)
+					return undefined
+				}
+			}
 		}
 
 		this._rowEndIndex = this.data.length - 1 > this.NO_OF_RENDER_CONTENT_TO_ADD ? this.NO_OF_RENDER_CONTENT_TO_ADD : this.data.length - 1
@@ -806,6 +891,10 @@ class Component extends LitElement {
 		if (typeof this._rowEndAddContentTimeout === 'number') {
 			window.clearTimeout(this._rowEndAddContentTimeout)
 		}
+
+		if (typeof this._switchSelectColumnInterval === 'number') {
+			window.clearInterval(this._switchSelectColumnInterval)
+		}
 	}
 
 	@state() private _rowNumberColumnMenuTextSearchFieldsQuery: string = ''
@@ -843,7 +932,7 @@ class Component extends LitElement {
 		const fieldGroup = this._dataFields[dfIndex]
 
 		return html`
-			<div class="flex space-x-1">
+			<div class="flex gap-x-1">
 				<div class="self-center h-fit w-fit font-bold">${columnIndex + 1} (${dfIndex + 1})</div>
 				<div class="self-center h-fit w-fit">${MetadataModel.GetFieldGroupName(fieldGroup)}</div>
 				<div class="join">
@@ -871,7 +960,7 @@ class Component extends LitElement {
 									return html`
 										<!--mdi:lock-open-variant source: https://icon-sets.iconify.design-->
 										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-											<path fill="black" d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
+											<path d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
 										</svg>
 									`
 								}
@@ -879,7 +968,7 @@ class Component extends LitElement {
 								return html`
 									<!--mdi:lock source: https://icon-sets.iconify.design-->
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-										<path fill="black" d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
+										<path d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
 									</svg>
 								`
 							})()}
@@ -960,7 +1049,7 @@ class Component extends LitElement {
 								>
 									<!--mdi:jump source: https://icon-sets.iconify.design-->
 									<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-										<path fill="black" d="M12 14a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m11.46-5.14l-1.59 6.89L15 14.16l3.8-2.38A7.97 7.97 0 0 0 12 8c-3.95 0-7.23 2.86-7.88 6.63l-1.97-.35C2.96 9.58 7.06 6 12 6c3.58 0 6.73 1.89 8.5 4.72z" />
+										<path d="M12 14a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m11.46-5.14l-1.59 6.89L15 14.16l3.8-2.38A7.97 7.97 0 0 0 12 8c-3.95 0-7.23 2.86-7.88 6.63l-1.97-.35C2.96 9.58 7.06 6 12 6c3.58 0 6.73 1.89 8.5 4.72z" />
 									</svg>
 								</button>
 								${(() => {
@@ -983,6 +1072,9 @@ class Component extends LitElement {
 	@state() private _viewJsonOutput: boolean = false
 
 	@state() private _showHintID: string = ''
+
+	@state() private _selectRowActionColor: Theme.Color = Theme.Color.PRIMARY
+	@state() private _switchSelectColumnInterval: number | undefined
 
 	protected render(): unknown {
 		if (this._tableViewIn2DStateChanged) {
@@ -1075,7 +1167,7 @@ class Component extends LitElement {
 						this._columnHeaderLockedResizeObserved = false
 						this._rowRenderTrackers = {}
 
-						return html` <div class="flex space-x-1"><span class="loading loading-spinner loading-md"></span><button class="link" @click=${() => (this._displayContent = true)}>load data</button></div> `
+						return html` <div class="flex gap-x-1"><span class="loading loading-spinner loading-md"></span><button class="link" @click=${() => (this._displayContent = true)}>load data</button></div> `
 					}
 
 					if (typeof this._rowContentItemIntersectionObserver === 'undefined') {
@@ -1221,11 +1313,11 @@ class Component extends LitElement {
 					return html`
 						<header
 							id="top-header"
-							class="grid sticky space-y-1 shadow-sm text-sm font-bold z-[3] shadow-gray-800 ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
+							class="grid sticky gap-y-1 shadow-sm text-sm font-bold z-[3] shadow-gray-800 ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}"
 							style="top: ${this.basestickytop}px; grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;"
 						>
 							<section class="z-[2] p-1 grid w-full h-fit" style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3};">
-								<div class="w-fit h-fit sticky flex space-x-2" style="left: ${this.basestickyleft}px;">
+								<div class="w-fit h-fit sticky flex gap-x-2" style="left: ${this.basestickyleft}px;">
 									<div class="flex">
 										<drop-down
 											.showdropdowncontent=${this._currentOpenDropdownID === 'header-menu-view-columns'}
@@ -1263,7 +1355,7 @@ class Component extends LitElement {
 													return nothing
 												})()}
 											</div>
-											<div slot="content" class="shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black flex flex-col min-w-[500px] max-w-[800px] max-h-[800px] min-h-[200px] overflow-auto space-y-1">
+											<div slot="content" class="shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black flex flex-col min-w-[500px] max-w-[800px] max-h-[800px] min-h-[200px] overflow-auto gap-y-1">
 												<div class="join w-full shadow-inner shadow-gray-800">
 													${(() => {
 														if (this._unlockedColumnStartIndex === 0) {
@@ -1571,47 +1663,88 @@ class Component extends LitElement {
 									style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid; left: ${this.basestickyleft}px;"
 									class="z-[2] grid sticky shadow-sm ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content '}"
 								>
-									<div class="w-full h-full min-h-full p-1 flex justify-evenly space-x-1">
+									<div class="w-full h-full min-h-full p-1 flex justify-evenly gap-x-1">
 										<div class="h-full flex justify-center text-2xl w-[47px] font-bold">
-											<div class="self-center h-fit w-fit">#</div>
+											<div class="self-end h-fit w-fit">#</div>
 										</div>
 										${(() => {
 											if (this.addselectcolumn) {
 												return html`
-													<div class="flex flex-col self-center h-fit w-fit" @mouseover=${() => (this._showHintID = 'header-menu-select-unselect-all-rows')} @mouseout=${() => (this._showHintID = '')}>
-														<input
-															class="self-center checkbox ${this.color === Theme.Color.ACCENT ? 'checkbox-primary' : this.color === Theme.Color.PRIMARY ? 'checkbox-secondary' : 'checkbox-accent'}"
-															type="checkbox"
-															.checked=${this._selectedrowminindex === 0 && this._selectedrowmaxindex === this.data.length - 1 && this._selectedcolumnminindex === 0 && this._selectedcolumnmaxindex === this._dataFields.length - 1}
-															@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																if (e.currentTarget.checked) {
-																	this._selectedcolumnminindex = 0
-																	this._selectedcolumnmaxindex = this._dataFields.length - 1
-																	this._selectedrowminindex = 0
-																	this._selectedrowmaxindex = this.data.length - 1
-																} else {
-																	this._resetSelectedFields()
-																}
-															}}
-														/>
-														${(() => {
-															if (this._showHintID === 'header-menu-select-unselect-all-rows') {
-																return html`
-																	<div class="relative">
-																		<div
-																			class="z-50 absolute top-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
-																				? 'bg-primary text-primary-content'
-																				: this.color === Theme.Color.SECONDARY
-																					? 'bg-secondary text-secondary-content'
-																					: 'bg-accent text-accent-content'}"
-																		>
-																			select/unselect columns with data
+													<div class="flex gap-x-1 h-fit self-end">
+														<div class="flex flex-col self-center h-fit w-fit" @mouseover=${() => (this._showHintID = 'header-menu-select-unselect-all-rows')} @mouseout=${() => (this._showHintID = '')}>
+															<input
+																class="self-center checkbox ${this.color === Theme.Color.ACCENT ? 'checkbox-primary' : this.color === Theme.Color.PRIMARY ? 'checkbox-secondary' : 'checkbox-accent'}"
+																type="checkbox"
+																.checked=${this.selecteddataindexes.length === this.data.length}
+																@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+																	if (e.currentTarget.checked) {
+																		this.selecteddataindexes = this.data.map((_, index) => index)
+																	} else {
+																		this.selecteddataindexes = []
+																	}
+																	this.dispatchEvent(
+																		new CustomEvent('metadata-model-view-table:selecteddataindexesupdate', {
+																			detail: {
+																				value: this.selecteddataindexes
+																			}
+																		})
+																	)
+																}}
+																.disabled=${!this.multiselectcolumns}
+															/>
+															${(() => {
+																if (this._showHintID === 'header-menu-select-unselect-all-rows') {
+																	return html`
+																		<div class="relative">
+																			<div
+																				class="z-50 absolute top-0 self-center font-bold text-sm min-w-[100px] shadow-lg shadow-gray-800 rounded-md p-1 ${this.color === Theme.Color.PRIMARY
+																					? 'bg-primary text-primary-content'
+																					: this.color === Theme.Color.SECONDARY
+																						? 'bg-secondary text-secondary-content'
+																						: 'bg-accent text-accent-content'}"
+																			>
+																				select/unselect columns with data
+																			</div>
 																		</div>
-																	</div>
-																`
+																	`
+																}
+
+																return nothing
+															})()}
+														</div>
+														${(() => {
+															if (this.selecteddataindexes.length === 0 || this.selecteddataindexesactions.length === 0) {
+																if (typeof this._switchSelectColumnInterval === 'number') {
+																	window.clearInterval(this._switchSelectColumnInterval)
+																	this._switchSelectColumnInterval = undefined
+																}
+																return nothing
 															}
 
-															return nothing
+															if (typeof this._switchSelectColumnInterval !== 'number') {
+																this._switchSelectColumnInterval = window.setInterval(() => {
+																	this._selectRowActionColor = Theme.GetNextColorA(this._selectRowActionColor)
+																}, 1000)
+															}
+
+															return html`
+																<drop-down class="self-end">
+																	<button slot="header" class="btn btn-circle btn-ghost min-w-fit w-fit min-h-fit h-fit p-1 self-end">
+																		<!--mdi:dots-vertical-circle-outline source: https://icon-sets.iconify.design-->
+																		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
+																			<path
+																				fill="${this._selectRowActionColor === this.color ? Theme.GetColorContent(this._selectRowActionColor) : this._selectRowActionColor}"
+																				d="M10.5 12a1.5 1.5 0 0 1 1.5-1.5a1.5 1.5 0 0 1 1.5 1.5a1.5 1.5 0 0 1-1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m0 4.5A1.5 1.5 0 0 1 12 15a1.5 1.5 0 0 1 1.5 1.5A1.5 1.5 0 0 1 12 18a1.5 1.5 0 0 1-1.5-1.5m0-9A1.5 1.5 0 0 1 12 6a1.5 1.5 0 0 1 1.5 1.5A1.5 1.5 0 0 1 12 9a1.5 1.5 0 0 1-1.5-1.5M12 2a10 10 0 0 1 10 10a10 10 0 0 1-10 10A10 10 0 0 1 2 12A10 10 0 0 1 12 2m0 2a8 8 0 0 0-8 8a8 8 0 0 0 8 8a8 8 0 0 0 8-8a8 8 0 0 0-8-8"
+																			/>
+																		</svg>
+																	</button>
+																	<div slot="content" class="shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black flex flex-col min-w-[200px] max-w-[800px] max-h-[50vh] h-fit overflow-auto gap-y-1">
+																		${this.selecteddataindexesactions.map((v, index) => {
+																			return html` <button class="link link-hover text-lg font-bold" @click=${() => v.action(this.selecteddataindexes)}>${index + 1}-<i>${v.actionName}</i></button> `
+																		})}
+																	</div>
+																</drop-down>
+															`
 														})()}
 													</div>
 												`
@@ -1656,7 +1789,7 @@ class Component extends LitElement {
 												for (let index = 0; index < this._lockedColumnData2DFieldsIndex.length + 1; index++) {
 													templates.push(html`
 														<div class="w-full min-w-full h-fit">
-															<div style="top: ${this.basestickytop + this._topHeaderHeight}px; left: ${this.basestickyleft + this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
+															<div style="top: ${this.basestickytop + this._topHeaderHeight}px; left: ${this.basestickyleft + this._columnHeaderLockedWidth}px;" class="sticky flex gap-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
 														</div>
 													`)
 												}
@@ -1677,7 +1810,7 @@ class Component extends LitElement {
 												} else {
 													templates.push(html`
 														<div class="w-full min-w-full h-fit">
-															<div style="top: ${this.basestickytop + this._topHeaderHeight}px; left: ${this.basestickyleft + this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
+															<div style="top: ${this.basestickytop + this._topHeaderHeight}px; left: ${this.basestickyleft + this._columnHeaderLockedWidth}px;" class="sticky flex gap-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
 														</div>
 													`)
 												}
@@ -1751,13 +1884,23 @@ class Component extends LitElement {
 														3}; grid-template-columns: subgrid;"
 													>
 														${(() => {
+															if (this.filterexcludeindexes.length > 0 && this.filterexcludeindexes.includes(rowIndex)) {
+																return html`
+																	<div
+																		class="w-full min-w-full h-0"
+																		style="${this.metadatamodel[MetadataModel.FgProperties.GROUP_VIEW_TABLE_IN_2D] && datum2D.length > 0 ? `grid-row: span ${datum2D.length};` : ''} grid-column:span ${this._lockedColumnData2DFieldsIndex.length +
+																		(this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) +
+																		3};"
+																	></div>
+																`
+															}
 															if (this.metadatamodel[MetadataModel.FgProperties.GROUP_VIEW_TABLE_IN_2D]) {
 																return html`
 																	<div
 																		style="grid-row: span ${datum2D.length}; grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this.basestickytop + this._topHeaderHeight}px; left: ${this.basestickyleft}px;"
 																		class="grid sticky bg-white shadow-sm shadow-gray-800 z-10"
 																	>
-																		<div class="w-full h-full min-h-full p-1 flex justify-evenly space-x-1" style="grid-row: span ${datum2D.length};">
+																		<div class="w-full h-full min-h-full p-1 flex justify-evenly gap-x-1" style="grid-row: span ${datum2D.length};">
 																			${(() => {
 																				if (this.addclickcolumn) {
 																					return html`
@@ -1785,26 +1928,20 @@ class Component extends LitElement {
 																						<input
 																							class="self-center checkbox ${this.color === Theme.Color.PRIMARY ? 'checkbox-primary' : this.color === Theme.Color.SECONDARY ? 'checkbox-secondary' : 'checkbox-accent'}"
 																							type="checkbox"
-																							.checked=${rowIndex >= this._selectedrowminindex && rowIndex <= this._selectedrowmaxindex && this._selectedcolumnminindex === 0 && this._selectedcolumnmaxindex === this._dataFields.length - 1}
+																							.checked=${this.selecteddataindexes.includes(rowIndex)}
 																							@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																								if (e.currentTarget.checked) {
-																									this._selectedcolumnminindex = 0
-																									this._selectedcolumnmaxindex = this._dataFields.length - 1
-																									if (rowIndex < this._selectedrowminindex || this._selectedrowminindex === -1) {
-																										this._selectedrowminindex = rowIndex
-																									}
-																									if (rowIndex > this._selectedrowmaxindex || this._selectedrowmaxindex === -1) {
-																										this._selectedrowmaxindex = rowIndex
-																									}
+																									this.selecteddataindexes = [...this.selecteddataindexes, rowIndex]
 																								} else {
-																									if (rowIndex === this._selectedrowminindex) {
-																										this._selectedrowminindex += 1
-																									}
-
-																									if (rowIndex === this._selectedrowmaxindex) {
-																										this._selectedrowmaxindex -= 1
-																									}
+																									this.selecteddataindexes = this.selecteddataindexes.filter((rIndex) => rIndex !== rowIndex)
 																								}
+																								this.dispatchEvent(
+																									new CustomEvent('metadata-model-view-table:selecteddataindexesupdate', {
+																										detail: {
+																											value: this.selecteddataindexes
+																										}
+																									})
+																								)
 																							}}
 																						/>
 																					`
@@ -1871,7 +2008,7 @@ class Component extends LitElement {
 															return html`
 																<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this.basestickytop + this._topHeaderHeight}px;left: ${this.basestickyleft}px;" class="grid sticky bg-white shadow-sm shadow-gray-800 z-10">
 																	<div class="w-full h-full min-h-full flex">
-																		<div class="w-full sticky left-0 bottom-0 h-fit p-1 flex justify-evenly space-x-1" style="top: ${this.basestickytop + this._topHeaderHeight}px;">
+																		<div class="w-full sticky left-0 bottom-0 h-fit p-1 flex justify-evenly gap-x-1" style="top: ${this.basestickytop + this._topHeaderHeight}px;">
 																			${(() => {
 																				if (this.addclickcolumn) {
 																					return html`
@@ -1882,6 +2019,14 @@ class Component extends LitElement {
 																									? 'btn-secondary bg-secondary text-secondary-content'
 																									: 'btn-accent bg-accent text-accent-content'}"
 																							@click=${() => {
+																								this.dispatchEvent(
+																									new CustomEvent('metadata-model-view-table:rowclick', {
+																										detail: {
+																											value: this.data[rowIndex],
+																											index: rowIndex
+																										}
+																									})
+																								)
 																								this._currentOpenDropdownID = this._currentOpenDropdownID === `row-${rowIndex}` ? '' : `row-${rowIndex}`
 																							}}
 																							.disabled=${!this.addclickcolumn}
@@ -1899,26 +2044,20 @@ class Component extends LitElement {
 																						<input
 																							class="self-center checkbox ${this.color === Theme.Color.PRIMARY ? 'checkbox-primary' : this.color === Theme.Color.SECONDARY ? 'checkbox-secondary' : 'checkbox-accent'}"
 																							type="checkbox"
-																							.checked=${rowIndex >= this._selectedrowminindex && rowIndex <= this._selectedrowmaxindex && this._selectedcolumnminindex === 0 && this._selectedcolumnmaxindex === this._dataFields.length - 1}
+																							.checked=${this.selecteddataindexes.includes(rowIndex)}
 																							@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																								if (e.currentTarget.checked) {
-																									this._selectedcolumnminindex = 0
-																									this._selectedcolumnmaxindex = this._dataFields.length - 1
-																									if (rowIndex < this._selectedrowminindex || this._selectedrowminindex === -1) {
-																										this._selectedrowminindex = rowIndex
-																									}
-																									if (rowIndex > this._selectedrowmaxindex || this._selectedrowmaxindex === -1) {
-																										this._selectedrowmaxindex = rowIndex
-																									}
+																									this.selecteddataindexes = [...this.selecteddataindexes, rowIndex]
 																								} else {
-																									if (rowIndex === this._selectedrowminindex) {
-																										this._selectedrowminindex += 1
-																									}
-
-																									if (rowIndex === this._selectedrowmaxindex) {
-																										this._selectedrowmaxindex -= 1
-																									}
+																									this.selecteddataindexes = this.selecteddataindexes.filter((rIndex) => rIndex !== rowIndex)
 																								}
+																								this.dispatchEvent(
+																									new CustomEvent('metadata-model-view-table:selecteddataindexesupdate', {
+																										detail: {
+																											value: this.selecteddataindexes
+																										}
+																									})
+																								)
 																							}}
 																						/>
 																					`

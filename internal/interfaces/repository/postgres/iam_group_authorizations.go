@@ -8,11 +8,78 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/brunoga/deep"
 	"github.com/gofrs/uuid/v5"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
+	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
 )
+
+func (n *PostrgresRepository) RepoIamGroupAuthorizationsSearch(
+	ctx context.Context,
+	mmsearch *intdoment.MetadataModelSearch,
+	repo intdomint.IamRepository,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	startSearchDirectoryGroupID uuid.UUID,
+	authContextDirectoryGroupID uuid.UUID,
+	skipIfFGDisabled bool,
+	skipIfDataExtraction bool,
+	whereAfterJoin bool,
+) (*intdoment.MetadataModelSearchResults, error) {
+	pSelectQuery := NewPostgresSelectQuery(
+		n.logger,
+		repo,
+		iamCredential,
+		iamAuthorizationRules,
+		startSearchDirectoryGroupID,
+		authContextDirectoryGroupID,
+		mmsearch.QueryConditions,
+		skipIfFGDisabled,
+		skipIfDataExtraction,
+		whereAfterJoin,
+	)
+	selectQuery, err := pSelectQuery.IamGroupAuthorizationsGetSelectQuery(ctx, mmsearch.MetadataModel, "")
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsSearch, err)
+	}
+
+	query, selectQueryExtract := GetSelectQuery(selectQuery, whereAfterJoin)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoIamGroupAuthorizationsSearch))
+
+	rows, err := n.db.Query(ctx, query)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsSearch, fmt.Errorf("retrieve %s failed, err: %v", intdoment.IamCredentialsRepository().RepositoryName, err))
+	}
+	defer rows.Close()
+	dataRows := make([]any, 0)
+	for rows.Next() {
+		if r, err := rows.Values(); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsSearch, err)
+		} else {
+			dataRows = append(dataRows, r)
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(mmsearch.MetadataModel, selectQueryExtract.Fields, false, false, nil)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsSearch, err)
+	}
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsSearch, err)
+	}
+
+	mmSearchResults := new(intdoment.MetadataModelSearchResults)
+	mmSearchResults.MetadataModel = deep.MustCopy(mmsearch.MetadataModel)
+	if len(array2DToObject.Objects()) > 0 {
+		mmSearchResults.Data = array2DToObject.Objects()
+	} else {
+		mmSearchResults.Data = make([]any, 0)
+	}
+
+	return mmSearchResults, nil
+}
 
 func (n *PostgresSelectQuery) IamGroupAuthorizationsGetSelectQuery(ctx context.Context, metadataModel map[string]any, metadataModelParentPath string) (*SelectQuery, error) {
 	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
@@ -22,15 +89,15 @@ func (n *PostgresSelectQuery) IamGroupAuthorizationsGetSelectQuery(ctx context.C
 		[]*intdoment.IamGroupAuthorizationRule{
 			{
 				ID:        intdoment.AUTH_RULE_RETRIEVE_SELF,
-				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 			},
 			{
 				ID:        intdoment.AUTH_RULE_RETRIEVE,
-				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 			},
 			{
 				ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
-				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 			},
 		},
 		n.iamAuthorizationRules,
@@ -41,6 +108,9 @@ func (n *PostgresSelectQuery) IamGroupAuthorizationsGetSelectQuery(ctx context.C
 	quoteColumns := true
 	if len(metadataModelParentPath) == 0 {
 		metadataModelParentPath = "$"
+		quoteColumns = false
+	}
+	if !n.whereAfterJoin {
 		quoteColumns = false
 	}
 
@@ -55,7 +125,7 @@ func (n *PostgresSelectQuery) IamGroupAuthorizationsGetSelectQuery(ctx context.C
 	if tableUid, ok := metadataModel[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID].(string); ok && len(tableUid) > 0 {
 		selectQuery.TableUid = tableUid
 	} else {
-		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetSelectQuery, errors.New("tableUid is empty"))
+		return nil, intlib.FunctionNameAndError(n.IamGroupAuthorizationsGetSelectQuery, errors.New("tableUid is empty"))
 	}
 
 	if value, err := intlibmmodel.DatabaseGetColumnFields(metadataModel, selectQuery.TableUid, false, false); err != nil {
@@ -94,9 +164,59 @@ func (n *PostgresSelectQuery) IamGroupAuthorizationsGetSelectQuery(ctx context.C
 		}
 	}
 
-	//iam credentials
+	iamCredentialsIDJoinIamCredentials := intlib.MetadataModelGenJoinKey(intdoment.IamGroupAuthorizationsRepository().IamCredentialsID, intdoment.IamCredentialsRepository().RepositoryName)
+	if value, err := n.extractChildMetadataModel(metadataModel, iamCredentialsIDJoinIamCredentials); err != nil {
+		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", iamCredentialsIDJoinIamCredentials, err))
+	} else {
+		if sq, err := n.IamCredentialsGetSelectQuery(
+			ctx,
+			value,
+			metadataModelParentPath,
+		); err != nil {
+			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", iamCredentialsIDJoinIamCredentials, err))
+		} else {
+			if len(sq.Where) == 0 {
+				sq.JoinType = JOIN_LEFT
+			} else {
+				sq.JoinType = JOIN_INNER
+			}
+			sq.JoinQuery = make([]string, 1)
+			sq.JoinQuery[0] = fmt.Sprintf(
+				"%[1]s = %[2]s",
+				GetJoinColumnName(sq.TableUid, intdoment.IamCredentialsRepository().ID, true),                                 //1
+				GetJoinColumnName(selectQuery.TableUid, intdoment.IamGroupAuthorizationsRepository().IamCredentialsID, false), //2
+			)
 
-	//group rule authorizations
+			selectQuery.Join[iamCredentialsIDJoinIamCredentials] = sq
+		}
+	}
+
+	groupRuleAuthorizationsIDJoinGroupRuleAuthorizations := intlib.MetadataModelGenJoinKey(intdoment.IamGroupAuthorizationsRepository().GroupRuleAuthorizationsID, intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
+	if value, err := n.extractChildMetadataModel(metadataModel, groupRuleAuthorizationsIDJoinGroupRuleAuthorizations); err != nil {
+		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", groupRuleAuthorizationsIDJoinGroupRuleAuthorizations, err))
+	} else {
+		if sq, err := n.GroupRuleAuthorizationsGetSelectQuery(
+			ctx,
+			value,
+			metadataModelParentPath,
+		); err != nil {
+			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", groupRuleAuthorizationsIDJoinGroupRuleAuthorizations, err))
+		} else {
+			if len(sq.Where) == 0 {
+				sq.JoinType = JOIN_LEFT
+			} else {
+				sq.JoinType = JOIN_INNER
+			}
+			sq.JoinQuery = make([]string, 1)
+			sq.JoinQuery[0] = fmt.Sprintf(
+				"%[1]s = %[2]s",
+				GetJoinColumnName(sq.TableUid, intdoment.GroupRuleAuthorizationsRepository().ID, true),                                 //1
+				GetJoinColumnName(selectQuery.TableUid, intdoment.IamGroupAuthorizationsRepository().GroupRuleAuthorizationsID, false), //2
+			)
+
+			selectQuery.Join[groupRuleAuthorizationsIDJoinGroupRuleAuthorizations] = sq
+		}
+	}
 
 	selectQuery.appendSort()
 	selectQuery.appendLimitOffset(metadataModel)

@@ -17,6 +17,7 @@ class Component extends LitElement {
 
 	@state() private _contentElementLeftRightFixedPosition: string = 'left'
 	@state() private _contentElementLeftRightPosition: number = -window.innerWidth / 2
+	@state() private _minwidth: number = 700
 
 	private _contentPositionInterval: number | undefined
 
@@ -46,11 +47,17 @@ class Component extends LitElement {
 	@state() private _headerIsFocused: boolean = false
 	@state() private _contentIsFocused: boolean = false
 
+	@state() private _windowWidth: number = window.innerWidth
+	private _handleWindowResize = (_: UIEvent) => {
+		this._windowWidth = window.innerWidth //1000
+	}
+
 	connectedCallback(): void {
 		super.connectedCallback()
 		let randomContentID = new Int32Array(1)
 		window.crypto.getRandomValues(randomContentID)
 		this._contentElementID = this._contentElementID + randomContentID[0].toString()
+		window.addEventListener('resize', this._handleWindowResize)
 	}
 
 	disconnectedCallback(): void {
@@ -60,6 +67,7 @@ class Component extends LitElement {
 		if (typeof this._removeContentFromViewTimeout === 'number') {
 			window.clearTimeout(this._removeContentFromViewTimeout)
 		}
+		window.removeEventListener('resize', this._handleWindowResize)
 	}
 
 	private _removeContentFromView() {
@@ -191,8 +199,9 @@ class Component extends LitElement {
 			<div
 				id="${this._contentElementID}"
 				class="fixed max-w-fit max-h-fit"
-				style="${(this._headerIsFocused || this._contentIsFocused) && this.showdropdowncontent && this._contentElementTopBottomPosition >= 0 && this._contentElementLeftRightPosition >= 0 ? '' : 'visibility: hidden;'} ${this._contentElementTopBottomFixedPosition}: ${this
-					._contentElementTopBottomPosition}px; ${this._contentElementLeftRightFixedPosition}: ${this._contentElementLeftRightPosition}px;z-index: 999;"
+				style="${(this._headerIsFocused || this._contentIsFocused) && this.showdropdowncontent && this._contentElementTopBottomPosition >= 0 && this._contentElementLeftRightPosition >= 0 ? '' : 'visibility: hidden;'} ${this._contentElementTopBottomFixedPosition}: ${
+					this._contentElementTopBottomPosition
+				}px; ${this._contentElementLeftRightFixedPosition}: ${this._contentElementLeftRightPosition}px;z-index: 999;"
 				@focusin=${() => {
 					this._handleFocusUpdate(undefined, true)
 				}}
@@ -227,7 +236,6 @@ class Component extends LitElement {
 						})()
 					}
 
-					// if (true) {
 					if ((this._headerIsFocused || this._contentIsFocused) && this.showdropdowncontent) {
 						if (typeof this._contentPositionInterval !== 'number') {
 							this._contentPositionInterval = window.setInterval(() => this._handleUpdateContentPosition(), 50)
@@ -236,8 +244,24 @@ class Component extends LitElement {
 							document.body.appendChild(this._contentElement)
 							this._contentElement.append(...this._contentElements)
 						}
-
 						return nothing
+						// if (this._windowWidth > this._minwidth) {
+						// 	;(this.shadowRoot?.querySelector('#drop-down-dialog') as HTMLDialogElement).close()
+						// 	if (typeof this._contentPositionInterval !== 'number') {
+						// 		this._contentPositionInterval = window.setInterval(() => this._handleUpdateContentPosition(), 50)
+						// 	}
+						// 	if (!document.body.querySelector(`#${this._contentElementID}`) && this._contentElement && Array.isArray(this._contentElements)) {
+						// 		document.body.appendChild(this._contentElement)
+						// 		this._contentElement.append(...this._contentElements)
+						// 	}
+						// 	return nothing
+						// } else {
+						// 	;(this.shadowRoot?.querySelector('#drop-down-dialog') as HTMLDialogElement).showModal()
+						// 	if (!document.body.querySelector(`#${this._contentElementID}`) && this._contentElement && Array.isArray(this._contentElements)) {
+						// 		// (this.querySelector(`#drop-down-dialog`) as HTMLElement).appendChild(this._contentElement)
+						// 		(this.querySelector(`#drop-down-dialog`) as HTMLElement).append(...this._contentElements)
+						// 	}
+						// }
 					}
 
 					this._removeContentFromView()
@@ -254,3 +278,24 @@ declare global {
 		'drop-down': Component
 	}
 }
+
+
+
+// <dialog id="drop-down-dialog" class="modal">
+// <form method="dialog" class="modal-box p-0 rounded w-full max-w-fit max-h-fit overflow-hidden">
+// 	<header class="sticky flex justify-end items-end p-2 shadow-gray-800 shadow-sm top-0 left-0 right-0">
+// 		<button class="btn btn-circle btn-ghost flex justify-center" @click=${() => {
+// 			this._handleFocusUpdate(false, false)
+// 			this._updateShowdropdownContent()
+// 		}}>
+// 			<!--mdi:close-thick source: https://icon-sets.iconify.design-->
+// 			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+// 				<path fill="black" d="M20 6.91L17.09 4L12 9.09L6.91 4L4 6.91L9.09 12L4 17.09L6.91 20L12 14.91L17.09 20L20 17.09L14.91 12z" />
+// 			</svg>
+// 		</button>
+// 	</header>
+// 	<main id="drop-down-dialog">
+
+// 	</main>
+// </form>
+// </dialog>

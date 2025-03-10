@@ -29,8 +29,8 @@ func (n *PostrgresRepository) RepoDirectoryGroupsSearch(
 	authContextDirectoryGroupID uuid.UUID,
 	skipIfFGDisabled bool,
 	skipIfDataExtraction bool,
+	whereAfterJoin bool,
 ) (*intdoment.MetadataModelSearchResults, error) {
-
 	pSelectQuery := NewPostgresSelectQuery(
 		n.logger,
 		repo,
@@ -41,24 +41,25 @@ func (n *PostrgresRepository) RepoDirectoryGroupsSearch(
 		mmsearch.QueryConditions,
 		skipIfFGDisabled,
 		skipIfDataExtraction,
+		whereAfterJoin,
 	)
 	selectQuery, err := pSelectQuery.DirectoryGroupsGetSelectQuery(ctx, mmsearch.MetadataModel, "")
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsSearch, err)
 	}
 
-	query, selectQueryExtract := GetSelectQuery(selectQuery)
+	query, selectQueryExtract := GetSelectQuery(selectQuery, whereAfterJoin)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsSearch))
 
 	rows, err := n.db.Query(ctx, query)
 	if err != nil {
-		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsSearch, fmt.Errorf("retrieve %s failed, err: %v", intdoment.IamCredentialsRepository().RepositoryName, err))
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsSearch, fmt.Errorf("retrieve %s failed, err: %v", intdoment.DirectoryGroupsRepository().RepositoryName, err))
 	}
 	defer rows.Close()
 	dataRows := make([]any, 0)
 	for rows.Next() {
 		if r, err := rows.Values(); err != nil {
-			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, err)
+			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsSearch, err)
 		} else {
 			dataRows = append(dataRows, r)
 		}
@@ -66,10 +67,10 @@ func (n *PostrgresRepository) RepoDirectoryGroupsSearch(
 
 	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(mmsearch.MetadataModel, selectQueryExtract.Fields, false, false, nil)
 	if err != nil {
-		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindOneByIamCredentialID, err)
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsSearch, err)
 	}
 	if err := array2DToObject.Convert(dataRows); err != nil {
-		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindOneByIamCredentialID, err)
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsSearch, err)
 	}
 
 	mmSearchResults := new(intdoment.MetadataModelSearchResults)
@@ -108,6 +109,9 @@ func (n *PostgresSelectQuery) DirectoryGroupsGetSelectQuery(ctx context.Context,
 		metadataModelParentPath = "$"
 		quoteColumns = false
 	}
+	if !n.whereAfterJoin {
+		quoteColumns = false
+	}
 
 	selectQuery := SelectQuery{
 		TableName: intdoment.DirectoryGroupsRepository().RepositoryName,
@@ -121,77 +125,6 @@ func (n *PostgresSelectQuery) DirectoryGroupsGetSelectQuery(ctx context.Context,
 		selectQuery.TableUid = tableUid
 	} else {
 		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetSelectQuery, errors.New("tableUid is empty"))
-	}
-
-	directoryGroupsJoinDirectoryGroupAuthorizationIDs := intlib.MetadataModelGenJoinKey(intdoment.DirectoryGroupsRepository().RepositoryName, intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName)
-	if value, err := n.extractChildMetadataModel(metadataModel, directoryGroupsJoinDirectoryGroupAuthorizationIDs); err != nil {
-		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", directoryGroupsJoinDirectoryGroupAuthorizationIDs, err))
-	} else {
-		if sq, err := n.AuthorizationIDsGetSelectQuery(
-			ctx,
-			value,
-			metadataModelParentPath,
-			intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName,
-			[]AuthIDsSelectQueryPKey{{Name: intdoment.DirectoryGroupsAuthorizationIDsRepository().ID, ProcessAs: PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE}},
-			intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID,
-			intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID,
-		); err != nil {
-			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", directoryGroupsJoinDirectoryGroupAuthorizationIDs, err))
-		} else {
-			if len(sq.Where) == 0 {
-				sq.JoinType = JOIN_LEFT
-			} else {
-				sq.JoinType = JOIN_INNER
-			}
-			sq.JoinQuery = make([]string, 1)
-			sq.JoinQuery[0] = fmt.Sprintf(
-				"%[1]s = %[2]s",
-				GetJoinColumnName(sq.TableUid, intdoment.DirectoryGroupsAuthorizationIDsRepository().ID, true), //1
-				GetJoinColumnName(selectQuery.TableUid, intdoment.DirectoryGroupsRepository().ID, false),       //2
-			)
-
-			selectQuery.Join[directoryGroupsJoinDirectoryGroupAuthorizationIDs] = sq
-		}
-	}
-
-	if value, err := intlibmmodel.DatabaseGetColumnFields(metadataModel, selectQuery.TableUid, false, false); err != nil {
-		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetSelectQuery, fmt.Errorf("extract database column fields failed, error: %v", err))
-	} else {
-		selectQuery.Columns = value
-	}
-
-	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().ID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().ID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.DirectoryGroupsRepository().ID] = value
-		}
-	}
-	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().Data][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().Data, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.DirectoryGroupsRepository().Data] = value
-		}
-	}
-	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().Data][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().Data, fgKeyString, PROCESS_QUERY_CONDITION_AS_JSONB, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.DirectoryGroupsRepository().Data] = value
-		}
-	}
-	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().CreatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().CreatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.DirectoryGroupsRepository().CreatedOn] = value
-		}
-	}
-	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().LastUpdatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().LastUpdatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.DirectoryGroupsRepository().LastUpdatedOn] = value
-		}
-	}
-	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().DeactivatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().DeactivatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.DirectoryGroupsRepository().DeactivatedOn] = value
-		}
-	}
-	if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, selectQuery.TableName, "", "", "", intdoment.DirectoryGroupsRepository().FullTextSearch); len(value) > 0 {
-		selectQuery.Where[intdoment.DirectoryGroupsRepository().RepositoryName] = value
 	}
 
 	if !n.startSearchDirectoryGroupID.IsNil() {
@@ -247,6 +180,77 @@ func (n *PostgresSelectQuery) DirectoryGroupsGetSelectQuery(ctx context.Context,
 		n.startSearchDirectoryGroupID = uuid.Nil
 	}
 
+	if value, err := intlibmmodel.DatabaseGetColumnFields(metadataModel, selectQuery.TableUid, false, false); err != nil {
+		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetSelectQuery, fmt.Errorf("extract database column fields failed, error: %v", err))
+	} else {
+		selectQuery.Columns = value
+	}
+
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().ID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().ID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().ID] = value
+		}
+	}
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().Data][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().Data, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().Data] = value
+		}
+	}
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().Data][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().Data, fgKeyString, PROCESS_QUERY_CONDITION_AS_JSONB, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().Data] = value
+		}
+	}
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().CreatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().CreatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().CreatedOn] = value
+		}
+	}
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().LastUpdatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().LastUpdatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().LastUpdatedOn] = value
+		}
+	}
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().DeactivatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().DeactivatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().DeactivatedOn] = value
+		}
+	}
+	if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, selectQuery.TableName, "", "", "", intdoment.DirectoryGroupsRepository().FullTextSearch); len(value) > 0 {
+		selectQuery.Where[intdoment.DirectoryGroupsRepository().RepositoryName] = value
+	}
+
+	directoryGroupsJoinDirectoryGroupAuthorizationIDs := intlib.MetadataModelGenJoinKey(intdoment.DirectoryGroupsRepository().RepositoryName, intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName)
+	if value, err := n.extractChildMetadataModel(metadataModel, directoryGroupsJoinDirectoryGroupAuthorizationIDs); err != nil {
+		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", directoryGroupsJoinDirectoryGroupAuthorizationIDs, err))
+	} else {
+		if sq, err := n.AuthorizationIDsGetSelectQuery(
+			ctx,
+			value,
+			metadataModelParentPath,
+			intdoment.DirectoryGroupsAuthorizationIDsRepository().RepositoryName,
+			[]AuthIDsSelectQueryPKey{{Name: intdoment.DirectoryGroupsAuthorizationIDsRepository().ID, ProcessAs: PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE}},
+			intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID,
+			intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID,
+		); err != nil {
+			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", directoryGroupsJoinDirectoryGroupAuthorizationIDs, err))
+		} else {
+			if len(sq.Where) == 0 {
+				sq.JoinType = JOIN_LEFT
+			} else {
+				sq.JoinType = JOIN_INNER
+			}
+			sq.JoinQuery = make([]string, 1)
+			sq.JoinQuery[0] = fmt.Sprintf(
+				"%[1]s = %[2]s",
+				GetJoinColumnName(sq.TableUid, intdoment.DirectoryGroupsAuthorizationIDsRepository().ID, true), //1
+				GetJoinColumnName(selectQuery.TableUid, intdoment.DirectoryGroupsRepository().ID, false),       //2
+			)
+
+			selectQuery.Join[directoryGroupsJoinDirectoryGroupAuthorizationIDs] = sq
+		}
+	}
+
 	selectQuery.appendSort()
 	selectQuery.appendLimitOffset(metadataModel)
 
@@ -254,7 +258,7 @@ func (n *PostgresSelectQuery) DirectoryGroupsGetSelectQuery(ctx context.Context,
 }
 
 func (n *PostrgresRepository) RepoDirectoryGroupsFindOneByIamCredentialID(ctx context.Context, iamCredentialID uuid.UUID, columns []string) (*intdoment.DirectoryGroups, error) {
-	directoryGroupsMModel, err := intlib.MetadataModelGetDatum(intdoment.DirectoryGroupsRepository().RepositoryName)
+	directoryGroupsMModel, err := intlib.MetadataModelGet(intdoment.DirectoryGroupsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindOneByIamCredentialID, err)
 	}
@@ -338,7 +342,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroupRuleAuthorizatio
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, err)
 	}
 
-	groupRuleAuthorizationMModel, err := intlib.MetadataModelGetDatum(intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
+	groupRuleAuthorizationMModel, err := intlib.MetadataModelGet(intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, err)
 	}
@@ -353,7 +357,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroupRuleAuthorizatio
 	)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations))
 
-	rows, err := n.db.Query(ctx, query, systemGroup.ID[0], intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATION, intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION, intdoment.AUTH_RULE_GROUP_DIRECTORY, intdoment.AUTH_RULE_GROUP_IAM_CREDENTIALS, intdoment.AUTH_RULE_GROUP_DIRECTORY_GROUPS)
+	rows, err := n.db.Query(ctx, query, systemGroup.ID[0], intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATIONS, intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS, intdoment.AUTH_RULE_GROUP_DIRECTORY, intdoment.AUTH_RULE_GROUP_IAM_CREDENTIALS, intdoment.AUTH_RULE_GROUP_DIRECTORY_GROUPS)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, fmt.Errorf("retrieve %s failed, err: %v", intdoment.IamCredentialsRepository().RepositoryName, err))
 	}
@@ -379,7 +383,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroupRuleAuthorizatio
 	if jsonData, err := json.Marshal(array2DToObject.Objects()); err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, err)
 	} else {
-		n.logger.Log(ctx, slog.LevelDebug, "json parsing groupRuleAuthorizations", "groupRuleAuthorizations", string(jsonData), "function", intlib.FunctionName(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations))
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing groupRuleAuthorizations", "groupRuleAuthorizations", string(jsonData), "function", intlib.FunctionName(n.RepoDirectoryGroupsSearch))
 		if err := json.Unmarshal(jsonData, &groupRuleAuthorizations); err != nil {
 			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, err)
 		}
@@ -389,7 +393,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroupRuleAuthorizatio
 }
 
 func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.Context, columns []string) (*intdoment.DirectoryGroups, error) {
-	directoryGroupsMModel, err := intlib.MetadataModelGetDatum(intdoment.DirectoryGroupsRepository().RepositoryName)
+	directoryGroupsMModel, err := intlib.MetadataModelGet(intdoment.DirectoryGroupsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 	}
@@ -457,7 +461,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 		}
 	}
 
-	groupAuthorizationRulesMModel, err := intlib.MetadataModelGetDatum(intdoment.GroupAuthorizationRulesRepository().RepositoryName)
+	groupAuthorizationRulesMModel, err := intlib.MetadataModelGet(intdoment.GroupAuthorizationRulesRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 	}
@@ -470,7 +474,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 	)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsCreateSystemGroup))
 
-	rows, err = transaction.Query(ctx, query, intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATION, intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION, intdoment.AUTH_RULE_GROUP_DIRECTORY, intdoment.AUTH_RULE_GROUP_IAM_CREDENTIALS, intdoment.AUTH_RULE_GROUP_DIRECTORY_GROUPS)
+	rows, err = transaction.Query(ctx, query, intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATIONS, intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS, intdoment.AUTH_RULE_GROUP_DIRECTORY, intdoment.AUTH_RULE_GROUP_IAM_CREDENTIALS, intdoment.AUTH_RULE_GROUP_DIRECTORY_GROUPS)
 	if err != nil {
 		transaction.Rollback(ctx)
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, fmt.Errorf("retrieve %s failed, err: %v", intdoment.GroupAuthorizationRulesRepository().RepositoryName, err))
@@ -554,7 +558,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 }
 
 func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroup(ctx context.Context, columns []string) (*intdoment.DirectoryGroups, error) {
-	directoryGroupsMModel, err := intlib.MetadataModelGetDatum(intdoment.DirectoryGroupsRepository().RepositoryName)
+	directoryGroupsMModel, err := intlib.MetadataModelGet(intdoment.DirectoryGroupsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 	}

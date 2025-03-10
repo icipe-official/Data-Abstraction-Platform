@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
@@ -59,6 +60,10 @@ func IamAuthenticationMiddleware(logger intdomint.Logger, env *EnvVariables, ope
 			openIDTokenIntrospect := new(intdoment.OpenIDTokenIntrospect)
 			if value, err := openId.OpenIDIntrospectToken(openIDToken); err != nil {
 				logger.Log(r.Context(), slog.LevelWarn+1, fmt.Sprintf("introspect open id token failed, error: %v", err))
+				if strings.HasPrefix(r.URL.Path, fmt.Sprintf("%sapi/iam/logout", env.Get(ENV_WEB_SERVICE_BASE_PATH))) {
+					next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ERROR_CODE_CTX_KEY, NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)))))
+					return
+				}
 				if newToken, err := openId.OpenIDRefreshToken(openIDToken); err != nil {
 					logger.Log(r.Context(), slog.LevelError, fmt.Sprintf("refresh open id token failed, error: %v", err))
 					next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ERROR_CODE_CTX_KEY, NewError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized)))))
@@ -102,7 +107,16 @@ func IamAuthenticationMiddleware(logger intdomint.Logger, env *EnvVariables, ope
 				return
 			}
 
-			logger.Log(r.Context(), slog.LevelDebug, fmt.Sprintf("iamCredentials: %+v", iamCredentials))
+			logger.Log(r.Context(), slog.LevelDebug, fmt.Sprintf("authed iamCredentials: %+v", iamCredentials))
+
+			if strings.HasPrefix(r.URL.Path, fmt.Sprintf("%sapi/iam/logout", env.Get(ENV_WEB_SERVICE_BASE_PATH))) {
+				if err := openId.OpenIDRevokeToken(openIDToken); err != nil {
+					logger.Log(r.Context(), slog.LevelWarn, fmt.Sprintf("revoke open id token for logout failed, error: %v", err))
+				}
+				token := new(IamAccessRefreshToken)
+				IamSetCookieInResponse(w, iamCookie, token, 0, 0)
+			}
+
 			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), IAM_CREDENTIAL_ID_CTX_KEY, *iamCredentials)))
 		})
 	}

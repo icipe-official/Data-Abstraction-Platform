@@ -589,7 +589,7 @@ class Component extends LitElement {
 													}}
 												>
 													<!--mdi:delete source: https://icon-sets.iconify.design-->
-													<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24"><path fill="black" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
+													<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 												</button>
 											`
 										} else {
@@ -602,7 +602,7 @@ class Component extends LitElement {
 						return tabs.length > 0 ? tabs : nothing
 					})()}
 				</header>
-				<div slot="content" class="rounded-md bg-white shadow-md shadow-gray-800 p-1 w-full overflow-auto flex flex-col space-y-1">
+				<div slot="content" class="rounded-md bg-white shadow-md shadow-gray-800 p-1 w-full overflow-auto flex flex-col gap-y-1">
 					<header role="tablist" class="tabs tabs-bordered">
 						${(() => {
 							let tabs: TemplateResult<1>[] = []
@@ -670,7 +670,7 @@ class Component extends LitElement {
 							switch (this._currentTab) {
 								case CalendarTimeTab.YEAR:
 									return html`
-										<div class="flex flex-col space-y-1 w-full">
+										<div class="flex flex-col gap-y-1 w-full">
 											<div class="flex w-full">
 												<button
 													class="rounded-bl-lg rounded-tl-lg rounded-br-none rounded-tr-none btn ${this.color === Theme.Color.PRIMARY

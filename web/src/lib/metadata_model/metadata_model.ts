@@ -49,6 +49,8 @@ export interface IMetadataModel {
 	[FgProperties.FIELD_GROUP_QUERY_CONDITIONS_EDIT_DISABLE]?: boolean
 	[FgProperties.GROUP_EXTRACT_AS_SINGLE_FIELD]?: boolean
 
+	[FgProperties.FIELD_TYPE_ANY]?: IFieldAny
+
 	[FgProperties.GROUP_READ_ORDER_OF_FIELDS]?: string[]
 	[FgProperties.GROUP_FIELDS]?: { [key: string]: IMetadataModel[] }[]
 
@@ -106,7 +108,7 @@ export enum FSelectType {
 export interface ISelectOption {
 	[FSelectProperties.LABEL]?: string
 	[FSelectProperties.TYPE]?: FSelectType
-	[FSelectProperties.DATE_TIME_FORMAT]?: FieldDateTimeFormat 
+	[FSelectProperties.DATE_TIME_FORMAT]?: FieldDateTimeFormat
 	[FSelectProperties.VALUE]?: any
 }
 
@@ -144,6 +146,7 @@ export enum FgProperties {
 	FIELD_GROUP_DISABLE_PROPERTIES_EDIT = '$FIELD_GROUP_DISABLE_PROPERTIES_EDIT',
 	DATABASE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX = '$DATABASE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX',
 	FIELD_CHECKBOX_VALUE_IF_TRUE = '$FIELD_CHECKBOX_VALUE_IF_TRUE',
+	FIELD_TYPE_ANY = '$FIELD_TYPE_ANY',
 	FIELD_CHECKBOX_VALUE_IF_FALSE = '$FIELD_CHECKBOX_VALUE_IF_FALSE',
 	FIELD_CHECKBOX_VALUES_USE_IN_VIEW = '$FIELD_CHECKBOX_VALUES_USE_IN_VIEW',
 	FIELD_CHECKBOX_VALUES_USE_IN_STORAGE = '$FIELD_CHECKBOX_VALUES_USE_IN_STORAGE',
@@ -165,18 +168,20 @@ export enum FgProperties {
 	FIELD_2D_DATA_REMOVE_EMPTY_VALUES = '$FIELD_2D_DATA_REMOVE_EMPTY_VALUES'
 }
 
+export interface IFieldAny {
+	[FieldAnyProperties.METADATA_MODEL_ACTION_ID]: string
+	[FieldAnyProperties.PICK_METADATA_MODEL_MESSAGE_PROMPT]?: string
+	[FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT]?: string
+}
+
+export enum FieldAnyProperties {
+	METADATA_MODEL_ACTION_ID = '$METADATA_MODEL_ACTION_ID',
+	PICK_METADATA_MODEL_MESSAGE_PROMPT = '$PICK_METADATA_MODEL_MESSAGE_PROMPT',
+	GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT = '$GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT'
+}
+
 
 export type QueryConditions = { [key: string]: IQueryCondition }
-
-export interface ISearch {
-	metadata_model?: IMetadataModel
-	query_conditions?: QueryConditions[]
-}
-
-export interface ISearchResults {
-	metadata_model?: IMetadataModel
-	data?: any[]
-}
 
 export interface IQueryCondition {
 	[QcProperties.D_TABLE_COLLECTION_UID]?: string

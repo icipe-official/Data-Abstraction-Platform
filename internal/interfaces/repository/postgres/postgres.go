@@ -43,15 +43,15 @@ func (n *PostgresSelectQuery) AuthorizationIDsGetSelectQuery(
 		[]*intdoment.IamGroupAuthorizationRule{
 			{
 				ID:        intdoment.AUTH_RULE_RETRIEVE_SELF,
-				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 			},
 			{
 				ID:        intdoment.AUTH_RULE_RETRIEVE,
-				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 			},
 			{
 				ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
-				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 			},
 		},
 		n.iamAuthorizationRules,
@@ -62,6 +62,9 @@ func (n *PostgresSelectQuery) AuthorizationIDsGetSelectQuery(
 	quoteColumns := true
 	if len(metadataModelParentPath) == 0 {
 		metadataModelParentPath = "$"
+		quoteColumns = false
+	}
+	if !n.whereAfterJoin {
 		quoteColumns = false
 	}
 
@@ -76,6 +79,31 @@ func (n *PostgresSelectQuery) AuthorizationIDsGetSelectQuery(
 		selectQuery.TableUid = tableUid
 	} else {
 		return nil, intlib.FunctionNameAndError(n.AuthorizationIDsGetSelectQuery, errors.New("tableUid is empty"))
+	}
+
+	if value, err := intlibmmodel.DatabaseGetColumnFields(metadataModel, selectQuery.TableUid, false, false); err != nil {
+		return nil, intlib.FunctionNameAndError(n.AuthorizationIDsGetSelectQuery, fmt.Errorf("extract database column fields failed, error: %v", err))
+	} else {
+		selectQuery.Columns = value
+	}
+
+	for _, pkc := range primaryKeyColumns {
+		if fgKeyString, ok := selectQuery.Columns.Fields[pkc.Name][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+			if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", pkc.Name, fgKeyString, pkc.ProcessAs, ""); len(value) > 0 {
+				selectQuery.Where[pkc.Name] = value
+			}
+		}
+	}
+
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID] = value
+		}
+	}
+	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID] = value
+		}
 	}
 
 	creationIamGroupAuthorizationsIDJoinIamGroupAuthorizations := intlib.MetadataModelGenJoinKey(creationIamGroupAuthorizationsIDColumnName, intdoment.IamGroupAuthorizationsRepository().RepositoryName)
@@ -120,42 +148,20 @@ func (n *PostgresSelectQuery) AuthorizationIDsGetSelectQuery(
 		}
 	}
 
-	if value, err := intlibmmodel.DatabaseGetColumnFields(metadataModel, selectQuery.TableUid, false, false); err != nil {
-		return nil, intlib.FunctionNameAndError(n.AuthorizationIDsGetSelectQuery, fmt.Errorf("extract database column fields failed, error: %v", err))
-	} else {
-		selectQuery.Columns = value
-	}
-
-	for _, pkc := range primaryKeyColumns {
-		if fgKeyString, ok := selectQuery.Columns.Fields[pkc.Name][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-			if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", pkc.Name, fgKeyString, pkc.ProcessAs, ""); len(value) > 0 {
-				selectQuery.Where[pkc.Name] = value
-			}
-		}
-	}
-
-	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.DirectoryGroupsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID] = value
-		}
-	}
-	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.DirectoryGroupsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID] = value
-		}
-	}
-
 	selectQuery.appendSort()
 	selectQuery.appendLimitOffset(metadataModel)
 
 	return &selectQuery, nil
 }
 
-func GetSelectQuery(selectQuery *SelectQuery) (string, *SelectQueryExtract) {
-	sqe := new(ExtractSelectQuery)
+func GetSelectQuery(selectQuery *SelectQuery, whereAfterJoin bool) (string, *SelectQueryExtract) {
+	sqe := NewExtractSelectQuery(whereAfterJoin)
 	selectQueryExtract := sqe.Extract(selectQuery)
 	selectQueryWhere := NewSelectQueryWhere()
-	where := selectQueryWhere.Merge(selectQuery)
+	where := ""
+	if whereAfterJoin {
+		where = selectQueryWhere.Merge(selectQuery)
+	}
 	query := ""
 	if len(selectQueryExtract.DirectoryGroupsSubGroupsCTE) > 0 {
 		query += selectQueryExtract.DirectoryGroupsSubGroupsCTE + " "
@@ -208,7 +214,15 @@ type SelectQueryExtract struct {
 	SortAsc                              map[string]bool
 }
 
-type ExtractSelectQuery struct{}
+type ExtractSelectQuery struct {
+	whereAfterJoin bool
+}
+
+func NewExtractSelectQuery(whereAfterJoin bool) *ExtractSelectQuery {
+	n := new(ExtractSelectQuery)
+	n.whereAfterJoin = whereAfterJoin
+	return n
+}
 
 func (n *ExtractSelectQuery) Extract(selectQuery *SelectQuery) *SelectQueryExtract {
 	return n.extract(selectQuery, false)
@@ -246,10 +260,26 @@ func (n *ExtractSelectQuery) extract(selectQuery *SelectQuery, nested bool) *Sel
 	psq.Query += "SELECT"
 	psq.Query += fmt.Sprintf(" %s FROM %s as %s", strings.Join(psq.SelectColumns, ","), selectQuery.TableName, selectQuery.TableUid)
 	psq.Query += " " + strings.Join(psq.JoinQuery, " ")
-	if nested && len(selectQuery.DirectoryGroupsSubGroupsCTECondition) > 0 {
+	whereSet := false
+	if (nested || !n.whereAfterJoin) && len(selectQuery.DirectoryGroupsSubGroupsCTECondition) > 0 {
 		psq.Query += " WHERE " + selectQuery.DirectoryGroupsSubGroupsCTECondition
+		whereSet = true
 	} else {
 		psq.DirectoryGroupsSubGroupsCTECondition = selectQuery.DirectoryGroupsSubGroupsCTECondition
+	}
+
+	if !n.whereAfterJoin {
+		sqCopy := deep.MustCopy(selectQuery)
+		sqCopy.Join = nil
+		selectQueryWhere := NewSelectQueryWhere()
+		where := selectQueryWhere.Merge(sqCopy)
+		if len(where) > 0 {
+			if whereSet {
+				psq.Query += " AND " + where
+			} else {
+				psq.Query += " WHERE " + where
+			}
+		}
 	}
 
 	// Process Limit, Offset, Sort
@@ -394,16 +424,11 @@ func (n *SelecteQueryWhere) Merge(selectQuery *SelectQuery) string {
 }
 
 func (n *SelecteQueryWhere) Group(selectQuery *SelectQuery) {
-	if len(selectQuery.Where) < 1 {
-		return
-	}
-
 	for _, qConditions := range selectQuery.Where {
 		for qKey, qCondition := range qConditions {
 			if _, ok := n.groupedqueryconditions[qKey]; !ok {
 				n.groupedqueryconditions[qKey] = make([][][]string, 0)
 			}
-
 			n.groupedqueryconditions[qKey] = append(n.groupedqueryconditions[qKey], qCondition)
 		}
 	}
@@ -518,6 +543,7 @@ type PostgresSelectQuery struct {
 	queryConditions             []intdoment.MetadataModelQueryConditions
 	skipIfFGDisabled            bool
 	skipIfDataExtraction        bool
+	whereAfterJoin              bool
 }
 
 func (n *PostgresSelectQuery) getWhereCondition(quoteColumns bool, tableUID string, tableName string, columnName string, columnFgKey string, processQueryConditionAs string, fullTextSearchColumnName string) map[int][][]string {
@@ -544,13 +570,13 @@ func (n *PostgresSelectQuery) getWhereCondition(quoteColumns bool, tableUID stri
 			if qValue.DatabaseTableCollectionUid != tableUID {
 				continue
 			}
+
 			if len(tableName) > 0 && qValue.DatabaseTableCollectionName != tableName {
 				continue
 			}
 			if len(columnName) > 0 && qValue.DatabaseFieldColumnName != columnName {
 				continue
 			}
-
 			if len(tableName) > 0 && len(fullTextSearchColumnName) > 0 {
 				if len(qValue.DatabaseFullTextSearchQuery) > 0 {
 					initWhere()
@@ -566,7 +592,6 @@ func (n *PostgresSelectQuery) getWhereCondition(quoteColumns bool, tableUID stri
 			if len(qValue.FilterCondition) < 1 {
 				continue
 			}
-
 			switch processQueryConditionAs {
 			case PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE:
 				if len(columnFgKey) > 0 && qPath != intlibmmodel.GetPathToValue(columnFgKey, true, intlibmmodel.ARRAY_PATH_PLACEHOLDER) {
@@ -729,7 +754,7 @@ func GetWhereConditionForJsonbValue(columName string, queryPath string, columnFg
 				if len(andFilterCondition.DateTimeFormat) > 0 || reflect.TypeOf(andFilterCondition.Value).Kind() == reflect.String {
 					cName = jsonbElementTextColumnName
 				}
-				c := ColumnEqualTo(cName, andFilterCondition.DateTimeFormat, andFilterCondition.Value)
+				c := ColumnEqualTo(cName, andFilterCondition.Value)
 				if len(c) == 0 {
 					break
 				}
@@ -882,7 +907,7 @@ func GetWhereConditionForArrayValue(columName string, filterCondition [][]intdom
 					andCondition = fmt.Sprintf("EXISTS(SELECT 1 FROM %s as %s WHERE %s)", selectArrayElementsQuery, arrayElementColumnName, c)
 				}
 			case intlibmmodel.FILTER_CONDTION_EQUAL_TO:
-				c := ColumnEqualTo(arrayElementColumnName, andFilterCondition.DateTimeFormat, andFilterCondition.Value)
+				c := ColumnEqualTo(arrayElementColumnName, andFilterCondition.Value)
 				if len(c) == 0 {
 					break
 				}
@@ -1046,7 +1071,7 @@ func GetWhereConditionForSingleValue(columName string, filterCondition [][]intdo
 					andCondition = c
 				}
 			case intlibmmodel.FILTER_CONDTION_EQUAL_TO:
-				c := ColumnEqualTo(columName, andFilterCondition.DateTimeFormat, andFilterCondition.Value)
+				c := ColumnEqualTo(columName, andFilterCondition.Value)
 				if len(c) == 0 {
 					break
 				}
@@ -1167,17 +1192,20 @@ func ColumnNumberCondition(column string, columnCondition string, value any) str
 	return fmt.Sprintf("%s %s %f", column, columnCondition, valueFloat)
 }
 
-func ColumnEqualTo(column string, dateTimeFormat string, value any) string {
-	if valueString, ok := value.(string); ok {
-		if len(valueString) > 0 {
-			if len(dateTimeFormat) > 0 {
-				return ColumnTimestampCondition(column, dateTimeFormat, COLUMN_EQUAL_TO, valueString)
+func ColumnEqualTo(column string, value any) string {
+	if valueEqual, ok := value.(map[string]any); ok {
+		if vValue, ok := valueEqual[intlibmmodel.FIELD_SELECT_PROP_VALUE]; ok {
+			if valueString, ok := vValue.(string); ok && len(valueString) > 0 {
+				if vDateTimeFormat, ok := valueEqual[intlibmmodel.FIELD_SELECT_DATE_TIME_FORMAT].(string); ok {
+					return ColumnTimestampCondition(column, vDateTimeFormat, COLUMN_EQUAL_TO, valueString)
+				}
+				return fmt.Sprintf("%s = '%v'", column, vValue)
 			}
-			return fmt.Sprintf("%s = '%v'", column, value)
+			return fmt.Sprintf("%s = %v", column, vValue)
 		}
 	}
 
-	return fmt.Sprintf("%s = %v", column, value)
+	return ""
 }
 
 func ColumnIsNotNull(column string) string {
@@ -1198,6 +1226,7 @@ func NewPostgresSelectQuery(
 	queryConditions []intdoment.MetadataModelQueryConditions,
 	skipIfFGDisabled bool,
 	skipIfDataExtraction bool,
+	whereAfterJoin bool,
 ) *PostgresSelectQuery {
 	n := new(PostgresSelectQuery)
 	n.logger = logger
@@ -1209,6 +1238,7 @@ func NewPostgresSelectQuery(
 	n.queryConditions = queryConditions
 	n.skipIfFGDisabled = skipIfFGDisabled
 	n.skipIfDataExtraction = skipIfDataExtraction
+	n.whereAfterJoin = whereAfterJoin
 
 	return n
 }
@@ -1256,10 +1286,12 @@ func GetJoinColumnName(prefix string, suffix string, quote bool) string {
 func GetFullTextSearchQuery(fullTextSearchColumn string, searchQuery string) string {
 	sqSplitSpace := strings.Split(searchQuery, " ")
 	if len(sqSplitSpace) > 0 {
-		newQuery := fmt.Sprintf("%v @@ to_tsquery('%v:*')", fullTextSearchColumn, sqSplitSpace[0])
+		newQuery := "("
+		newQuery += fmt.Sprintf("%v @@ to_tsquery('%v:*')", fullTextSearchColumn, sqSplitSpace[0])
 		for i := 1; i < len(sqSplitSpace); i++ {
 			newQuery = newQuery + " AND " + fmt.Sprintf("%v @@ to_tsquery('%v:*')", fullTextSearchColumn, sqSplitSpace[i])
 		}
+		newQuery += ")"
 		return newQuery
 	} else {
 		return fmt.Sprintf("%v @@ to_tsquery('%v:*')", fullTextSearchColumn, searchQuery)

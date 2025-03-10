@@ -8,6 +8,11 @@ import Log from '@lib/log'
 import Theme from '@lib/theme'
 import Papa from 'papaparse'
 import { Task } from '@lit/task'
+import { FieldAnyMetadataModel } from '@interfaces/field_any_metadata_model/field_any_metadata_model'
+import { AppContextConsumer } from '@interfaces/context/app'
+import { IAppContextConsumer } from '@dominterfaces/context/app'
+import Entities from '@domentities'
+import { IFieldAnyMetadataModelGet } from '@dominterfaces/field_any_metadata_model/field_any_metadata_model'
 
 enum Tab {
 	PROPERTIES = 'PROPERTIES',
@@ -26,9 +31,15 @@ enum ViewTab {
 class Page extends LitElement {
 	static styles = [unsafeCSS(indexCss), unsafeCSS(pageCss)]
 
-	@property({ type: Object }) data: MetadataModel.ISearchResults | null = null
+	@property({ type: Object }) data: Entities.MetadataModel.ISearchResults | null = null
 
-	private _currentDirectoryGroupID: string | null = null
+	constructor() {
+		super()
+		this._appContext = new AppContextConsumer(this)
+		this._fieldAnyMetadataModels = new FieldAnyMetadataModel()
+	}
+
+	private _appContext: IAppContextConsumer
 
 	@state() private _currentTab: Tab = Tab.PROPERTIES
 
@@ -90,7 +101,7 @@ class Page extends LitElement {
 	})
 
 	private _pendingTaskHtmlTemplate = () => html`
-		<div class="flex-1 flex flex-col justify-center items-center text-xl space-y-5">
+		<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
 			<div class="flex">
 				<span class="loading loading-ball loading-sm text-accent"></span>
 				<span class="loading loading-ball loading-md text-secondary"></span>
@@ -110,8 +121,8 @@ class Page extends LitElement {
 
 	private _viewHtmlTemplate() {
 		return html`
-			<div class="flex justify-between space-x-1 z-[2]">
-				<div class="flex-[9] h-fit self-center w-fit flex space-x-1">
+			<div class="flex justify-between gap-x-1 z-[2]">
+				<div class="flex-[9] h-fit self-center w-fit flex gap-x-1">
 					<div class="font-bold h-fit self-center">current datum index:</div>
 					<input
 						class="w-[70px] input input-bordered h-[36px] rounded-none"
@@ -132,7 +143,7 @@ class Page extends LitElement {
 					/>
 					<div class="font-bold h-fit self-center">/${this._datuminputsampledata.length - 1}</div>
 				</div>
-				<div class="flex space-x-1">
+				<div class="flex gap-x-1">
 					<div class="flex flex-col">
 						<button
 							class="btn btn-ghost min-h-fit min-w-fit h-fit w-fit p-1"
@@ -141,7 +152,7 @@ class Page extends LitElement {
 							}}
 						>
 							<!--mdi:file-export source: https://icon-sets.iconify.design-->
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6m-1 1.5L18.5 9H13m-4.07 3.22H16v7.07l-2.12-2.12L11.05 20l-2.83-2.83l2.83-2.82" /></svg>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6m-1 1.5L18.5 9H13m-4.07 3.22H16v7.07l-2.12-2.12L11.05 20l-2.83-2.83l2.83-2.82" /></svg>
 						</button>
 						${(() => {
 							if (this._showSampleDataExportButton) {
@@ -232,7 +243,7 @@ class Page extends LitElement {
 							}}
 						>
 							<!--mdi:file-import source: https://icon-sets.iconify.design-->
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6m-1 1.5L18.5 9H13m-2.95 2.22l2.83 2.83L15 11.93V19H7.93l2.12-2.12l-2.83-2.83" /></svg>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6m-1 1.5L18.5 9H13m-2.95 2.22l2.83 2.83L15 11.93V19H7.93l2.12-2.12l-2.83-2.83" /></svg>
 						</button>
 						${(() => {
 							if (this._showSampleDataImportButton) {
@@ -342,7 +353,7 @@ class Page extends LitElement {
 								pending: () => this._pendingTaskHtmlTemplate(),
 								complete: () => html`
 									<div class="border-[1px] border-gray-400 h-fit max-h-full max-w-full flex overflow-hidden">
-										<metadata-model-view-table .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${this._datuminputsampledata}></metadata-model-view-table>
+										<metadata-model-view-table .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${this._datuminputsampledata} .getmetadatamodel=${this._fieldAnyMetadataModels}></metadata-model-view-table>
 									</div>
 								`,
 								error: (e) => {
@@ -385,7 +396,7 @@ class Page extends LitElement {
 								pending: () => this._pendingTaskHtmlTemplate(),
 								complete: () => html`
 									<div class="border-[1px] border-gray-400 flex-1 h-fit max-h-full max-w-full flex overflow-hidden">
-										<metadata-model-view-datum class="flex-1" .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${this._datuminputsampledata[this._currentDatumInputSampleDataIndex]}></metadata-model-view-datum>
+										<metadata-model-view-datum class="flex-1" .color=${this._colorTheme} .metadatamodel=${this._datuminputsamplemetadatamodel} .data=${this._datuminputsampledata[this._currentDatumInputSampleDataIndex]} .getmetadatamodel=${this._fieldAnyMetadataModels}></metadata-model-view-datum>
 									</div>
 								`,
 								error: (e) => {
@@ -401,10 +412,11 @@ class Page extends LitElement {
 		`
 	}
 
+	private _fieldAnyMetadataModels: IFieldAnyMetadataModelGet
+
 	connectedCallback(): void {
 		super.connectedCallback()
 		window.addEventListener('resize', this._handleWindowResize)
-		this._currentDirectoryGroupID = Lib.CurrentDirectoryGroupID(window.location.toString())
 	}
 
 	disconnectedCallback(): void {
@@ -417,7 +429,7 @@ class Page extends LitElement {
 			${(() => {
 				if (!this._expandRightSection || this._windowWidth <= 1000) {
 					return html`
-						<section id="left-section" class="flex-1 flex flex-col rounded-md shadow-md shadow-gray-800 bg-white p-1 space-y-1 overflow-hidden">
+						<section id="left-section" class="flex-1 flex flex-col rounded-md shadow-md shadow-gray-800 bg-white p-1 gap-y-1 overflow-hidden">
 							<header role="tablist" class="tabs tabs-bordered">
 								<button role="tab" class="tab${this._currentTab === Tab.PROPERTIES ? ' tab-active' : ''}" @click=${() => (this._currentTab = Tab.PROPERTIES)}>Properties</button>
 								<button role="tab" class="tab${this._currentTab === Tab.BUILD ? ' tab-active' : ''}" @click=${() => (this._currentTab = Tab.BUILD)}>Building</button>
@@ -429,7 +441,7 @@ class Page extends LitElement {
 									}
 								})()}
 							</header>
-							<main class="flex-[9.5] flex flex-col space-y-1 overflow-hidden">
+							<main class="flex-[9.5] flex flex-col gap-y-1 overflow-hidden">
 								${(() => {
 									switch (this._currentTab) {
 										case Tab.PROPERTIES:
@@ -533,7 +545,7 @@ class Page extends LitElement {
 			${(() => {
 				if (this._windowWidth > 1000) {
 					return html`
-						<section id="right-section" class="flex-1 flex flex-col rounded-md shadow-md shadow-gray-800 bg-white p-1 space-y-1 overflow-hidden">
+						<section id="right-section" class="flex-1 flex flex-col rounded-md shadow-md shadow-gray-800 bg-white p-1 gap-y-1 overflow-hidden">
 							<header class="flex justify-between">
 								<div class="font-bold text-lg h-fit self-center">View metadata-model</div>
 								<button class="btn btn-circle btn-ghost self-center" @click=${() => (this._expandRightSection = !this._expandRightSection)}>
@@ -541,13 +553,13 @@ class Page extends LitElement {
 										if (this._expandRightSection) {
 											return html`
 												<!--mdi:expand-vertical source: https://icon-sets.iconify.design-->
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M18.17 12L15 8.83l1.41-1.42L21 12l-4.59 4.58L15 15.17zM5.83 12L9 15.17l-1.41 1.42L3 12l4.59-4.58L9 8.83z" /></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M18.17 12L15 8.83l1.41-1.42L21 12l-4.59 4.58L15 15.17zM5.83 12L9 15.17l-1.41 1.42L3 12l4.59-4.58L9 8.83z" /></svg>
 											`
 										}
 
 										return html`
 											<!--mdi:collapse-vertical source: https://icon-sets.iconify.design-->
-											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M5.41 7.41L10 12l-4.59 4.59L4 15.17L7.17 12L4 8.83zm13.18 9.18L14 12l4.59-4.58L20 8.83L16.83 12L20 15.17z" /></svg>
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M5.41 7.41L10 12l-4.59 4.59L4 15.17L7.17 12L4 8.83zm13.18 9.18L14 12l4.59-4.58L20 8.83L16.83 12L20 15.17z" /></svg>
 										`
 									})()}
 								</button>

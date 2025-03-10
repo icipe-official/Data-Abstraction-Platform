@@ -645,7 +645,7 @@ class Component extends LitElement {
 									${(() => {
 										if (!MetadataModel.IsFieldAField(this.fieldgroup)) {
 											return html`
-												<div class="flex flex-col pt-1 pb-1 space-y-1">
+												<div class="flex flex-col pt-1 pb-1 gap-y-1">
 													${(() => {
 														if (typeof this.createfieldgroup === 'function') {
 															return html` <metadata-model-build-field-group-create class="md:max-w-[600px]" .color=${this.color} .groupKey=${this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]} .createfieldgroup=${this.createfieldgroup}></metadata-model-build-field-group-create> `
@@ -669,13 +669,13 @@ class Component extends LitElement {
 																			if (this._showGroupName) {
 																				return html`
 																					<div
-																						class="absolute bottom-0 z-10 max-w-fit flex flex-col space-y-1 ${this.color === Theme.Color.PRIMARY
+																						class="absolute bottom-0 z-10 max-w-fit flex flex-col gap-y-1 ${this.color === Theme.Color.PRIMARY
 																							? 'bg-primary text-primary-content'
 																							: this.color === Theme.Color.SECONDARY
 																								? 'bg-secondary text-secondary-content'
 																								: 'bg-accent text-accent-content'} p-1 rounded-md shadow-md shadow-gray-800 text-center w-full"
 																					>
-																						<div class="flex space-x-2">
+																						<div class="flex gap-x-2">
 																							<div class="h-fit self-center font-bold text-lg">${MetadataModel.GetFieldGroupName(this.fieldgroup)}</div>
 																							<button class="btn btn-ghost w-fit h-fit p-0" @click=${() => (this._showGroupKey = !this._showGroupKey)}>
 																								<div class="flex flex-col justify-center">

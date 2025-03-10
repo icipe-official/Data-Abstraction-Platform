@@ -383,7 +383,7 @@ class Component extends LitElement {
 					if (typeof this._rowDecrementStartIndexTimeout === 'number') {
 						if (this.flexcolumn) {
 							return html`
-								<div class="flex flex-col justify-center items-center text-xl space-y-5">
+								<div class="flex flex-col justify-center items-center text-xl gap-y-5">
 									<div class="flex">
 										<span class="loading loading-ball loading-sm text-black"></span>
 										<span class="loading loading-ball loading-md text-black"></span>
@@ -495,7 +495,7 @@ class Component extends LitElement {
 					if (typeof this._rowIncrementEndIndexTimeout === 'number') {
 						if (this.flexcolumn) {
 							return html`
-								<div class="flex flex-col justify-center items-center text-xl space-y-5">
+								<div class="flex flex-col justify-center items-center text-xl gap-y-5">
 									<div class="flex">
 										<span class="loading loading-ball loading-sm text-black"></span>
 										<span class="loading loading-ball loading-md text-black"></span>

@@ -303,7 +303,7 @@ class Component extends LitElement {
 
 					return html`
 						<drop-down>
-							<div slot="header" class="min-w-[120px] flex space-x-1 p-1 w-fit h-full${!fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? ' sticky right-0' : ''}" style="left: ${this._columnHeaderLockedWidth}px;">
+							<div slot="header" class="min-w-[120px] flex gap-x-1 p-1 w-fit h-full${!fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? ' sticky right-0' : ''}" style="left: ${this._columnHeaderLockedWidth}px;">
 								<button
 									class="w-fit h-fit p-0 self-center"
 									@click=${() => {
@@ -319,7 +319,7 @@ class Component extends LitElement {
 							</div>
 							<div slot="content" class="min-w-[120px] shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black w-full flex flex-col">
 								<button
-									class="flex w-full space-x-1"
+									class="flex w-full gap-x-1"
 									@click=${() => {
 										if (fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]) {
 											delete fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN]
@@ -337,7 +337,7 @@ class Component extends LitElement {
 												return html`
 													<!--mdi:lock-open-variant source: https://icon-sets.iconify.design-->
 													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-														<path fill="black" d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
+														<path d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
 													</svg>
 												`
 											}
@@ -345,7 +345,7 @@ class Component extends LitElement {
 											return html`
 												<!--mdi:lock source: https://icon-sets.iconify.design-->
 												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-													<path fill="black" d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
+													<path d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
 												</svg>
 											`
 										})()}
@@ -353,7 +353,7 @@ class Component extends LitElement {
 									<div class="w-fit h-fit self-center">${fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_TABLE_LOCK_COLUMN] ? 'unfreeze' : 'freeze'} column</div>
 								</button>
 								<button
-									class="flex w-full space-x-1"
+									class="flex w-full gap-x-1"
 									@click=${() => {
 										fieldGroup[MetadataModel.FgProperties.FIELD_GROUP_VIEW_DISABLE] = true
 										this._currentOpenDropdownID = ''
@@ -591,7 +591,7 @@ class Component extends LitElement {
 					}}
 				>
 					<!--mdi:chevron-double-up source: https://icon-sets.iconify.design-->
-					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="black" d="M7.41 18.41L6 17l6-6l6 6l-1.41 1.41L12 13.83zm0-6L6 11l6-6l6 6l-1.41 1.41L12 7.83z" /></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M7.41 18.41L6 17l6-6l6 6l-1.41 1.41L12 13.83zm0-6L6 11l6-6l6 6l-1.41 1.41L12 7.83z" /></svg>
 				</button>
 			`
 		}
@@ -673,7 +673,7 @@ class Component extends LitElement {
 				}}
 			>
 				<!--mdi:chevron-double-down source: https://icon-sets.iconify.design-->
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M16.59 5.59L18 7l-6 6l-6-6l1.41-1.41L12 10.17zm0 6L18 13l-6 6l-6-6l1.41-1.41L12 16.17z" /></svg>
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M16.59 5.59L18 7l-6 6l-6-6l1.41-1.41L12 10.17zm0 6L18 13l-6 6l-6-6l1.41-1.41L12 16.17z" /></svg>
 			</button>
 		`
 	}
@@ -798,7 +798,7 @@ class Component extends LitElement {
 		const fieldGroup = this._data2DFields[dfIndex]
 
 		return html`
-			<div class="flex space-x-1">
+			<div class="flex gap-x-1">
 				<div class="self-center h-fit w-fit font-bold">${columnIndex + 1} (${dfIndex + 1})</div>
 				<div class="self-center h-fit w-fit">${MetadataModel.GetFieldGroupName(fieldGroup)}</div>
 				<div class="join">
@@ -820,7 +820,7 @@ class Component extends LitElement {
 									return html`
 										<!--mdi:lock-open-variant source: https://icon-sets.iconify.design-->
 										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-											<path fill="black" d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
+											<path d="M18 1c-2.76 0-5 2.24-5 5v2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12c1.11 0 2-.89 2-2V10a2 2 0 0 0-2-2h-1V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2h2V6c0-2.76-2.24-5-5-5m-8 12a2 2 0 0 1 2 2c0 1.11-.89 2-2 2a2 2 0 1 1 0-4" />
 										</svg>
 									`
 								}
@@ -828,7 +828,7 @@ class Component extends LitElement {
 								return html`
 									<!--mdi:lock source: https://icon-sets.iconify.design-->
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-										<path fill="black" d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
+										<path d="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3" />
 									</svg>
 								`
 							})()}
@@ -903,7 +903,7 @@ class Component extends LitElement {
 								>
 									<!--mdi:jump source: https://icon-sets.iconify.design-->
 									<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-										<path fill="black" d="M12 14a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m11.46-5.14l-1.59 6.89L15 14.16l3.8-2.38A7.97 7.97 0 0 0 12 8c-3.95 0-7.23 2.86-7.88 6.63l-1.97-.35C2.96 9.58 7.06 6 12 6c3.58 0 6.73 1.89 8.5 4.72z" />
+										<path d="M12 14a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m11.46-5.14l-1.59 6.89L15 14.16l3.8-2.38A7.97 7.97 0 0 0 12 8c-3.95 0-7.23 2.86-7.88 6.63l-1.97-.35C2.96 9.58 7.06 6 12 6c3.58 0 6.73 1.89 8.5 4.72z" />
 									</svg>
 								</button>
 								${(() => {
@@ -1126,7 +1126,7 @@ class Component extends LitElement {
 					</div>
 				</section>
 				<section id="header-menu" class="ml-1 mr-1 shadow-inner shadow-gray-800 rounded-md p-1 flex">
-					<div class="sticky left-0 w-fit flex space-x-4 z-50">
+					<div class="sticky left-0 w-fit flex gap-x-4 z-50">
 						<div class="flex">
 							<drop-down>
 								<div slot="header" class="flex flex-col" @mouseover=${() => (this._showHintID = 'header-menu-view-columns')} @mouseout=${() => (this._showHintID = '')}>
@@ -1159,7 +1159,7 @@ class Component extends LitElement {
 										return nothing
 									})()}
 								</div>
-								<div class="shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black flex flex-col min-w-[500px] max-w-[800px] max-h-[800px] min-h-[200px] overflow-auto space-y-1">
+								<div class="shadow-sm shadow-gray-800 p-1 rounded-md bg-white text-black flex flex-col min-w-[500px] max-w-[800px] max-h-[800px] min-h-[200px] overflow-auto gap-y-1">
 									<div class="join w-full shadow-inner shadow-gray-800">
 										${(() => {
 											if (this._unlockedColumnStartIndex === 0) {
@@ -1666,7 +1666,7 @@ class Component extends LitElement {
 								style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;"
 								class="grid sticky left-0 z-[2] shadow-sm ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content '}"
 							>
-								<div class="w-full h-full min-h-full p-1 flex justify-evenly space-x-1">
+								<div class="w-full h-full min-h-full p-1 flex justify-evenly gap-x-1">
 									<div class="h-full flex justify-center text-2xl w-[47px] font-bold">
 										<div class="self-center h-fit w-fit">#</div>
 									</div>
@@ -1776,7 +1776,7 @@ class Component extends LitElement {
 										for (let index = 0; index < this._lockedColumnData2DFieldsIndex.length + 1; index++) {
 											templates.push(html`
 												<div class="w-full min-w-full h-fit">
-													<div style="top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
+													<div style="top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex gap-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
 												</div>
 											`)
 										}
@@ -1797,7 +1797,7 @@ class Component extends LitElement {
 										} else {
 											templates.push(html`
 												<div class="w-full min-w-full h-fit">
-													<div style="top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex space-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
+													<div style="top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px; left: ${this._columnHeaderLockedWidth}px;" class="sticky flex gap-x-1 w-fit">${this._rowStartRenderTrackerHtmlTemplate()}</div>
 												</div>
 											`)
 										}
@@ -1860,7 +1860,7 @@ class Component extends LitElement {
 												style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + (this._unlockedColumnEndIndex + 1 - this._unlockedColumnStartIndex) + 3}; grid-template-columns: subgrid;"
 											>
 												<div style="grid-column:span ${this._lockedColumnData2DFieldsIndex.length + 1}; grid-template-columns: subgrid;top: ${this._columnHeaderHeight + this._topHeaderHeight + this.basestickytop}px;" class="grid sticky left-0 bg-white shadow-sm shadow-gray-800 z-[2]">
-													<div class="w-full h-full min-h-full p-1 flex justify-evenly space-x-1">
+													<div class="w-full h-full min-h-full p-1 flex justify-evenly gap-x-1">
 														<button
 															class="self-center btn btn-circle glass ${this.color === Theme.Color.PRIMARY ? 'btn-primary bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'btn-secondary bg-secondary text-secondary-content' : 'btn-accent bg-accent text-accent-content'}"
 															@click=${() => {

@@ -60,7 +60,7 @@ class Component extends LitElement {
 				<div class="flex">
 					<div class="flex self-center">
 						<!--mdi:plus-bold source: https://icon-sets.iconify.design-->
-						<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path fill="black" d="M20 14h-6v6h-4v-6H4v-4h6V4h4v6h6z" /></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M20 14h-6v6h-4v-6H4v-4h6V4h4v6h6z" /></svg>
 					</div>
 					<div class="self-center font-bold">Add new ${MetadataModel.GetFieldGroupName(this.group)}</div>
 				</div>
@@ -82,14 +82,14 @@ class Component extends LitElement {
 							if (this.group[MetadataModel.FgProperties.DATUM_INPUT_VIEW] === MetadataModel.DView.TABLE) {
 								return html`
 									<!--mdi:form source: https://icon-sets.iconify.design-->
-									<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path fill="black" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2M7 7h2v2H7zm0 4h2v2H7zm0 4h2v2H7zm10 2h-6v-2h6zm0-4h-6v-2h6zm0-4h-6V7h6z" /></svg>
+									<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2M7 7h2v2H7zm0 4h2v2H7zm0 4h2v2H7zm10 2h-6v-2h6zm0-4h-6v-2h6zm0-4h-6V7h6z" /></svg>
 								`
 							}
 
 							return html`
 								<!--mdi:table-large source: https://icon-sets.iconify.design-->
 								<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24">
-									<path fill="black" d="M4 3h16a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m0 4v3h4V7zm6 0v3h4V7zm10 3V7h-4v3zM4 12v3h4v-3zm0 8h4v-3H4zm6-8v3h4v-3zm0 8h4v-3h-4zm10 0v-3h-4v3zm0-8h-4v3h4z" />
+									<path d="M4 3h16a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m0 4v3h4V7zm6 0v3h4V7zm10 3V7h-4v3zM4 12v3h4v-3zm0 8h4v-3H4zm6-8v3h4v-3zm0 8h4v-3h-4zm10 0v-3h-4v3zm0-8h-4v3h4z" />
 								</svg>
 							`
 						})()}
@@ -107,7 +107,7 @@ class Component extends LitElement {
 				<div class="flex">
 					<div class="flex self-center">
 						<!--mdi:delete-empty source: https://icon-sets.iconify.design-->
-						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="30" viewBox="0 0 24 24"><path fill="black" d="m20.37 8.91l-1 1.73l-12.13-7l1-1.73l3.04 1.75l1.36-.37l4.33 2.5l.37 1.37zM6 19V7h5.07L18 11v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2" /></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="30" viewBox="0 0 24 24"><path d="m20.37 8.91l-1 1.73l-12.13-7l1-1.73l3.04 1.75l1.36-.37l4.33 2.5l.37 1.37zM6 19V7h5.07L18 11v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2" /></svg>
 					</div>
 					<div class="self-center font-bold">Delete all ${MetadataModel.GetFieldGroupName(this.group)}</div>
 				</div>
@@ -128,7 +128,7 @@ class Component extends LitElement {
 									return html`
 										<!--mdi:close-circle source: https://icon-sets.iconify.design-->
 										<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24">
-											<path fill="black" d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
+											<path d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
 										</svg>
 									`
 								}
@@ -199,7 +199,7 @@ class Component extends LitElement {
 							<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="M11 4h2v12l5.5-5.5l1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5L11 16z" /></svg>
 						</div>
 					</button>
-					<div slot="content" class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-sm shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div>
+					<div slot="content" class="flex flex-col gap-y-1 w-fit bg-white p-1 rounded-md shadow-sm shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div>
 				</drop-down>
 			</header>
 			<virtual-flex-scroll
@@ -339,7 +339,7 @@ class Component extends LitElement {
 							<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path fill="${Theme.GetColorContent(this.color)}" d="M13 20h-2V8l-5.5 5.5l-1.42-1.42L12 4.16l7.92 7.92l-1.42 1.42L13 8z" /></svg>
 						</div>
 					</button>
-					<div slot="content" class="flex flex-col space-y-1 w-fit bg-white p-1 rounded-md shadow-sm shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div>
+					<div slot="content" class="flex flex-col gap-y-1 w-fit bg-white p-1 rounded-md shadow-sm shadow-gray-800 text-black min-w-[200px]">${this._multipleEntryFormMenuHtmlTemplate()}</div>
 				</drop-down>
 			</footer>
 		`

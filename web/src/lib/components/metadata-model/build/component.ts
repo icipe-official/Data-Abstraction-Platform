@@ -276,7 +276,7 @@ class Component extends LitElement {
 			<dialog id="edit-field-group-dialog" class="modal">
 				<form method="dialog" class="modal-box p-0 rounded min-w-[500px] w-fit md:max-w-[800px] max-h-[90vh] overflow-hidden">
 					<header class="sticky flex justify-between items-center p-2 shadow-gray-800 shadow-sm top-0 left-0 right-0">
-						<div class="h-fit w-fit flex space-x-1 ${this._selectedFieldGroupColor === Theme.Color.PRIMARY ? 'text-primary' : this._selectedFieldGroupColor === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Edit Field/Group</div>
+						<div class="h-fit w-fit flex gap-x-1 ${this._selectedFieldGroupColor === Theme.Color.PRIMARY ? 'text-primary' : this._selectedFieldGroupColor === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Edit Field/Group</div>
 						<button class="btn btn-circle btn-ghost flex justify-center" @click=${() => (this._selectedFieldGroupPath = '')}>
 							<!--mdi:close-circle source: https://icon-sets.iconify.design-->
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" viewBox="0 0 24 24">

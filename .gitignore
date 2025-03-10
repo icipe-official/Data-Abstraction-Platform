@@ -1,6 +1,5 @@
 bin/*
 tmp/*
 temp/*
-scratch/*
 venv/*
-scratch/*
+_ignore/*

@@ -28,6 +28,8 @@ class Component extends LitElement {
 
 	@state() private _show2DRepositionFields: boolean = false
 
+	@state() private _showFieldAnyProperties: boolean = false
+
 	@state() private _cycleFieldGroupKeyViews = 0
 
 	private readonly FIELD_GROUP_NAME_ERROR = 'Field Group Name must be at least 1 character in length'
@@ -51,7 +53,7 @@ class Component extends LitElement {
 
 	protected render(): unknown {
 		return html`
-			<main class="flex-1 overflow-auto max-h-[70vh] space-y-2 p-1">
+			<main class="flex-1 overflow-auto max-h-[70vh] gap-y-2 p-1">
 				<section class="rounded-md shadow-inner shadow-gray-800 p-1">
 					<header class="flex justify-between">
 						<div class="h-fit self-center font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">General Properties</div>
@@ -82,11 +84,11 @@ class Component extends LitElement {
 						if (this._showFieldGroupGeneralProperties) {
 							return html`
 								<div class="divider h-fit"></div>
-								<main class="flex flex-col space-y-1">
+								<main class="flex flex-col gap-y-1">
 									${(() => {
 										const fieldGroupKey = this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]
 										return html`
-											<div class="flex space-x-1">
+											<div class="flex gap-x-1">
 												<span class="self-center font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Field Group Key:</span>
 												${(() => {
 													if (typeof fieldGroupKey === 'string') {
@@ -150,7 +152,7 @@ class Component extends LitElement {
 											</div>
 										`
 									})()}
-									<section class="flex flex-col space-y-1">
+									<section class="flex flex-col gap-y-1">
 										<div class="join max-md:join-vertical">
 											<span class="join-item h-[48px] ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex "><span class="h-fit self-center">Field Group Name</span></span>
 											<input
@@ -194,7 +196,7 @@ class Component extends LitElement {
 											}}
 										></textarea>
 									</div>
-									<section class="flex flex-col space-y-1">
+									<section class="flex flex-col gap-y-1">
 										<div class="join max-md:join-vertical">
 											<span class="join-item h-[48px] ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex "><span class="h-fit self-center">Field Group Max Entries</span></span>
 											<input
@@ -229,7 +231,7 @@ class Component extends LitElement {
 										})()}
 									</section>
 									<div class="join max-md:join-vertical">
-										<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+										<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 											<span class="h-fit self-center break-words">Join symbol for field with multiple values</span>
 											<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-join-symbol')} @mouseout=${() => (this._showHintID = '')}>
 												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -252,7 +254,7 @@ class Component extends LitElement {
 											}}
 										/>
 									</div>
-									<section class="flex flex-col space-y-1">
+									<section class="flex flex-col gap-y-1">
 										<div class="relative w-full h-0">
 											${(() => {
 												if (this._showHintID === 'fg-is-primary-key') {
@@ -271,8 +273,8 @@ class Component extends LitElement {
 												return nothing
 											})()}
 										</div>
-										<div class="flex space-x-1">
-											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+										<div class="flex gap-x-1">
+											<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group is Primary Key</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-is-primary-key')} @mouseout=${() => (this._showHintID = '')}>
 													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -344,7 +346,7 @@ class Component extends LitElement {
 									if (this._show2DRepositionFields) {
 										return html`
 											<div class="divider h-fit"></div>
-											<main class="flex flex-col space-y-1">
+											<main class="flex flex-col gap-y-1">
 												<div class="italic font-bold text-center">Pick target position for field</div>
 												<div><span class="font-bold italic">Original Position: </span><span>${originalPosition > -1 ? originalPosition + 1 : 'Not found'}</span></div>
 												<virtual-flex-scroll
@@ -396,9 +398,9 @@ class Component extends LitElement {
 																for (let fIndex = 0; fIndex < fields2d.FieldsRepositioned.length; fIndex++) {
 																	if (fields2d.FieldsRepositioned[fIndex][MetadataModel.FgProperties.FIELD_GROUP_KEY] === this.fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY]) {
 																		return html`
-																			<div class="flex flex-col space-y-1">
+																			<div class="flex flex-col gap-y-1">
 																				<div><span class="font-bold italic">Repositioned Position: </span><span>${fIndex + 1}</span></div>
-																				<div class="flex space-x-1">
+																				<div class="flex gap-x-1">
 																					<span class="font-bold">Position field before?</span>
 																					<input
 																						class="checkbox ${this.color === Theme.Color.PRIMARY ? 'checkbox-primary' : this.color === Theme.Color.SECONDARY ? 'checkbox-secondary' : 'checkbox-accent'}"
@@ -491,8 +493,8 @@ class Component extends LitElement {
 						if (this._showFieldGroupInputFilterView) {
 							return html`
 								<div class="divider h-fit"></div>
-								<main class="flex flex-col space-y-1">
-									<section class="flex flex-col space-y-1">
+								<main class="flex flex-col gap-y-1">
+									<section class="flex flex-col gap-y-1">
 										<div class="relative w-full h-0">
 											${(() => {
 												if (this._showHintID === 'fg-input-disable') {
@@ -511,8 +513,8 @@ class Component extends LitElement {
 												return nothing
 											})()}
 										</div>
-										<div class="flex space-x-1">
-											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+										<div class="flex gap-x-1">
+											<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group Disable User Input</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-input-disable')} @mouseout=${() => (this._showHintID = '')}>
 													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -535,7 +537,7 @@ class Component extends LitElement {
 											/>
 										</div>
 									</section>
-									<section class="flex flex-col space-y-1">
+									<section class="flex flex-col gap-y-1">
 										<div class="relative w-full h-0">
 											${(() => {
 												if (this._showHintID === 'fg-view-disable') {
@@ -554,8 +556,8 @@ class Component extends LitElement {
 												return nothing
 											})()}
 										</div>
-										<div class="flex space-x-1">
-											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+										<div class="flex gap-x-1">
+											<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group Disable View</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-disable')} @mouseout=${() => (this._showHintID = '')}>
 													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -579,7 +581,7 @@ class Component extends LitElement {
 										</div>
 									</section>
 									<div class="divider h-fit ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">View Multiple groups/tables or fields/columns values in one row</div>
-									<section class="flex flex-col space-y-1">
+									<section class="flex flex-col gap-y-1">
 										<div class="relative w-full h-0">
 											${(() => {
 												if (this._showHintID === 'fg-view-values-in-separate-columns') {
@@ -598,8 +600,8 @@ class Component extends LitElement {
 												return nothing
 											})()}
 										</div>
-										<div class="flex space-x-1">
-											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+										<div class="flex gap-x-1">
+											<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group view values in separate columns</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns')} @mouseout=${() => (this._showHintID = '')}>
 													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -622,7 +624,7 @@ class Component extends LitElement {
 											/>
 										</div>
 									</section>
-									<section class="flex flex-col space-y-1">
+									<section class="flex flex-col gap-y-1">
 										<div class="relative w-full h-0">
 											${(() => {
 												if (this._showHintID === 'fg-view-max-values-in-separate-columns') {
@@ -642,7 +644,7 @@ class Component extends LitElement {
 											})()}
 										</div>
 										<div class="join max-md:join-vertical">
-											<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+											<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 												<span class="h-fit self-center break-words">Field Group view max columns in separate columns</span>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-max-values-in-separate-columns')} @mouseout=${() => (this._showHintID = '')}>
 													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -671,7 +673,7 @@ class Component extends LitElement {
 											/>
 										</div>
 									</section>
-									<section class="flex flex-col space-y-1">
+									<section class="flex flex-col gap-y-1">
 										<div class="relative w-full h-0">
 											${(() => {
 												if (this._showHintID === 'fg-view-values-in-separate-columns-header-format') {
@@ -691,7 +693,7 @@ class Component extends LitElement {
 											})()}
 										</div>
 										<div class="join max-md:join-vertical">
-											<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+											<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 												<span class="h-fit self-center break-words">Field view header format</span>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns-header-format')} @mouseout=${() => (this._showHintID = '')}>
 													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -719,7 +721,7 @@ class Component extends LitElement {
 									${(() => {
 										if (typeof this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS] === 'object') {
 											return html`
-												<section class="flex flex-col space-y-1">
+												<section class="flex flex-col gap-y-1">
 													<div class="relative w-full h-0">
 														${(() => {
 															if (this._showHintID === 'fg-view-as-table-in-2d') {
@@ -738,8 +740,8 @@ class Component extends LitElement {
 															return nothing
 														})()}
 													</div>
-													<div class="flex space-x-1">
-														<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+													<div class="flex gap-x-1">
+														<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 															<div class="h-fit self-center">Group default view as table in 2D</div>
 															<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-as-table-in-2d')} @mouseout=${() => (this._showHintID = '')}>
 																<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -762,7 +764,7 @@ class Component extends LitElement {
 														/>
 													</div>
 												</section>
-												<section class="flex flex-col space-y-1">
+												<section class="flex flex-col gap-y-1">
 													<div class="relative w-full h-0">
 														${(() => {
 															if (this._showHintID === 'fg-filter-add-full-text-search-box') {
@@ -781,8 +783,8 @@ class Component extends LitElement {
 															return nothing
 														})()}
 													</div>
-													<div class="flex space-x-1">
-														<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+													<div class="flex gap-x-1">
+														<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 															<div class="h-fit self-center">Group filter add full text search box</div>
 															<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-filter-add-full-text-search-box')} @mouseout=${() => (this._showHintID = '')}>
 																<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -809,7 +811,7 @@ class Component extends LitElement {
 										}
 										return nothing
 									})()}
-									<section class="flex flex-col space-y-1">
+									<section class="flex flex-col gap-y-1">
 										<div class="relative w-full h-0">
 											${(() => {
 												if (this._showHintID === 'fg-filter-disable') {
@@ -828,8 +830,8 @@ class Component extends LitElement {
 												return nothing
 											})()}
 										</div>
-										<div class="flex space-x-1">
-											<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+										<div class="flex gap-x-1">
+											<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 												<div class="h-fit self-center">Field Group Disable Filter</div>
 												<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-filter-disable')} @mouseout=${() => (this._showHintID = '')}>
 													<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -887,7 +889,7 @@ class Component extends LitElement {
 					${(() => {
 						if (this._showDatabaseProperties) {
 							return html`
-								<section class="flex flex-col space-y-1">
+								<section class="flex flex-col gap-y-1">
 									<div class="relative w-full h-0">
 										${(() => {
 											if (this._showHintID === 'd-table-collection-uid') {
@@ -907,7 +909,7 @@ class Component extends LitElement {
 										})()}
 									</div>
 									<div class="join max-md:join-vertical">
-										<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+										<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 											<span class="h-fit self-center break-words">Database table/collection unique id</span>
 											<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-table-collection-uid')} @mouseout=${() => (this._showHintID = '')}>
 												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -934,7 +936,7 @@ class Component extends LitElement {
 								${(() => {
 									if (typeof this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS] === 'object') {
 										return html`
-											<section class="flex flex-col space-y-1">
+											<section class="flex flex-col gap-y-1">
 												<div class="relative w-full h-0">
 													${(() => {
 														if (this._showHintID === 'd-group-table-collection-name') {
@@ -954,7 +956,7 @@ class Component extends LitElement {
 													})()}
 												</div>
 												<div class="join max-md:join-vertical">
-													<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+													<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 														<span class="h-fit self-center break-words">Database Table/Collection name</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-group-table-collection-name')} @mouseout=${() => (this._showHintID = '')}>
 															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -981,7 +983,7 @@ class Component extends LitElement {
 										`
 									}
 									return html`
-										<section class="flex flex-col space-y-1">
+										<section class="flex flex-col gap-y-1">
 											<div class="relative w-full h-0">
 												${(() => {
 													if (this._showHintID === 'd-field-column-name') {
@@ -1001,7 +1003,7 @@ class Component extends LitElement {
 												})()}
 											</div>
 											<div class="join max-md:join-vertical">
-												<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+												<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 													<span class="h-fit self-center break-words">Database column/field name</span>
 													<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-field-column-name')} @mouseout=${() => (this._showHintID = '')}>
 														<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -1027,7 +1029,7 @@ class Component extends LitElement {
 										</section>
 									`
 								})()}
-								<section class="flex flex-col space-y-1">
+								<section class="flex flex-col gap-y-1">
 									<div class="relative w-full h-0">
 										${(() => {
 											if (this._showHintID === 'd-skip-data-extraction') {
@@ -1046,8 +1048,8 @@ class Component extends LitElement {
 											return nothing
 										})()}
 									</div>
-									<div class="flex space-x-1">
-										<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+									<div class="flex gap-x-1">
+										<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 											<div class="h-fit self-center">Database Skip Data Extraction</div>
 											<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'd-skip-data-extraction')} @mouseout=${() => (this._showHintID = '')}>
 												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -1078,7 +1080,7 @@ class Component extends LitElement {
 				${(() => {
 					if (typeof this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS] === 'undefined') {
 						return html`
-							<section class="rounded-md shadow-inner shadow-gray-800 p-1 space-y-1">
+							<section class="rounded-md shadow-inner shadow-gray-800 p-1 gap-y-1">
 								<header class="flex justify-between">
 									<div class="h-fit self-center font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Field Properties</div>
 									<button class="btn btn-ghost w-fit h-fit min-h-fit p-0" @click=${() => (this._showFieldProperties = !this._showFieldProperties)}>
@@ -1108,7 +1110,7 @@ class Component extends LitElement {
 									if (this._showFieldProperties) {
 										return html`
 											<div class="divider h-fit"></div>
-											<section class="flex flex-col space-y-1">
+											<section class="flex flex-col gap-y-1">
 												<div class="relative w-full h-0">
 													${(() => {
 														if (this._showHintID === 'f-input-placeholder') {
@@ -1128,7 +1130,7 @@ class Component extends LitElement {
 													})()}
 												</div>
 												<div class="join max-md:join-vertical">
-													<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+													<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 														<span class="h-fit self-center break-words">Field input placeholder</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'f-input-placeholder')} @mouseout=${() => (this._showHintID = '')}>
 															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -1266,7 +1268,7 @@ class Component extends LitElement {
 														<section class="join join-vertical w-full">
 															<div class="join-item h-fit ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex justify-between">
 																<span class="h-fit self-center">Select Options (REQUIRED)</span>
-																<span class="flex space-x-1">
+																<span class="flex gap-x-1">
 																	<button
 																		class="btn btn-circle btn-ghost"
 																		@click=${(e: Event) => {
@@ -1562,7 +1564,7 @@ class Component extends LitElement {
 												if (this.fieldgroup[MetadataModel.FgProperties.FIELD_UI] === MetadataModel.FieldUi.CHECKBOX) {
 													return html`
 														<div class="divider h-fit">Field UI Checkbox options</div>
-														<section class="flex flex-col space-y-1">
+														<section class="flex flex-col gap-y-1">
 															<div class="relative w-full h-0">
 																${(() => {
 																	if (this._showHintID === 'f-checkbox-value-if-true') {
@@ -1582,7 +1584,7 @@ class Component extends LitElement {
 																})()}
 															</div>
 															<div class="join join-vertical">
-																<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+																<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 																	<span class="h-fit self-center break-words">Field checkbox value if true</span>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'f-checkbox-value-if-true')} @mouseout=${() => (this._showHintID = '')}>
 																		<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -1655,7 +1657,7 @@ class Component extends LitElement {
 																})()}
 															</div>
 														</section>
-														<section class="flex flex-col space-y-1">
+														<section class="flex flex-col gap-y-1">
 															<div class="relative w-full h-0">
 																${(() => {
 																	if (this._showHintID === 'f-checkbox-value-if-false') {
@@ -1675,7 +1677,7 @@ class Component extends LitElement {
 																})()}
 															</div>
 															<div class="join join-vertical">
-																<span class="join-item h-[48px] space-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+																<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
 																	<span class="h-fit self-center break-words">Field checkbox value if false</span>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'f-checkbox-value-if-false')} @mouseout=${() => (this._showHintID = '')}>
 																		<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -1749,7 +1751,7 @@ class Component extends LitElement {
 																})()}
 															</div>
 														</section>
-														<section class="flex flex-col space-y-1">
+														<section class="flex flex-col gap-y-1">
 															<div class="relative w-full h-0">
 																${(() => {
 																	if (this._showHintID === 'fg-use-checkbox-values-in-storage') {
@@ -1768,8 +1770,8 @@ class Component extends LitElement {
 																	return nothing
 																})()}
 															</div>
-															<div class="flex space-x-1">
-																<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+															<div class="flex gap-x-1">
+																<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 																	<div class="h-fit self-center">Field Checkbox value is in storage</div>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-use-checkbox-values-in-storage')} @mouseout=${() => (this._showHintID = '')}>
 																		<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -1800,7 +1802,7 @@ class Component extends LitElement {
 											${(() => {
 												if (typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] === 'string' && (this.fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] as string).length > 0) {
 													return html`
-														<section class="flex flex-col space-y-1">
+														<section class="flex flex-col gap-y-1">
 															<div class="relative w-full h-0">
 																${(() => {
 																	if (this._showHintID === 'd-field-add-data-to-full-text-search-index') {
@@ -1819,8 +1821,8 @@ class Component extends LitElement {
 																	return nothing
 																})()}
 															</div>
-															<div class="flex space-x-1">
-																<span class="flex space-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
+															<div class="flex gap-x-1">
+																<span class="flex gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">
 																	<div class="h-fit self-center">Database add data to full text search index</div>
 																	<div class="btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'd-field-add-data-to-full-text-search-index')} @mouseout=${() => (this._showHintID = '')}>
 																		<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -1847,6 +1849,202 @@ class Component extends LitElement {
 												}
 												return nothing
 											})()}
+										`
+									}
+									return nothing
+								})()}
+							</section>
+							<section class="rounded-md shadow-inner shadow-gray-800 p-1 gap-y-1">
+								<header class="flex justify-between">
+									<div class="h-fit self-center font-bold ${this.color === Theme.Color.PRIMARY ? 'text-primary' : this.color === Theme.Color.SECONDARY ? 'text-secondary' : 'text-accent'}">Field Type Any Properties</div>
+									<button class="btn btn-ghost w-fit h-fit min-h-fit p-0" @click=${() => (this._showFieldAnyProperties = !this._showFieldAnyProperties)}>
+										${(() => {
+											if (this._showFieldAnyProperties) {
+												return html`
+													<!--mdi:eye source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+														<path fill="${this.color}" d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5" />
+													</svg>
+												`
+											}
+
+											return html`
+												<!--mdi:eye-off source: https://icon-sets.iconify.design-->
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<path
+														fill="${this.color}"
+														d="M11.83 9L15 12.16V12a3 3 0 0 0-3-3zm-4.3.8l1.55 1.55c-.05.21-.08.42-.08.65a3 3 0 0 0 3 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 0 1-5-5c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28l.45.45C3.08 8.3 1.78 10 1 12c1.73 4.39 6 7.5 11 7.5c1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22L21 20.73L3.27 3M12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75c-1.73-4.39-6-7.5-11-7.5c-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7"
+													/>
+												</svg>
+											`
+										})()}
+									</button>
+								</header>
+								${(() => {
+									if (this._showFieldAnyProperties) {
+										return html`
+											<div class="divider h-fit"></div>
+											<section class="flex flex-col gap-y-1">
+												<div class="relative w-full h-0">
+													${(() => {
+														if (this._showHintID === 'mm-action-id') {
+															return html`
+																<div
+																	class="z-20 absolute bottom-0 w-full min-w-[250px] h-fit ${this.color === Theme.Color.PRIMARY
+																		? 'bg-primary text-primary-content'
+																		: this.color === Theme.Color.SECONDARY
+																			? 'bg-secondary text-secondary-content'
+																			: 'bg-accent text-accent-content'} p-1 shadow-md shadow-gray-800 rounded-md"
+																>
+																	Unique name to use when identifying the action request to get a metadata-model
+																</div>
+															`
+														}
+														return nothing
+													})()}
+												</div>
+												<div class="join join-vertical max-md:join-vertical">
+													<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+														<span class="h-fit self-center break-words">Metadata model action id</span>
+														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'mm-action-id')} @mouseout=${() => (this._showHintID = '')}>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
+														</div>
+													</span>
+													<input
+														class="flex-1 join-item input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
+														type="text"
+														placeholder="Enter metadata model action id..."
+														.value=${(() => {
+															if (this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]) {
+																if (typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID] == 'string') {
+																	return this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID]
+																}
+															}
+
+															return ''
+														})()}
+														@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+															if (e.currentTarget.value.length > 0) {
+																this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_TYPE_ANY}.${MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID}`, e.currentTarget.value)
+															} else {
+															 	this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_TYPE_ANY}.${MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID}`)
+																if (Object.keys(this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]).length == 0) {
+																	delete this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]
+																}
+															}
+														}}
+													/>
+												</div>
+												<div class="relative w-full h-0">
+													${(() => {
+														if (this._showHintID === 'pick-mm-message-prompt') {
+															return html`
+																<div
+																	class="z-20 absolute bottom-0 w-full min-w-[250px] h-fit ${this.color === Theme.Color.PRIMARY
+																		? 'bg-primary text-primary-content'
+																		: this.color === Theme.Color.SECONDARY
+																			? 'bg-secondary text-secondary-content'
+																			: 'bg-accent text-accent-content'} p-1 shadow-md shadow-gray-800 rounded-md"
+																>
+																	Message to show user when asked to pick metadata-model
+																</div>
+															`
+														}
+														return nothing
+													})()}
+												</div>
+												<div class="join join-vertical max-md:join-vertical">
+													<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+														<span class="h-fit self-center break-words">Pick metadata model message prompt</span>
+														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'pick-mm-message-prompt')} @mouseout=${() => (this._showHintID = '')}>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
+														</div>
+													</span>
+													<input
+														class="flex-1 join-item input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
+														type="text"
+														placeholder="Enter pick metadata-model message prompt..."
+														.value=${(() => {
+															if (this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]) {
+																if (typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.PICK_METADATA_MODEL_MESSAGE_PROMPT] == 'string') {
+																	return this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.PICK_METADATA_MODEL_MESSAGE_PROMPT]
+																}
+															}
+
+															return ''
+														})()}
+														@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+															if (e.currentTarget.value.length > 0) {
+																this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_TYPE_ANY}.${MetadataModel.FieldAnyProperties.PICK_METADATA_MODEL_MESSAGE_PROMPT}`, e.currentTarget.value)
+															} else {
+															 	this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_TYPE_ANY}.${MetadataModel.FieldAnyProperties.PICK_METADATA_MODEL_MESSAGE_PROMPT}`)
+																if (Object.keys(this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]).length == 0) {
+																	delete this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]
+																}
+															}
+														}}
+													/>
+												</div>
+												<div class="relative w-full h-0">
+													${(() => {
+														if (this._showHintID === 'get-mm-path-to-data-argument') {
+															return html`
+																<div
+																	class="z-20 absolute bottom-0 w-full min-w-[250px] h-fit ${this.color === Theme.Color.PRIMARY
+																		? 'bg-primary text-primary-content'
+																		: this.color === Theme.Color.SECONDARY
+																			? 'bg-secondary text-secondary-content'
+																			: 'bg-accent text-accent-content'} p-1 shadow-md shadow-gray-800 rounded-md"
+																>
+																	Data to use as arguments when getting the metadata model e.g. $.message[*].message_type. Will replace [*] with current array indexes to data.
+																</div>
+															`
+														}
+														return nothing
+													})()}
+												</div>
+												<div class="join join-vertical max-md:join-vertical">
+													<span class="join-item h-[48px] gap-x-1 ${this.color === Theme.Color.PRIMARY ? 'join-label-primary' : this.color === Theme.Color.SECONDARY ? 'join-label-secondary' : 'join-label-accent'} p-1 flex ">
+														<span class="h-fit self-center break-words">Get metadata-model path to data argument</span>
+														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'get-mm-path-to-data-argument')} @mouseout=${() => (this._showHintID = '')}>
+															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
+															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																<path fill="${this.color}" d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6" />
+															</svg>
+														</div>
+													</span>
+													<input
+														class="flex-1 join-item input ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
+														type="text"
+														placeholder="Enter path to data (e.g. $.message[*].message_type)..."
+														.value=${(() => {
+															if (this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]) {
+																if (typeof this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT] == 'string') {
+																	return this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT]
+																}
+															}
+
+															return ''
+														})()}
+														@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+															if (e.currentTarget.value.length > 0) {
+																this.fieldgroup = Json.SetValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_TYPE_ANY}.${MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT}`, e.currentTarget.value)
+															} else {
+															 	this.fieldgroup = Json.DeleteValueInObject(this.fieldgroup, `$.${MetadataModel.FgProperties.FIELD_TYPE_ANY}.${MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT}`)
+																if (Object.keys(this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]).length == 0) {
+																	delete this.fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]
+																}
+															}
+														}}
+													/>
+												</div>
+											</section>
 										`
 									}
 									return nothing

@@ -9,7 +9,6 @@ import (
 type MetadataModels struct {
 	ID                []uuid.UUID `json:"id,omitempty"`
 	DirectoryGroupsID []uuid.UUID `json:"directory_groups_id,omitempty"`
-	DirectoryID       []uuid.UUID `json:"directory_id,omitempty"`
 	Name              []string    `json:"name,omitempty"`
 	Description       []string    `json:"description,omitempty"`
 	EditAuthorized    []bool      `json:"edit_authorized,omitempty"`
@@ -28,7 +27,6 @@ type metadataModelsRepository struct {
 
 	ID                string
 	DirectoryGroupsID string
-	DirectoryID       string
 	Name              string
 	Description       string
 	EditAuthorized    string
@@ -49,7 +47,6 @@ func MetadataModelsRepository() metadataModelsRepository {
 
 		ID:                "id",
 		DirectoryGroupsID: "directory_groups_id",
-		DirectoryID:       "directory_id",
 		Name:              "name",
 		Description:       "description",
 		EditAuthorized:    "edit_authorized",

@@ -1,0 +1,21 @@
+meta {
+  name: Get search metadata-model
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{web_service_api_core_url}}/group/rule-authorizations/search/metadata-model?target_join_depth=-1
+  body: none
+  auth: none
+}
+
+params:query {
+  target_join_depth: -1
+  ~auth_context_directory_group_id: 01954140-6d04-7a40-a685-17cd8b786300
+}
+
+script:post-response {
+  let data = res.getBody()
+  bru.setEnvVar('search_metadata_model',JSON.stringify(data))
+}

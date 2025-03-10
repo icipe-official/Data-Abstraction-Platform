@@ -6,8 +6,9 @@ export { ConvertObjectsTo2DArray } from './convert_objects_to_2d'
 export { Convert2DArrayToObjects } from './convert_2darray_to_objects'
 export { FilterData } from './filter_data'
 
-export type { IDatabaseColumnFields, QueryConditions, ISearch, ISearchResults, IQueryCondition, IFilterCondition, IMetadataModel, ISelectOption, IFieldCheckboxValue, I2DFieldViewPosition, I2DFields, RepositionFields, IFConditionFilterEqualToValue, Error } from './metadata_model'
+export type { IFieldAnyMetadataModelGet, IFieldAny, IDatabaseColumnFields, QueryConditions, IQueryCondition, IFilterCondition, IMetadataModel, ISelectOption, IFieldCheckboxValue, I2DFieldViewPosition, I2DFields, RepositionFields, IFConditionFilterEqualToValue, Error } from './metadata_model'
 export {
+	FieldAnyProperties,
 	QcProperties,
 	FConditionProperties,
 	FgProperties,

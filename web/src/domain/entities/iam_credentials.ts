@@ -30,6 +30,22 @@ namespace _IamCredentials {
 		last_updated_on?: string[]
 		deactivated_on?: string[]
 	}
+
+	export function GetOpenidName(iamCredential: Interface, defaultValue: string = '#noname') {
+		if (Array.isArray(iamCredential.openid_user_info) && iamCredential.openid_user_info.length > 0) {
+			if (
+				Array.isArray(iamCredential.openid_user_info[0].openid_family_name) && iamCredential.openid_user_info[0].openid_family_name.length > 0 &&
+				Array.isArray(iamCredential.openid_user_info[0].openid_given_name) && iamCredential.openid_user_info[0].openid_given_name.length > 0
+			) {
+				return `${iamCredential.openid_user_info[0].openid_family_name[0]} ${iamCredential.openid_user_info[0].openid_given_name[0]}`
+			}
+			if (Array.isArray(iamCredential.openid_user_info[0].openid_preferred_username) && iamCredential.openid_user_info[0].openid_preferred_username.length > 0) {
+				return iamCredential.openid_user_info[0].openid_preferred_username[0]
+			}
+		}
+
+		return defaultValue
+	}
 }
 
 export default _IamCredentials

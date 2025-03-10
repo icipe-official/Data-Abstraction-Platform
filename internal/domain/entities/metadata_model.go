@@ -1,13 +1,18 @@
 package entities
 
 type MetadataModelSearch struct {
-	MetadataModel   map[string]any                 `json:"metadata_model,omitempty"`
 	QueryConditions []MetadataModelQueryConditions `json:"query_conditions,omitempty"`
+	MetadataModel   map[string]any                 `json:"metadata_model,omitempty"`
+}
+
+type MetadataModelDatum struct {
+	Datum         any            `json:"datum"`
+	MetadataModel map[string]any `json:"metadata_model,omitempty"`
 }
 
 type MetadataModelSearchResults struct {
-	MetadataModel map[string]any `json:"metadata_model"`
 	Data          []any          `json:"data"`
+	MetadataModel map[string]any `json:"metadata_model,omitempty"`
 }
 
 type MetadataModelQueryConditions map[string]MetadataModelQueryCondition

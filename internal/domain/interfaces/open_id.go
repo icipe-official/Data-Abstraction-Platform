@@ -5,6 +5,7 @@ import intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/d
 type OpenID interface {
 	OpenIDGetLoginEndpoint() string
 	OpenIDGetRegistrationEndpoint() (string, error)
+	OpenIDGetAccountManagementEndpoint() (string, error)
 	OpenIDGetConfig() intdoment.OpenIDConfiguration
 	OpenIDRevokeToken(token *intdoment.OpenIDToken) error
 	OpenIDRefreshToken(token *intdoment.OpenIDToken) (*intdoment.OpenIDToken, error)

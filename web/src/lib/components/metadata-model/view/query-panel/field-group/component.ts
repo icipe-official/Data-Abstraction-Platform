@@ -358,7 +358,7 @@ class Component extends LitElement {
 									return html`
 										<div class="relative h-full">
 											<span class="absolute left-[-10px] top-0 badge min-h-fit min-w-fit h-fit w-fit ${this.color === Theme.Color.ACCENT ? 'badge-primary' : this.color === Theme.Color.PRIMARY ? 'badge-secondary' : 'badge-accent'}">
-												<div class="flex w-fit h-fit self-center space-x-1">
+												<div class="flex w-fit h-fit self-center gap-x-1">
 													<div class="flex h-fit w-fit self-center">
 														<!--mdi:sql-query source: https://icon-sets.iconify.design-->
 														<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
@@ -374,7 +374,7 @@ class Component extends LitElement {
 													if (Array.isArray(queryCondition[MetadataModel.QcProperties.FG_FILTER_CONDITION])) {
 														return html`
 															<div class="divider divider-horizontal ml-1 mr-1"></div>
-															<div class="flex w-fit h-fit self-center space-x-1">
+															<div class="flex w-fit h-fit self-center gap-x-1">
 																<div class="flex h-fit w-fit self-center">
 																	<!--mdi:filter-check source: https://icon-sets.iconify.design-->
 																	<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
@@ -448,7 +448,7 @@ class Component extends LitElement {
 
 						if (MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
 							return html`
-								<div class="flex flex-col space-y-1">
+								<div class="flex flex-col gap-y-1">
 									${(() => {
 										if (this.fieldgroup[MetadataModel.FgProperties.GROUP_QUERY_ADD_FULL_TEXT_SEARCH_BOX]) {
 											return html`

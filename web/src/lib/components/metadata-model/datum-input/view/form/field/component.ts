@@ -108,7 +108,7 @@ class Component extends LitElement {
 				<button slot="header" class="btn btn-circle btn-sm btn-ghost self-start" @click=${() => (this._showMenuContent = !this._showMenuContent)}>
 					<!--mdi:dots-vertical source: https://icon-sets.iconify.design-->
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-						<path fill="black" d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2" />
+						<path d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2" />
 					</svg>
 				</button>
 				<div slot="content" class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
@@ -121,7 +121,7 @@ class Component extends LitElement {
 					>
 						<div class="flex self-center">
 							<!--mdi:delete-empty source: https://icon-sets.iconify.design-->
-							<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path fill="black" d="m20.37 8.91l-1 1.73l-12.13-7l1-1.73l3.04 1.75l1.36-.37l4.33 2.5l.37 1.37zM6 19V7h5.07L18 11v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2" /></svg>
+							<svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 24 24"><path d="m20.37 8.91l-1 1.73l-12.13-7l1-1.73l3.04 1.75l1.36-.37l4.33 2.5l.37 1.37zM6 19V7h5.07L18 11v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2" /></svg>
 						</div>
 						<div class="self-center font-bold">delete data</div>
 					</button>
@@ -140,7 +140,7 @@ class Component extends LitElement {
 										return html`
 											<!--mdi:close-circle source: https://icon-sets.iconify.design-->
 											<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24">
-												<path fill="black" d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
+												<path d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
 											</svg>
 										`
 									}
@@ -161,7 +161,7 @@ class Component extends LitElement {
 								>
 									<div class="flex self-center">
 										<!--mdi:content-copy source: https://icon-sets.iconify.design-->
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z" /></svg>
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z" /></svg>
 									</div>
 									<div class="self-center font-bold">copy data</div>
 								</button>
@@ -190,7 +190,7 @@ class Component extends LitElement {
 				</div>
 			</drop-down>
 			<header class="flex flex-col">
-				<div class="flex space-x-1 h-full">
+				<div class="flex gap-x-1 h-full">
 					<div class="w-full flex h-fit self-center">${MetadataModel.GetFieldGroupName(this.field)}</div>
 					${(() => {
 						if (typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] === 'string' && (this.field[MetadataModel.FgProperties.FIELD_GROUP_DESCRIPTION] as string).length > 0) {
@@ -225,7 +225,7 @@ class Component extends LitElement {
 								>
 									<!--mdi:content-paste source: https://icon-sets.iconify.design-->
 									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
-										<path fill="black" d="M19 20H5V4h2v3h10V4h2m-7-2a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m7 0h-4.18C14.4.84 13.3 0 12 0S9.6.84 9.18 2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2" />
+										<path d="M19 20H5V4h2v3h10V4h2m-7-2a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1m7 0h-4.18C14.4.84 13.3 0 12 0S9.6.84 9.18 2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2" />
 									</svg>
 								</button>
 							`
@@ -254,7 +254,7 @@ class Component extends LitElement {
 									.disabled=${typeof this.field[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] === 'number' && this.field[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES] > 1 && this._totalNoOfRows >= this.field[MetadataModel.FgProperties.FIELD_GROUP_MAX_ENTRIES]}
 								>
 									<!--mdi:plus-circle source: https://icon-sets.iconify.design-->
-									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path fill="black" d="M17 13h-4v4h-2v-4H7v-2h4V7h2v4h4m-5-9A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2" /></svg>
+									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path d="M17 13h-4v4h-2v-4H7v-2h4V7h2v4h4m-5-9A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2" /></svg>
 								</button>
 							`
 						} else {
@@ -302,7 +302,7 @@ class Component extends LitElement {
 					if (typeof this.field[MetadataModel.FgProperties.FIELD_UI] === 'string' && (this.field[MetadataModel.FgProperties.FIELD_UI] as string).length > 0) {
 						templates.push(html`
 							<div class="w-full h-full"></div>
-							<div class="flex space-x-1 mb-1">
+							<div class="flex gap-x-1 mb-1">
 								<div class="font-bold text-lg h-full self-start">${rowIndex + 1}</div>
 								${this._inputFieldHtmlTemplate(rowIndex)}
 								${(() => {
@@ -342,7 +342,7 @@ class Component extends LitElement {
 									>
 										<!--mdi:dots-vertical source: https://icon-sets.iconify.design-->
 										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-											<path fill="black" d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2" />
+											<path d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2" />
 										</svg>
 									</button>
 									<div slot="content" class="flex flex-col w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 min-w-[200px]">
@@ -355,7 +355,7 @@ class Component extends LitElement {
 											<div class="self-center font-bold">Copy field data</div>
 											<div class="flex self-center">
 												<!--mdi:content-copy source: https://icon-sets.iconify.design-->
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z" /></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z" /></svg>
 											</div>
 										</button>
 										<button
@@ -402,7 +402,7 @@ class Component extends LitElement {
 											<div class="self-center font-bold">Delete field data</div>
 											<div class="flex self-center">
 												<!--mdi:delete source: https://icon-sets.iconify.design-->
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 											</div>
 										</button>
 									</div>

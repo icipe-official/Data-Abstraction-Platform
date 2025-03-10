@@ -19,21 +19,23 @@ import (
 )
 
 const (
-	ENV_OPENID_CLIENT_ID                  string = "OPENID_CLIENT_ID"
-	ENV_OPENID_CLIENT_SECRET              string = "OPENID_CLIENT_SECRET"
-	ENV_OPENID_USER_REGISTRATION_ENDPOINT string = "OPENID_USER_REGISTRATION_ENDPOINT"
-	ENV_OPENID_LOGIN_ENDPOINT             string = "OPENID_LOGIN_ENDPOINT"
-	ENV_OPENID_LOGIN_REDIRECT_URL         string = "OPENID_LOGIN_REDIRECT_URL"
+	ENV_OPENID_CLIENT_ID                   string = "OPENID_CLIENT_ID"
+	ENV_OPENID_CLIENT_SECRET               string = "OPENID_CLIENT_SECRET"
+	ENV_OPENID_USER_REGISTRATION_ENDPOINT  string = "OPENID_USER_REGISTRATION_ENDPOINT"
+	ENV_OPENID_LOGIN_ENDPOINT              string = "OPENID_LOGIN_ENDPOINT"
+	ENV_OPENID_LOGIN_REDIRECT_URL          string = "OPENID_LOGIN_REDIRECT_URL"
+	ENV_OPENID_ACCOUNT_MANAGEMENT_ENDPOINT string = "OPENID_ACCOUNT_MANAGEMENT_ENDPOINT"
 )
 
 type KeycloakOpenID struct {
-	openIDConfig                   *intdoment.OpenIDConfiguration
-	logger                         intdomint.Logger
-	openIDClientID                 string
-	openIDClientSecret             string
-	openIDUserRegistrationEndpoint string
-	openIDRedirectUrl              string
-	openIDLoginEndpoint            string
+	openIDConfig                    *intdoment.OpenIDConfiguration
+	logger                          intdomint.Logger
+	openIDClientID                  string
+	openIDClientSecret              string
+	openIDUserRegistrationEndpoint  string
+	openIDRedirectUrl               string
+	openIDLoginEndpoint             string
+	openIDAccountManagementEndpoint string
 }
 
 func NewKeycloakOpenID(logger intdomint.Logger, baseUrl string, basePath string) (*KeycloakOpenID, error) {
@@ -112,6 +114,7 @@ func NewKeycloakOpenID(logger intdomint.Logger, baseUrl string, basePath string)
 	n.openIDClientID = os.Getenv(ENV_OPENID_CLIENT_ID)
 	n.openIDClientSecret = os.Getenv(ENV_OPENID_CLIENT_SECRET)
 	n.openIDUserRegistrationEndpoint = os.Getenv(ENV_OPENID_USER_REGISTRATION_ENDPOINT)
+	n.openIDAccountManagementEndpoint = os.Getenv(ENV_OPENID_ACCOUNT_MANAGEMENT_ENDPOINT)
 
 	loginRedirectUrl := new(url.URL)
 	if url, err := url.Parse(baseUrl); err != nil {
@@ -154,6 +157,13 @@ func (n *KeycloakOpenID) OpenIDGetRegistrationEndpoint() (string, error) {
 		return n.openIDUserRegistrationEndpoint, nil
 	}
 	return "", errors.New("openIDUserRegistrationEndpoint not set")
+}
+
+func (n *KeycloakOpenID) OpenIDGetAccountManagementEndpoint() (string, error) {
+	if len(n.openIDAccountManagementEndpoint) > 0 {
+		return n.openIDAccountManagementEndpoint, nil
+	}
+	return "", errors.New("openIDAccountManagementEndpoint not set")
 }
 
 func (n *KeycloakOpenID) OpenIDGetConfig() intdoment.OpenIDConfiguration {

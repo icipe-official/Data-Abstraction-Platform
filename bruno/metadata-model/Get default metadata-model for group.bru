@@ -1,0 +1,16 @@
+meta {
+  name: Get default metadata-model for group
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{web_service_api_core_url}}/metadata-model/{{metadata_model_action_id}}/{{directory_group_id}}
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  bru.setEnvVar('metadata_model_action_id','metadata_models_directory_groups')
+  bru.setEnvVar('directory_group_id','01954140-6d04-7a40-a685-17cd8b786300')
+}

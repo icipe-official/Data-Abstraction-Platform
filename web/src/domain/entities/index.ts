@@ -16,9 +16,11 @@ import _IamCredentials from './iam_credentials'
 import _IamCredentialsSessions from './iam_credentials_sessions'
 import _IamGroupAuthorizations from './iam_group_authorizations'
 import _IamGroupAuthorizationsIDs from './iam_group_authorizations_ids'
+import _MetadataModel from './metadata_model'
 import _MetadataModels from './metadata_models'
 import _MetadataModelsAuthorizationIDs from './metadata_models_authorization_ids'
-import _MetadataModelsDefaults from './metadata_models_defaults'
+import _MetadataModelsDirectory from './metadata_models_directory'
+import _MetadataModelsDirectoryGroups from './metadata_models_directory_groups'
 import _StorageDrives from './storage_drives'
 import _StorageDrivesAuthorizationIDs from './storage_drives_authorization_ids'
 import _StorageDrivesGroups from './storage_drives_groups'
@@ -35,7 +37,6 @@ namespace Entities {
 	export import StorageDrivesGroups = _StorageDrivesGroups
 	export import StorageDrivesAuthorizationIDs = _StorageDrivesAuthorizationIDs
 	export import StorageDrives = _StorageDrives
-	export import MetadataModelsDefaults = _MetadataModelsDefaults
 	export import MetadataModelsAuthorizationIDs = _MetadataModelsAuthorizationIDs
 	export import MetadataModels = _MetadataModels
 	export import IamGroupAuthorizationsIDs = _IamGroupAuthorizationsIDs
@@ -56,6 +57,9 @@ namespace Entities {
 	export import AbstractionsAuthorizationIDs = _AbstractionsAuthorizationIDs
 	export import Abstractions = _Abstractions
 	export import AppContext = _AppContext
+	export import MetadataModel = _MetadataModel
+	export import MetadataModelsDirectoryGroups = _MetadataModelsDirectoryGroups
+	export import MetadataModelsDirectory = _MetadataModelsDirectory
 }
 
 export default Entities

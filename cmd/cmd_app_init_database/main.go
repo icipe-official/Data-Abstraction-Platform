@@ -32,12 +32,6 @@ func main() {
 	}
 	log.Println("System directory group initialization succeeded")
 
-	successfulUpserts, err = service.ServiceMetadataModelDefaultsCreate(ctx, intdoment.AllMetadataModelsDefaults())
-	if err != nil {
-		log.Fatalf("ERROR: Failed to insert %s, error: %v", intdoment.MetadataModelsDefaultsRepository().RepositoryName, err)
-	}
-	log.Printf("SUCCESS: No of %s upserted: %v", intdoment.MetadataModelsDefaultsRepository().RepositoryName, successfulUpserts)
-
 	successfulUpserts, err = service.ServiceStorageTypesCreate(ctx)
 	if err != nil {
 		log.Fatalf("ERROR: Failed to insert %s, error: %v", intdoment.StorageDrivesTypesRepository().RepositoryName, err)

@@ -8,8 +8,6 @@ import (
 
 type InitDatabaseRepository interface {
 	// return no of data upserted successfully.
-	RepoMetadataModelDefaultsUpsertMany(ctx context.Context, data []intdoment.MetadataModelsDefaults) (int, error)
-	// return no of data upserted successfully.
 	RepoGroupAuthorizationRulesUpsertMany(ctx context.Context, data []intdoment.GroupAuthorizationRules) (int, error)
 	// return no of data upserted successfully.
 	RepoStorageDrivesTypesUpsertOne(ctx context.Context, data *intdoment.StorageDrivesTypes) error
@@ -24,8 +22,6 @@ type InitDatabaseRepository interface {
 }
 
 type InitDatabaseService interface {
-	// return no of data upserted successfully.
-	ServiceMetadataModelDefaultsCreate(ctx context.Context, data []intdoment.MetadataModelsDefaults) (int, error)
 	// return no of data upserted successfully.
 	ServiceGroupAuthorizationRulesCreate(ctx context.Context) (int, error)
 	// return no of data upserted successfully.

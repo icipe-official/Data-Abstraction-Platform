@@ -7,14 +7,22 @@ import '@lib/components/metadata-model/view/table/component'
 import Theme from '@lib/theme'
 import MetadataModel from '@lib/metadata_model'
 import Entities from '@domentities'
-import { OpenidContextProvider } from '@interfaces/context/openid'
-import { IOpenidContextProvider } from '@dominterfaces/context/openid'
+import { IAppContextProvider } from '@dominterfaces/context/app'
+import { AppContextProvider } from '@interfaces/context/app'
+import { SpaPageNavigation } from '@interfaces/spa_page_navigation/spa_page_navigation'
+import { ISpaPageNavigation } from '@dominterfaces/spa_page_navigation/spa_page_navigation'
+
+interface IComponentData {
+	openid_endpoints?: Entities.AppContext.OpenidEndpoints
+	iam_credential?: Entities.IamCredentials.Interface
+	directory_group_id?: string
+}
 
 /**
  * Provides the following functions:
  * * Displays a toast at the bottom of the screen when the event {@linkcode Lib.CustomEvents.TOAST_NOTIFY} is fired.
  * * Displays a loading screen when the event {@linkcode Lib.CustomEvents.SHOW_LOADING_SCREEN} is fired.
- * 
+ *
  * @listens {@linkcode Lib.CustomEvents.TOAST_NOTIFY} - Takes in event of type {@linkcode ToastNotifyEvent}.
  * @listens {@linkcode Lib.CustomEvents.SHOW_LOADING_SCREEN} - Takes in event of type {@linkcode ShowLoadingScreenEvent}.
  */
@@ -22,7 +30,13 @@ import { IOpenidContextProvider } from '@dominterfaces/context/openid'
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss)]
 
-	@property({ type: Object }) data: any | null = null
+	@property({ type: Object }) data: IComponentData | null = null
+
+	constructor() {
+		super()
+		this._appContextProvider = new AppContextProvider(undefined)
+		this._pageNavigation = new SpaPageNavigation(this._appContextProvider)
+	}
 
 	// loading screen start
 	@state() private _loading: boolean = false
@@ -44,7 +58,7 @@ class Component extends LitElement {
 	@state() private _toastType: string | null = null
 	@state() private _toastMessage: string | string[] | null = null
 	@state() private _toastTitle: string | null = null
-	@state() private _toastMetadataModelSearchResults: MetadataModel.ISearchResults | null = null
+	@state() private _toastMetadataModelSearchResults: Entities.MetadataModel.ISearchResults | null = null
 
 	@state() private _queryConditions: any[] = []
 	@state() private _filterexcludeindexes: number[] = []
@@ -76,24 +90,48 @@ class Component extends LitElement {
 		this._windowWidth = window.innerWidth //1000
 	}
 
-	private _openidCtxProvider: IOpenidContextProvider = new OpenidContextProvider(undefined)
+	private _appContextProvider: IAppContextProvider
+
+	private _pageNavigation: ISpaPageNavigation
+
+	private _handlePageNavigation = async (e: PopStateEvent) => {
+		await this._pageNavigation.HandlePopState(e)
+	}
 
 	connectedCallback(): void {
 		super.connectedCallback()
 
-		if (this.data.openid_endpoints && typeof this.data.openid_endpoints.login_endpoint === 'string') {
-			let newOpenID: Entities.AppContext.Openid = {
+		if (typeof this.data?.openid_endpoints?.login_endpoint === 'string') {
+			let newOpenID: Entities.AppContext.OpenidEndpoints = {
 				login_endpoint: this.data.openid_endpoints.login_endpoint
 			}
 			if (this.data.openid_endpoints.registration_endpoint) {
 				newOpenID.registration_endpoint = this.data.openid_endpoints.registration_endpoint
 			}
-			this._openidCtxProvider.Setopenidendpoints(newOpenID)
+			if (this.data.openid_endpoints.account_management_endpoint) {
+				newOpenID.account_management_endpoint = this.data.openid_endpoints.account_management_endpoint
+			}
+			this._appContextProvider.UpdateOpenidendpoints(newOpenID)
+		} else {
+			this._appContextProvider.UpdateOpenidendpoints(undefined)
+		}
+
+		if (typeof this.data?.iam_credential === 'object') {
+			this._appContextProvider.UpdateIamcredential(this.data.iam_credential)
+		} else {
+			this._appContextProvider.UpdateIamcredential(undefined)
+		}
+
+		if (typeof this.data?.directory_group_id === 'string') {
+			this._appContextProvider.UpdateIamdirectorygroupid(this.data.directory_group_id)
+		} else {
+			this._appContextProvider.UpdateIamdirectorygroupid(undefined)
 		}
 
 		window.addEventListener(Lib.CustomEvents.SHOW_LOADING_SCREEN, this._showLoadingScreenListener as EventListenerOrEventListenerObject)
 		window.addEventListener(Lib.CustomEvents.TOAST_NOTIFY, this._toastNotifyListener as EventListenerOrEventListenerObject)
 		window.addEventListener('resize', this._handleWindowResize)
+		window.addEventListener('popstate', this._handlePageNavigation)
 	}
 
 	disconnectedCallback(): void {
@@ -103,6 +141,7 @@ class Component extends LitElement {
 		window.removeEventListener(Lib.CustomEvents.SHOW_LOADING_SCREEN, this._showLoadingScreenListener as EventListenerOrEventListenerObject)
 		window.removeEventListener(Lib.CustomEvents.TOAST_NOTIFY, this._toastNotifyListener as EventListenerOrEventListenerObject)
 		window.removeEventListener('resize', this._handleWindowResize)
+		window.removeEventListener('popstate', this._handlePageNavigation)
 	}
 
 	protected render(): unknown {
@@ -114,7 +153,7 @@ class Component extends LitElement {
 					return html`
 						<div class="z-[2] toast max-sm:toast-center max-sm:w-full sm:toast-end">
 							<div role="alert" class="alert shadow-sm shadow-slate-600 flex ${this._toastType === Lib.ToastType.ERROR ? 'alert-error' : this._toastType === Lib.ToastType.WARNING ? 'alert-warning' : this._toastType === Lib.ToastType.SUCCESS ? 'alert-success' : 'alert-info'}">
-								<div class="flex w-full h-fit space-x-1">
+								<div class="flex w-full h-fit gap-x-1">
 									${(() => {
 										if (typeof this._toastMessage === 'string') {
 											return html`<div class="break-words flex-[9.5] self-center">${this._toastMessage}</div>`
@@ -168,7 +207,7 @@ class Component extends LitElement {
 			<dialog id="metadata-model-search-results-dialog" class="modal">
 				<form method="dialog" class="modal-box p-0 rounded min-w-[500px] w-full max-w-fit max-h-fit overflow-hidden">
 					<header class="sticky flex justify-between items-center p-2 shadow-gray-800 shadow-sm top-0 left-0 right-0">
-						<div class="h-fit w-fit flex space-x-1">
+						<div class="h-fit w-fit flex gap-x-1">
 							<button
 								class="btn btn-circle btn-ghost flex justify-center"
 								@click=${(e: Event) => {
@@ -181,7 +220,7 @@ class Component extends LitElement {
 									<path fill="${Theme.Color.INFO}" d="M14 12v7.88c.04.3-.06.62-.29.83a.996.996 0 0 1-1.41 0l-2.01-2.01a.99.99 0 0 1-.29-.83V12h-.03L4.21 4.62a1 1 0 0 1 .17-1.4c.19-.14.4-.22.62-.22h14c.22 0 .43.08.62.22a1 1 0 0 1 .17 1.4L14.03 12z" />
 								</svg>
 							</button>
-							<div class="flex self-center space-x-1">${typeof this._toastTitle !== 'undefined' && this._toastTitle !== null ? this._toastTitle : 'More information'}</div>
+							<div class="flex self-center gap-x-1">${typeof this._toastTitle !== 'undefined' && this._toastTitle !== null ? this._toastTitle : 'More information'}</div>
 						</div>
 						<button class="btn btn-circle btn-ghost flex justify-center" @click=${this._closeToast}>
 							<!--mdi:close-thick source: https://icon-sets.iconify.design-->
@@ -190,14 +229,14 @@ class Component extends LitElement {
 							</svg>
 						</button>
 					</header>
-					<main class="flex-[9.5] p-2 space-x-1 max-w-[90vw] overflow-hidden max-h-[90vh] flex">
+					<main class="flex-[9.5] p-2 gap-x-1 max-w-[90vw] overflow-hidden max-h-[90vh] flex">
 						${(() => {
 							if (typeof this._toastMetadataModelSearchResults !== 'undefined' && this._toastMetadataModelSearchResults !== null) {
 								return html`
 									${(() => {
 										if (this._showFilterPanel) {
 											return html`
-												<div class="flex-[2] flex flex-col bg-gray-100 shadow-inner shadow-gray-800 space-y-1 rounded-md overflow-hidden max-w-fit p-1">
+												<div class="flex-[2] flex flex-col bg-gray-100 shadow-inner shadow-gray-800 gap-y-1 rounded-md overflow-hidden max-w-fit p-1">
 													<metadata-model-view-query-panel
 														class="flex-[9.5] max-w-fit"
 														.queryconditions=${this._queryConditions}
@@ -253,7 +292,7 @@ class Component extends LitElement {
 			<!--loading-screen start-->
 			<dialog id="loading-screen-dialog" class="modal">
 				<form method="dialog" class="modal-backdrop min-w-[200px]">
-					<div class="flex flex-col justify-center items-center text-xl space-y-5">
+					<div class="flex flex-col justify-center items-center text-xl gap-y-5">
 						<div class="flex">
 							<span class="loading loading-ball loading-sm text-accent"></span>
 							<span class="loading loading-ball loading-md text-secondary"></span>
@@ -312,6 +351,6 @@ type ToastNotifyEvent = CustomEvent & {
 
 		toastTitle: string
 
-		toastMetadataModelSearchResults: MetadataModel.ISearchResults
+		toastMetadataModelSearchResults: Entities.MetadataModel.ISearchResults
 	}
 }

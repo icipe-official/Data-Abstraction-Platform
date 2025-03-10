@@ -86,6 +86,13 @@ func (n *MetadataModelRetrieve) MetadataModelInsertChildIntoParent(
 		if fgString, ok := property[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
 			property[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY] = strings.Replace(fgString, "$", childMetadataModel[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string), 1)
 		}
+		if fieldAnyProperties, ok := property[intlibmmodel.FIELD_GROUP_PROP_FIELD_TYPE_ANY].(map[string]any); ok {
+			if getPathToDataArgument, ok := fieldAnyProperties[intlibmmodel.FIELD_ANY_PROP_GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT].(string); ok {
+				pathToParent := intlibmmodel.GetPathToValue(childMetadataModel[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string), true, intlibmmodel.ARRAY_PATH_PLACEHOLDER)
+				fieldAnyProperties[intlibmmodel.FIELD_ANY_PROP_GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT] = strings.Replace(getPathToDataArgument, "$", fmt.Sprintf("%s%s", pathToParent, intlibmmodel.ARRAY_PATH_PLACEHOLDER), 1)
+				property[intlibmmodel.FIELD_GROUP_PROP_FIELD_TYPE_ANY] = fieldAnyProperties
+			}
+		}
 		return property
 	}).(map[string]any); ok {
 		childMetadataModel = value
@@ -144,12 +151,12 @@ func (n *MetadataModelRetrieve) SetTableCollectionUidForMetadataModel(metadataMo
 	}).(map[string]any); ok {
 		return value, nil
 	} else {
-		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetMetadataModel, errors.New("update parentMetadataModel tableCollectionUid failed"))
+		return nil, intlib.FunctionNameAndError(n.SetTableCollectionUidForMetadataModel, errors.New("update parentMetadataModel tableCollectionUid failed"))
 	}
 }
 
 func (n *MetadataModelRetrieve) GetMetadataModel(tableCollectionName string) (map[string]any, error) {
-	return intlib.MetadataModelGetDatum(tableCollectionName)
+	return intlib.MetadataModelGet(tableCollectionName)
 }
 
 func (n *MetadataModelRetrieve) DefaultAuthorizationIDsGetMetadataModel(
@@ -168,7 +175,7 @@ func (n *MetadataModelRetrieve) DefaultAuthorizationIDsGetMetadataModel(
 		[]*intdoment.IamGroupAuthorizationRule{
 			{
 				ID:        "",
-				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATION,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 			},
 		},
 		n.iamAuthorizationRules,

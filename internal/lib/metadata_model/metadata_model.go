@@ -12,11 +12,21 @@ import (
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 )
 
+type IGetMetadataModel interface {
+	GetMetadataModel(actionID string, argument any, currentFgKey string) any
+}
+
 func argumentsError(function any, variableName string, expectedType string, valueFound any) error {
 	return fmt.Errorf("%s->%v", "ErrArgumentsInvalid", intlib.FunctionNameAndError(function, fmt.Errorf("expected %s to be of type %s, found %T", variableName, expectedType, valueFound)))
 }
 
 const ErrArgumentsInvalid string = "ErrArgumentsInvalid"
+
+const (
+	FIELD_ANY_PROP_METADATA_MODEL_ACTION_ID                 string = "$METADATA_MODEL_ACTION_ID"
+	FIELD_ANY_PROP_PICK_METADATA_MODEL_MESSAGE_PROMPT       string = "$PICK_METADATA_MODEL_MESSAGE_PROMPT"
+	FIELD_ANY_PROP_GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT string = "$GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT"
+)
 
 const (
 	QUERY_CONDITION_PROP_D_TABLE_COLLECTION_UID   string = FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID
@@ -137,6 +147,7 @@ const (
 	FIELD_GROUP_PROP_DATUM_INPUT_VIEW                                      string = "$DATUM_INPUT_VIEW"
 	FIELD_GROUP_PROP_FIELD_2D_VIEW_POSITION                                string = "$FIELD_2D_VIEW_POSITION"
 	FIELD_GROUP_PROP_FIELD_MULTIPLE_VALUES_JOIN_SYMBOL                     string = "$FIELD_MULTIPLE_VALUES_JOIN_SYMBOL"
+	FIELD_GROUP_PROP_FIELD_TYPE_ANY                                        string = "$FIELD_TYPE_ANY"
 )
 
 const (
@@ -360,6 +371,12 @@ func FunctionNameAndError(function any, err error) error {
 	return fmt.Errorf("%v -> %v", runtime.FuncForPC(reflect.ValueOf(function).Pointer()).Name(), err)
 }
 
+type IFieldAny struct {
+	MetadataModelActionID              string `json:"$METADATA_MODEL_ACTION_ID,omitempty"`
+	PickMetadataModelMessagePrompt     string `json:"$PICK_METADATA_MODEL_MESSAGE_PROMPT,omitempty"`
+	GetMetadataModelPathToDataArgument string `json:"$GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT,omitempty"`
+}
+
 type I2DFieldViewPosition struct {
 	FgKey                                   string `json:"$FIELD_GROUP_KEY,omitempty"`
 	FViewValuesInSeparateColumnsHeaderIndex *int   `json:"$FIELD_VIEW_VALUES_IN_SEPARATE_COLUMNS_HEADER_INDEX,omitempty"`
@@ -410,20 +427,20 @@ type MetadataModel struct {
 		Label string `json:"$LABEL,omitempty"`
 		Value any    `json:"$VALUE,omitempty"`
 	} `json:"$F_SELECT_OPTIONS,omitempty"`
-	FieldPlaceholder                *string `json:"$F_PLACEHOLDER,omitempty"`
-	FieldGroupMaxEntries            *int    `json:"$FG_MAX_ENTRIES,omitempty"`
-	FieldDefaultValue               *any    `json:"$F_DEFAULT_VALUE,omitempty"`
-	FieldGroupDisableInput          *bool   `json:"$FG_DISABLE_INPUT,omitempty"`
-	FieldGroupDisablePropertiesEdit *bool   `json:"$FG_DISABLE_PROPERTIES_EDIT,omitempty"`
-	FieldAddToFullTextSearchIndex   *bool   `json:"$F_ADD_TO_FULL_TEXT_SEARCH_INDEX,omitempty"`
-	FieldCheckboxValueIfTrue        *any    `json:"$F_CHECKBOX_VALUE_IF_TRUE,omitempty"`
-	FieldCheckboxValueIfFalse       *any    `json:"$F_CHECKBOX_VALUE_IF_FALSE,omitempty"`
-	FieldCheckboxUseInView          *bool   `json:"$F_CHECKBOX_VALUES_USE_IN_VIEW,omitempty"`
-	FieldCheckboxUseInStorage       *bool   `json:"$F_CHECKBOX_VALUES_USE_IN_STORAGE,omitempty"`
-	FieldGroupViewDisable           *bool   `json:"$FG_VIEW_DISABLE,omitempty"`
-	FieldGroupSkipDataExtraction    *bool   `json:"$FG_SKIP_DATA_EXTRACTION,omitempty"`
-	FieldGroupFilterDisable         *bool   `json:"$FG_FILTER_DISABLE,omitempty"`
-	GroupExtractAsSingleValue       *bool   `json:"$G_EXTRACT_AS_SINGLE_VALUE,omitempty"`
+	FieldPlaceholder                                         *string `json:"$F_PLACEHOLDER,omitempty"`
+	FieldGroupMaxEntries                                     *int    `json:"$FG_MAX_ENTRIES,omitempty"`
+	FieldDefaultValue                                        *any    `json:"$F_DEFAULT_VALUE,omitempty"`
+	FieldGroupDisableInput                                   *bool   `json:"$FG_DISABLE_INPUT,omitempty"`
+	FieldGroupDisablePropertiesEdit                          *bool   `json:"$FG_DISABLE_PROPERTIES_EDIT,omitempty"`
+	FieldAddToFullTextSearchIndex                            *bool   `json:"$F_ADD_TO_FULL_TEXT_SEARCH_INDEX,omitempty"`
+	FieldCheckboxValueIfTrue                                 *any    `json:"$F_CHECKBOX_VALUE_IF_TRUE,omitempty"`
+	FieldCheckboxValueIfFalse                                *any    `json:"$F_CHECKBOX_VALUE_IF_FALSE,omitempty"`
+	FieldCheckboxUseInViewPICK_METADATA_MODEL_MESSAGE_PROMPT *bool   `json:"$F_CHECKBOX_VALUES_USE_IN_VIEW,omitempty"`
+	FieldCheckboxUseInStorage                                *bool   `json:"$F_CHECKBOX_VALUES_USE_IN_STORAGE,omitempty"`
+	FieldGroupViewDisable                                    *bool   `json:"$FG_VIEW_DISABLE,omitempty"`
+	FieldGroupSkipDataExtraction                             *bool   `json:"$FG_SKIP_DATA_EXTRACTION,omitempty"`
+	FieldGroupFilterDisable                                  *bool   `json:"$FG_FILTER_DISABLE,omitempty"`
+	GroupExtractAsSingleValue                                *bool   `json:"$G_EXTRACT_AS_SINGLE_VALUE,omitempty"`
 	MetadataModelGroup
 	TableCollectionName *string `json:"$D_TABLE_COLLECTION_NAME,omitempty"`
 	FieldColumnName     *string `json:"$D_FIELD_COLUMN_NAME,omitempty"`

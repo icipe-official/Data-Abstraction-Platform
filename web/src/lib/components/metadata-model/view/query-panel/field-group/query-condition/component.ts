@@ -144,7 +144,7 @@ class Component extends LitElement {
 							/>
 						</svg>
 					</button>
-					<div slot="content" class="shadow-sm shadow-gray-800 p-1 flex flex-col rounded-md bg-white space-y-1">
+					<div slot="content" class="shadow-sm shadow-gray-800 p-1 flex flex-col rounded-md bg-white gap-y-1">
 						<button class="btn ${this._currentTab === Tab.QUERY_JSON ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'} break-words" @click=${() => (this._currentTab = Tab.QUERY_JSON)}>Query JSON</button>
 						<button class="btn ${this._currentTab === Tab.FIELD_GROUP_JSON ? (this.color === Theme.Color.PRIMARY ? 'btn-primary' : this.color === Theme.Color.SECONDARY ? 'btn-secondary' : 'btn-accent') : 'btn-ghost'} break-words" @click=${() => (this._currentTab = Tab.FIELD_GROUP_JSON)}>
 							Field/Group JSON
@@ -174,7 +174,7 @@ class Component extends LitElement {
 
 				return nothing
 			})()}
-			<main class="flex-[9.5] flex flex-col space-y-1 overflow-auto">
+			<main class="flex-[9.5] flex flex-col gap-y-1 overflow-auto">
 				${(() => {
 					switch (this._currentTab) {
 						case Tab.QUERY_PROPERTIES:
@@ -233,7 +233,7 @@ class Component extends LitElement {
 												return nothing
 											})()}
 										</div>
-										<div class="flex space-x-1">
+										<div class="flex gap-x-1">
 											<div class="h-fit self-center">View Disabled</div>
 											<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-disable')} @mouseout=${() => (this._showHintID = '')}>
 												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -277,7 +277,7 @@ class Component extends LitElement {
 															return nothing
 														})()}
 													</div>
-													<span class="flex space-x-1">
+													<span class="flex gap-x-1">
 														<div class="h-fit self-center">Group default view as table in 2D</div>
 														<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-as-table-in-2d')} @mouseout=${() => (this._showHintID = '')}>
 															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -321,7 +321,7 @@ class Component extends LitElement {
 														return nothing
 													})()}
 												</div>
-												<div class="flex space-x-1">
+												<div class="flex gap-x-1">
 													<div class="h-fit self-center">Sort Order</div>
 													<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-sort-order')} @mouseout=${() => (this._showHintID = '')}>
 														<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -384,7 +384,7 @@ class Component extends LitElement {
 												return nothing
 											})()}
 										</div>
-										<span class="flex space-x-1">
+										<span class="flex gap-x-1">
 											<div class="h-fit self-center">Database Skip Data Extraction</div>
 											<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'd-skip-data-extraction')} @mouseout=${() => (this._showHintID = '')}>
 												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -425,7 +425,7 @@ class Component extends LitElement {
 												return nothing
 											})()}
 										</div>
-										<span class="flex space-x-1">
+										<span class="flex gap-x-1">
 											<div class="h-fit self-center">Field Group is Primary Key</div>
 											<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-is-primary-key')} @mouseout=${() => (this._showHintID = '')}>
 												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -466,7 +466,7 @@ class Component extends LitElement {
 												return nothing
 											})()}
 										</div>
-										<span class="flex space-x-1">
+										<span class="flex gap-x-1">
 											<span class="h-fit self-center break-words">Database table/collection unique id</span>
 											<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-table-collection-uid')} @mouseout=${() => (this._showHintID = '')}>
 												<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -511,7 +511,7 @@ class Component extends LitElement {
 															return nothing
 														})()}
 													</div>
-													<span class="flex space-x-1">
+													<span class="flex gap-x-1">
 														<span class="h-fit self-center break-words">Database Table/Collection name</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-group-table-collection-name')} @mouseout=${() => (this._showHintID = '')}>
 															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -553,7 +553,7 @@ class Component extends LitElement {
 															return nothing
 														})()}
 													</div>
-													<span class="flex space-x-1">
+													<span class="flex gap-x-1">
 														<span class="h-fit self-center break-words">Database Results Limit</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-limit')} @mouseout=${() => (this._showHintID = '')}>
 															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -600,8 +600,8 @@ class Component extends LitElement {
 															return nothing
 														})()}
 													</div>
-													<span class="flex space-x-1">
-														<span class="h-fit self-center break-words">Database Results Limit</span>
+													<span class="flex gap-x-1">
+														<span class="h-fit self-center break-words">Database Results Offset</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-offset')} @mouseout=${() => (this._showHintID = '')}>
 															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
 															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -613,7 +613,7 @@ class Component extends LitElement {
 														class="flex-1 input self-center ${this.color === Theme.Color.PRIMARY ? 'input-primary' : this.color === Theme.Color.SECONDARY ? 'input-secondary' : 'input-accent'} w-full min-h-[48px]"
 														type="number"
 														min="0"
-														placeholder="Enter maximum number of results..."
+														placeholder="Enter number of results to skip..."
 														.value=${typeof this.fieldgroup[MetadataModel.FgProperties.DATABASE_OFFSET] === 'number' ? this.fieldgroup[MetadataModel.FgProperties.DATABASE_OFFSET].toString() : ''}
 														@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 															if (e.currentTarget.value.length > 0) {
@@ -649,7 +649,7 @@ class Component extends LitElement {
 														return nothing
 													})()}
 												</div>
-												<span class="flex space-x-1">
+												<span class="flex gap-x-1">
 													<span class="h-fit self-center break-words">Database column/field name</span>
 													<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'd-field-column-name')} @mouseout=${() => (this._showHintID = '')}>
 														<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -696,7 +696,7 @@ class Component extends LitElement {
 										${(() => {
 											if (!MetadataModel.IsGroupReadOrderOfFieldsValid(this.fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]) || MetadataModel.GroupCanBeProcessedAs2D(this.fieldgroup)) {
 												return html`
-													<span class="flex space-x-1">
+													<span class="flex gap-x-1">
 														<div class="h-fit self-center">Field Group view values in separate columns</div>
 														<div class="self-center btn btn-circle w-fit h-fit min-h-fit p-0" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns')} @mouseout=${() => (this._showHintID = '')}>
 															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -737,7 +737,7 @@ class Component extends LitElement {
 															return nothing
 														})()}
 													</div>
-													<span class="flex space-x-1">
+													<span class="flex gap-x-1">
 														<span class="h-fit self-center break-words">Field Group view max columns in separate columns</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-max-values-in-separate-columns')} @mouseout=${() => (this._showHintID = '')}>
 															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -784,7 +784,7 @@ class Component extends LitElement {
 															return nothing
 														})()}
 													</div>
-													<span class="flex space-x-1">
+													<span class="flex gap-x-1">
 														<span class="h-fit self-center break-words">Field view header format</span>
 														<div class="btn btn-circle w-fit h-fit min-h-fit p-0 self-center" @mouseover=${() => (this._showHintID = 'fg-view-values-in-separate-columns-header-format')} @mouseout=${() => (this._showHintID = '')}>
 															<!--mdi:question-mark source: https://icon-sets.iconify.design-->
@@ -822,7 +822,7 @@ class Component extends LitElement {
 										<div class="rounded-md overflow-hidden min-h-fit min-w-fit flex flex-col ">
 											<header class="flex justify-between p-1 ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}">
 												<div class="font-bold self-center text-lg">'Or' Filter condition #${orIndex + 1}</div>
-												<div class="flex space-x-1">
+												<div class="flex gap-x-1">
 													<button
 														class="btn btn-ghost"
 														@click=${() => {
@@ -1298,7 +1298,7 @@ class Component extends LitElement {
 												}
 
 												return html`
-													<div class="w-full h-fit text-center shadow-inner shadow-gray-800 rounded-b-md flex justify-center space-x-1 p-1">
+													<div class="w-full h-fit text-center shadow-inner shadow-gray-800 rounded-b-md flex justify-center gap-x-1 p-1">
 														<div class="h-fit self-center">Click</div>
 														<div class="min-w-fit min-h-fit ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'}">
 															${this._addAndFilterConditionButtonHtmlTemplate(orIndex)}
@@ -1319,7 +1319,7 @@ class Component extends LitElement {
 								})
 							}
 							return html`
-								<div class="self-center flex justify-center space-x-1 p-1">
+								<div class="self-center flex justify-center gap-x-1 p-1">
 									<div class="h-fit self-center">Click</div>
 									${this._addOrFilterConditionButtonHtmlTemplate()}
 									<div class="h-fit self-center">to add a new 'or' filter condtion</div>

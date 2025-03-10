@@ -175,14 +175,14 @@ class Component extends LitElement {
 								<div class="flex flex-col justify-center">
 									<div class="flex self-center">
 										<!--mdi:file-tree source: https://icon-sets.iconify.design-->
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M3 3h6v4H3zm12 7h6v4h-6zm0 7h6v4h-6zm-2-4H7v5h6v2H5V9h2v2h6z" /></svg>
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M3 3h6v4H3zm12 7h6v4h-6zm0 7h6v4h-6zm-2-4H7v5h6v2H5V9h2v2h6z" /></svg>
 
 										${(() => {
 											if (this._viewGroupTree) {
 												return html`
 													<!--mdi:close-circle source: https://icon-sets.iconify.design-->
 													<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24">
-														<path fill="black" d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
+														<path d="M12 2c5.53 0 10 4.47 10 10s-4.47 10-10 10S2 17.53 2 12S6.47 2 12 2m3.59 5L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z" />
 													</svg>
 												`
 											}
@@ -259,7 +259,7 @@ class Component extends LitElement {
 							<button class="btn btn-ghost glass btn-square rounded-none min-w-fit w-full sticky bottom-0 left-0 right-0 self-center" @click=${() => (this._viewGroupTree = false)}>
 								<!--mdi:chevron-up source: https://icon-sets.iconify.design-->
 								<svg xmlns="http://www.w3.org/2000/svg" width="100" height="20" viewBox="0 0 24 24">
-									<path fill="black" d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6l-6 6z" />
+									<path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6l-6 6z" />
 								</svg>
 							</button>
 						</section>

@@ -38,7 +38,7 @@ class Component extends LitElement {
 				${(() => {
 					if (this._slideNumber === 0) {
 						return html`
-							<div class="w-full h-fit self-center flex flex-col space-y-2 text-ACCENT">
+							<div class="w-full h-fit self-center flex flex-col gap-y-2 text-ACCENT">
 								<div class="flex-1 flex-col h-full">
 									<div class="flex-1 flex-col h-full">
 										<div class="flex-[9] flex justify-center">
@@ -64,7 +64,7 @@ class Component extends LitElement {
 						`
 					} else if (this._slideNumber === 1) {
 						return html`
-							<div class="w-full h-fit self-center flex flex-col space-y-2 text-secondary">
+							<div class="w-full h-fit self-center flex flex-col gap-y-2 text-secondary">
 								<div class="flex-1 flex-col h-full">
 									<div class="flex-[9] flex justify-center">
 										<!--mdi:watering-can source: https://icon-sets.iconify.design-->
@@ -86,7 +86,7 @@ class Component extends LitElement {
 						`
 					} else if (this._slideNumber === 2) {
 						return html`
-							<div class="w-full h-fit self-center flex flex-col space-y-2 text-primary">
+							<div class="w-full h-fit self-center flex flex-col gap-y-2 text-primary">
 								<div class="flex-1 flex-col h-full">
 									<div class="fkex-[9] flex justify-center">
 										<!--mdi:explore source: https://icon-sets.iconify.design-->
@@ -109,7 +109,7 @@ class Component extends LitElement {
 					}
 				})()}
 			</main>
-			<footer class="flex-[1] flex justify-between space-x-1 min-h-fit overflow-x-auto">
+			<footer class="flex-[1] flex justify-between gap-x-1 min-h-fit overflow-x-auto">
 				<img src=${icipeLogoPng} alt="icipe logo" class="max-w-[10vw] max-h-[5vh] self-center" />
 				<img src=${uooLogoPng} alt="university of oxford logo" class="max-w-[10vw] max-h-[5vh] self-center" />
 				<img src=${vaLogoPng} alt="vector atlas logo" class="max-w-[10vw] max-h-[10vh] self-center" />

@@ -7,6 +7,7 @@ import (
 
 	"slices"
 
+	"github.com/gofrs/uuid/v5"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 )
@@ -21,7 +22,7 @@ type WebsiteManifestEntry struct {
 	Assets  []string `json:"assets"`
 }
 
-func WebsiteGetRoutesLayout(ctx context.Context, openId intdomint.OpenID, websiteTemplate intdomint.WebsiteTemplates, iamCredential *intdoment.IamCredentials) (any, string, error) {
+func WebsiteGetRoutesLayout(ctx context.Context, openId intdomint.OpenID, websiteTemplate intdomint.WebsiteTemplates, iamCredential *intdoment.IamCredentials, directoryGroupID uuid.UUID) (any, string, error) {
 	template, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_LAYOUT)
 	if err != nil {
 		return nil, "", err
@@ -29,11 +30,19 @@ func WebsiteGetRoutesLayout(ctx context.Context, openId intdomint.OpenID, websit
 
 	sessionData := new(SessionData)
 	sessionData.OpenidEndpoints.LoginEndpoint = openId.OpenIDGetLoginEndpoint()
-	if openIdRegistrationEndpoint, err := openId.OpenIDGetRegistrationEndpoint(); err == nil {
-		sessionData.OpenidEndpoints.RegistrationEndpoint = openIdRegistrationEndpoint
+	if value, err := openId.OpenIDGetRegistrationEndpoint(); err == nil {
+		sessionData.OpenidEndpoints.RegistrationEndpoint = value
 	}
+	if value, err := openId.OpenIDGetAccountManagementEndpoint(); err == nil {
+		sessionData.OpenidEndpoints.AccountManagementEndpoint = value
+	}
+
 	if iamCredential != nil {
 		sessionData.IamCredential = iamCredential
+	}
+	if !directoryGroupID.IsNil() {
+		sessionData.DirectoryGroupID = new(uuid.UUID)
+		*sessionData.DirectoryGroupID = directoryGroupID
 	}
 
 	if json, err := json.Marshal(sessionData); err != nil {
@@ -51,7 +60,7 @@ func WebsiteSendHTMLResponse(htmlContent *string, w http.ResponseWriter) {
 
 func WebsiteValidateHTMLPartialRequest(r *http.Request, partials []string) (bool, string) {
 	if isPartial := r.URL.Query().Get("partial"); isPartial == "true" {
-		if partialName := r.URL.Query().Get("partial_name"); partialName != "" {
+		if partialName := r.URL.Query().Get("partial_name"); len(partialName) > 0 {
 			if slices.Contains(partials, partialName) {
 				return true, partialName
 			}

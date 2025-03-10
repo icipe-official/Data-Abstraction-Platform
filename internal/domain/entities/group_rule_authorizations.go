@@ -22,7 +22,6 @@ type groupRuleAuthorizationRepository struct {
 
 	ID                           string
 	DirectoryGroupsID            string
-	GroupCreatedOn               string
 	GroupAuthorizationsRuleID    string
 	GroupAuthorizationsRuleGroup string
 	CreatedOn                    string
@@ -35,7 +34,6 @@ func GroupRuleAuthorizationsRepository() groupRuleAuthorizationRepository {
 
 		ID:                           "id",
 		DirectoryGroupsID:            "directory_groups_id",
-		GroupCreatedOn:               "group_created_on",
 		GroupAuthorizationsRuleID:    "group_authorization_rules_id",
 		GroupAuthorizationsRuleGroup: "group_authorization_rules_group",
 		CreatedOn:                    "created_on",

@@ -6,6 +6,9 @@ import Theme from '@lib/theme'
 import { Task } from '@lit/task'
 import MetadataModel from '@lib/metadata_model'
 import Json from '@lib/json'
+import { IMetadataModelGetController } from '@dominterfaces/controllers/metadata_model'
+import { MetadataModelGetController } from '@interfaces/controllers/metadata_model'
+import { IFieldAnyMetadataModelGet } from '@dominterfaces/field_any_metadata_model/field_any_metadata_model'
 
 @customElement('metadata-model-view-datum')
 class Component extends LitElement {
@@ -20,6 +23,10 @@ class Component extends LitElement {
 	@property({ type: Number }) scrollelementwidth: number = 0
 	@property({ type: Number }) scrollelementheight: number = 0
 	@property({ type: Number }) maxnoofgroupfields: number = 20
+	@property({ type: Object }) metadatamodelgetcontroller: IMetadataModelGetController | undefined
+	@property({ attribute: false }) getmetadatamodel: IFieldAnyMetadataModelGet | undefined
+	@property({ attribute: false }) getmetadatamodeldata: ((path: string, arrayindexes: number[]) => any) | undefined
+	@property({ type: Array }) arrayindexes: number[] = []
 
 	@state() private _componentNested: boolean = false
 
@@ -46,7 +53,7 @@ class Component extends LitElement {
 	`
 
 	private _pendingTaskHtmlTemplate = () => html`
-		<div class="flex flex-col justify-center items-center text-xl space-y-5 w-full h-fit">
+		<div class="flex flex-col justify-center items-center text-xl gap-y-5 w-full h-fit">
 			<div class="flex">
 				<span class="loading loading-ball loading-sm text-accent"></span>
 				<span class="loading loading-ball loading-md text-secondary"></span>
@@ -71,7 +78,7 @@ class Component extends LitElement {
 			case MetadataModel.FieldType.BOOLEAN:
 				if (datum === true || (typeof field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE] !== 'undefined' && Json.AreValuesEqual(datum, field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_TRUE][MetadataModel.FieldCheckboxValueProperties.VALUE]))) {
 					return html`
-						<div class="flex space-x-1 justify-center w-fit h-fit">
+						<div class="flex gap-x-1 justify-center w-fit h-fit">
 							<!--mdi:checkbox-marked source: https://icon-sets.iconify.design-->
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="m10 17l-5-5l1.41-1.42L10 14.17l7.59-7.59L19 8m0-5H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2" /></svg>
 							${(() => {
@@ -87,7 +94,7 @@ class Component extends LitElement {
 
 				if (datum === false || (typeof field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE] !== 'undefined' && Json.AreValuesEqual(datum, field[MetadataModel.FgProperties.FIELD_CHECKBOX_VALUE_IF_FALSE][MetadataModel.FieldCheckboxValueProperties.VALUE]))) {
 					return html`
-						<div class="flex space-x-1 justify-center w-fit h-fit">
+						<div class="flex gap-x-1 justify-center w-fit h-fit">
 							<!--mdi:close-box source: https://icon-sets.iconify.design-->
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${this.color}" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-3.4 14L12 13.4L8.4 17L7 15.6l3.6-3.6L7 8.4L8.4 7l3.6 3.6L15.6 7L17 8.4L13.4 12l3.6 3.6z" /></svg>
 							${(() => {
@@ -109,6 +116,14 @@ class Component extends LitElement {
 
 				if (field[MetadataModel.FgProperties.FIELD_DATATYPE] === MetadataModel.FieldType.TIMESTAMP) {
 					return html`<div class="w-fit">${this._formatDateTimeValue(field[MetadataModel.FgProperties.FIELD_DATETIME_FORMAT], datum)}</div>`
+				}
+
+				if (typeof datum === 'object') {
+					return html`
+						<pre class="z-[1] grid bg-gray-700 text-white w-full h-fit shadow-inner shadow-gray-800 p-1 max-h-[300px] overflow-auto">
+							<code class="sticky left-0 w-fit h-fit">${JSON.stringify(datum, null, 4)}</code>
+						</pre>
+					`
 				}
 
 				return html`<div class="w-fit">${datum}</div>`
@@ -163,6 +178,20 @@ class Component extends LitElement {
 
 		if (typeof this.scrollelement !== 'undefined') {
 			this._componentNested = true
+		} else {
+			if (typeof this.getmetadatamodel !== 'undefined' && typeof this.metadatamodelgetcontroller === 'undefined') {
+				this.metadatamodelgetcontroller = new MetadataModelGetController(this)
+			}
+			this.getmetadatamodeldata = (path: string, arrayindexes: number[]) => {
+				try {
+					arrayindexes = [arrayindexes[0], ...arrayindexes]
+					path = MetadataModel.PreparePathToValueInObject(path, arrayindexes)
+					return Json.GetValueInObject(this.data, path)
+				} catch (e) {
+					console.error(e)
+					return undefined
+				}
+			}
 		}
 
 		if (typeof this.data === 'undefined') {
@@ -225,6 +254,9 @@ class Component extends LitElement {
 											.scrollelementheight=${this.scrollelementheight}
 											.scrollelementwidth=${this.scrollelementwidth}
 											.basestickytop=${this.basestickytop}
+											.arrayindexes=${this.arrayindexes}
+											.getmetadatamodel=${this.getmetadatamodel}
+											.getmetadatamodeldata=${this.getmetadatamodeldata}
 										></metadata-model-view-table>
 									</div>
 								`,
@@ -242,7 +274,7 @@ class Component extends LitElement {
 										.data=${this.metadatamodel[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS]}
 										.scrollelement=${this.scrollelement}
 										.enablescrollintoview=${false}
-										.foreachrowrender=${(datum: string, _: number) => {
+										.foreachrowrender=${(datum: string, dIndex: number) => {
 											const fieldgroup = this.metadatamodel[MetadataModel.FgProperties.GROUP_FIELDS][0][datum]
 											const rowdata = (Array.isArray(this.data) ? (this.data.length === 1 ? this.data[0] : {}) : this.data)[datum]
 											if (MetadataModel.IsGroupReadOrderOfFieldsValid(fieldgroup[MetadataModel.FgProperties.GROUP_READ_ORDER_OF_FIELDS])) {
@@ -263,7 +295,88 @@ class Component extends LitElement {
 															.scrollelement=${this.scrollelement}
 															.scrollelementheight=${this.scrollelementheight}
 															.scrollelementwidth=${this.scrollelementwidth}
+															.arrayindexes=${[...this.arrayindexes, dIndex]}
+															.getmetadatamodel=${this.getmetadatamodel}
+															.getmetadatamodeldata=${this.getmetadatamodeldata}
+															.metadatamodelgetcontroller=${this.metadatamodelgetcontroller}
 														></metadata-model-view-datum>
+													</div>
+												`
+											}
+
+											if (fieldgroup[MetadataModel.FgProperties.FIELD_DATATYPE] === MetadataModel.FieldType.ANY) {
+												if (typeof fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY] == 'string') {
+													if (fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY]) {
+														if (typeof fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID] == 'string') {
+															if (typeof this.getmetadatamodel !== 'undefined') {
+																let arg = undefined
+																if (typeof fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT] == 'string' && typeof this.getmetadatamodeldata !== 'undefined') {
+																	arg = this.getmetadatamodeldata(fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT], this.arrayindexes)
+																}
+
+																const metadatamodel =
+																	this.metadatamodelgetcontroller?.cachemetadatamodels[
+																		this.metadatamodelgetcontroller.GetPathToCachedMetadataModel(
+																			fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID],
+																			fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY],
+																			fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
+																			arg
+																		)
+																	]
+
+																if (!metadatamodel) {
+																	this.metadatamodelgetcontroller?.GetMetadataModel(
+																		this.getmetadatamodel!,
+																		fieldgroup[MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.METADATA_MODEL_ACTION_ID],
+																		fieldgroup[MetadataModel.FgProperties.FIELD_GROUP_KEY],
+																		fieldgroup[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
+																		arg
+																	)
+																}
+
+																if (typeof metadatamodel === 'object') {
+																	return html`
+																		<div class="flex flex-col pb-2">
+																			<header
+																				class="flex h-[24px] sticky z-[2] ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'} shadow-sm shadow-gray-800"
+																				style="top: ${this.basestickytop}px;"
+																			>
+																				<div class="sticky left-0 pl-1">${MetadataModel.GetFieldGroupName(fieldgroup)}</div>
+																			</header>
+																			<metadata-model-view-datum
+																				class="z-[1] pl-1 pr-1 shadow-inner shadow-gray-800"
+																				.color=${this.color}
+																				.basestickytop=${this.basestickytop + 24}
+																				.metadatamodel=${metadatamodel}
+																				.data=${rowdata}
+																				.scrollelement=${this.scrollelement}
+																				.scrollelementheight=${this.scrollelementheight}
+																				.scrollelementwidth=${this.scrollelementwidth}
+																				.arrayindexes=${[...this.arrayindexes, dIndex]}
+																				.getmetadatamodel=${this.getmetadatamodel}
+																				.getmetadatamodeldata=${this.getmetadatamodeldata}
+																				.metadatamodelgetcontroller=${this.metadatamodelgetcontroller}
+																			></metadata-model-view-datum>
+																		</div>
+																	`
+																}
+															}
+														}
+													}
+												}
+
+												return html`
+													<div class="flex flex-col pb-2">
+														<header
+															class="flex h-[24px] sticky z-[2] ${this.color === Theme.Color.PRIMARY ? 'bg-primary text-primary-content' : this.color === Theme.Color.SECONDARY ? 'bg-secondary text-secondary-content' : 'bg-accent text-accent-content'} shadow-sm shadow-gray-800"
+															style="top: ${this.basestickytop}px;"
+														>
+															<div class="sticky left-0 pl-1">${MetadataModel.GetFieldGroupName(fieldgroup)}</div>
+														</header>
+													</div>
+													<div class="flex flex-col gap-y-1">
+														<div>${MetadataModel.GetFieldGroupName(fieldgroup)}</div>
+														<div class="p-1 border-2 rounded-md w-fit ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}">${this._rowColumnDatum(fieldgroup, rowdata)}</div>
 													</div>
 												`
 											}
@@ -316,7 +429,7 @@ class Component extends LitElement {
 														}
 
 														return html`
-															<div class="flex flex-col space-y-1">
+															<div class="flex flex-col gap-y-1">
 																<div>${MetadataModel.GetFieldGroupName(fieldgroup)}</div>
 																<div class="p-1 border-2 rounded-md w-fit ${this.color === Theme.Color.PRIMARY ? 'border-primary' : this.color === Theme.Color.SECONDARY ? 'border-secondary' : 'border-accent'}">${this._rowColumnDatum(fieldgroup, rowdata)}</div>
 															</div>

@@ -27,12 +27,14 @@ import (
 
 const (
 	URL_SEARCH_PARAM_TARGET_JOIN_DEPTH               string = "target_join_depth"
-	URL_SEARCH_PARAM_VERBOSE_RESPONSE                string = "verbose"
+	URL_SEARCH_PARAM_VERBOSE_RESPONSE                string = "verbose_response"
 	URL_SEARCH_PARAM_SKIP_IF_DATA_EXTRACTION         string = "skip_if_data_extraction"
 	URL_SEARCH_PARAM_SKIP_IF_FG_DISABLED             string = "skip_if_fg_disabled"
 	URL_SEARCH_PARAM_SUB_QUERY                       string = "sub_query"
 	URL_SEARCH_PARAM_START_SEARCH_DIRECTORY_GROUP_ID string = "start_search_directory_group_id"
 	URL_SEARCH_PARAM_AUTH_CONTEXT_DIRECTORY_GROUP_ID string = "auth_context_directory_group_id"
+	URL_SEARCH_PARAM_WHERE_AFTER_JOIN                string = "where_after_join"
+	URL_SEARCH_PARAM_DIRECTORY_GROUP_ID              string = "directory_group_id"
 )
 
 func UrlSearchParamGetInt(r *http.Request, param string) (int, error) {
@@ -64,10 +66,12 @@ func UrlSearchParamGetUuid(r *http.Request, param string) (uuid.UUID, error) {
 
 type SessionData struct {
 	OpenidEndpoints struct {
-		LoginEndpoint        string `json:"login_endpoint,omitempty"`
-		RegistrationEndpoint string `json:"registration_endpoint,omitempty"`
+		LoginEndpoint             string `json:"login_endpoint,omitempty"`
+		RegistrationEndpoint      string `json:"registration_endpoint,omitempty"`
+		AccountManagementEndpoint string `json:"account_management_endpoint,omitempty"`
 	} `json:"openid_endpoints,omitempty"`
-	IamCredential *intdoment.IamCredentials `json:"iam_credential,omitempty"`
+	IamCredential    *intdoment.IamCredentials `json:"iam_credential,omitempty"`
+	DirectoryGroupID *uuid.UUID                `json:"directory_group_id,omitempty"`
 }
 
 func DecryptData(encryptionKey string, data string) (string, error) {
