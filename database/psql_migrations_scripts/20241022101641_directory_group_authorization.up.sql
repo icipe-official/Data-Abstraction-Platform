@@ -4,7 +4,6 @@ CREATE TABLE public.group_authorization_rules
     id text NOT NULL,
     rule_group text NOT NULL,
     description text NOT NULL,
-    tags text[],
     created_on timestamp without time zone NOT NULL DEFAULT NOW(),
     last_updated_on timestamp without time zone NOT NULL DEFAULT NOW(),
     full_text_search tsvector,
@@ -23,7 +22,7 @@ CREATE INDEX group_authorization_rules_full_text_search_index
 
 -- trigger to update group_authorization_rules->last_updated_on column
 CREATE TRIGGER group_authorization_rules_update_last_updated_on
-    BEFORE UPDATE OF id, description, rule_group, tags
+    BEFORE UPDATE OF id, description, rule_group
     ON public.group_authorization_rules
     FOR EACH ROW
     EXECUTE FUNCTION public.update_last_updated_on();
@@ -40,8 +39,6 @@ AS $BODY$
 DECLARE id text;
 DECLARE rule_group text;
 DECLARE description text;
-DECLARE tags text[];
-
 BEGIN
 	IF NEW.id IS DISTINCT FROM OLD.id THEN
 		id = NEW.id;
@@ -58,21 +55,11 @@ BEGIN
 	ELSE
 		rule_group = OLD.rule_group;
 	END IF;
-    IF array_length(NEW.tags,1) > 0 THEN
-		tags = NEW.tags;
-	ELSE
-        IF OLD.tags IS NOT NULL THEN
-		    tags = OLD.tags;
-        ELSE
-            tags = '{}';
-        END IF;
-	END IF;
 
     NEW.full_text_search = 
         setweight(to_tsvector(coalesce(id,'')),'A') ||        
         setweight(to_tsvector(coalesce(rule_group,'')),'B') ||
-        setweight(to_tsvector(coalesce(description,'')),'C') ||
-        setweight(to_tsvector(coalesce(array_to_string(tags,' ','*'),'')),'D');
+        setweight(to_tsvector(coalesce(description,'')),'C');
     	
 	RETURN NEW;   
 END
@@ -85,7 +72,7 @@ COMMENT ON FUNCTION public.group_authorization_rules_update_full_text_search_ind
     IS 'Update full_text_search column in group_authorization_rules when id, rule_group, and description change';
 
 CREATE TRIGGER group_authorization_rules_update_full_text_search_index
-    BEFORE INSERT OR UPDATE OF id, rule_group, description, tags
+    BEFORE INSERT OR UPDATE OF id, rule_group, description
     ON public.group_authorization_rules
     FOR EACH ROW
     EXECUTE FUNCTION public.group_authorization_rules_update_full_text_search_index();

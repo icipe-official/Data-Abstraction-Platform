@@ -10,6 +10,7 @@ import _DirectoryAuthorizationIDs from './directory_authorization_ids'
 import _DirectoryGroups from './directory_groups'
 import _DirectoryGroupsAuthorizationIDs from './directory_groups_authorization_ids'
 import _DirectoryGroupsSubGroups from './directory_groups_sub_groups'
+import _GroupAuthorizationRules from './group_authorization_rules'
 import _GroupRuleAuthorizations from './group_rule_authorizations'
 import _GroupRuleAuthorizationsIDs from './group_rule_authorizations_ids'
 import _IamCredentials from './iam_credentials'
@@ -45,6 +46,7 @@ namespace Entities {
 	export import IamCredentials = _IamCredentials
 	export import GroupRuleAuthorizationsIDs = _GroupRuleAuthorizationsIDs
 	export import GroupRuleAuthorizations = _GroupRuleAuthorizations
+	export import  GroupAuthorizationRules = _GroupAuthorizationRules
 	export import DirectoryGroupsSubGroups = _DirectoryGroupsSubGroups
 	export import DirectoryGroupsAuthorizationIDs = _DirectoryGroupsAuthorizationIDs
 	export import DirectoryGroups = _DirectoryGroups

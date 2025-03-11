@@ -21,11 +21,14 @@ namespace _MetadataModel {
 		if (typeof data.message !== 'undefined') {
 			toastdata.toastMessage = data.message
 		}
-		if (typeof data.metadata_model !== 'undefined' && Array.isArray(data.data)) {
-			toastdata.toastMetadataModelSearchResults = {
-				metadata_model: data.metadata_model,
-				data: data.data
-			} as ISearchResults
+		if (data.metadata_model_verbose_response) {
+			toastdata.toastMetadataModelSearchResults = {}
+			if (data.metadata_model_verbose_response.metadata_model) {
+				(toastdata.toastMetadataModelSearchResults as ISearchResults).metadata_model = data.metadata_model_verbose_response.metadata_model
+			}
+			if (data.metadata_model_verbose_response.data) {
+				(toastdata.toastMetadataModelSearchResults as ISearchResults).data = data.metadata_model_verbose_response.data
+			}
 		}
 
 		return toastdata

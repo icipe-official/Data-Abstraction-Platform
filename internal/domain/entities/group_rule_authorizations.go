@@ -17,7 +17,7 @@ type GroupRuleAuthorization struct {
 	DeactivatedOn []time.Time `json:"deactivated_on,omitempty"`
 }
 
-type groupRuleAuthorizationRepository struct {
+type groupRuleAuthorizationsRepository struct {
 	RepositoryName string
 
 	ID                           string
@@ -28,8 +28,8 @@ type groupRuleAuthorizationRepository struct {
 	DeactivatedOn                string
 }
 
-func GroupRuleAuthorizationsRepository() groupRuleAuthorizationRepository {
-	return groupRuleAuthorizationRepository{
+func GroupRuleAuthorizationsRepository() groupRuleAuthorizationsRepository {
+	return groupRuleAuthorizationsRepository{
 		RepositoryName: "group_rule_authorizations",
 
 		ID:                           "id",

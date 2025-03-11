@@ -28,7 +28,7 @@ const (
 )
 
 func MetadataModelMiscGet(name string) (map[string]any, error) {
-	contentBytes, err := embedded.MetadataModels.ReadFile(fmt.Sprintf("metadata_models_misc/%s.metadata_model.json", name))
+	contentBytes, err := embedded.MiscMetadataModels.ReadFile(fmt.Sprintf("metadata_models_misc/%s.metadata_model.json", name))
 	if err != nil {
 		return nil, FunctionNameAndError(MetadataModelMiscGet, err)
 	}
@@ -46,14 +46,4 @@ func MetadataModelMiscVerboseReponseGet(replaceFgPropertes map[string]any, dataM
 	}
 
 	return verboseResponseMetadataModel, nil
-}
-
-type MetadataModelVerboseResponse struct {
-	Status []MetadataModelVerboseResponseStatus `json:"status,omitempty"`
-	Data   any                                  `json:"data,omitempty"`
-}
-
-type MetadataModelVerboseResponseStatus struct {
-	StatusCode    []int    `json:"status_code,omitempty"`
-	StatusMessage []string `json:"status_message,omitempty"`
 }

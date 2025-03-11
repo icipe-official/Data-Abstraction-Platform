@@ -496,7 +496,7 @@ class Component extends LitElement {
 								}
 
 								return html`
-									<pre class="grid bg-gray-700 text-white w-full h-fit shadow-inner shadow-gray-800 p-1 max-h-[300px] max-w-[300px] overflow-auto">
+									<pre class="grid bg-gray-700 text-white w-full h-fit shadow-inner shadow-gray-800 p-1 max-h-[500px] max-w-[500px] rounded-md overflow-auto">
 										<code class="sticky left-0 w-fit h-fit">${JSON.stringify(rowdata, null, 4)}</code>
 									</pre>
 								`
@@ -1113,6 +1113,16 @@ class Component extends LitElement {
 
 		if (this._unlockedColumnStartIndex >= this._unlockedColumnEndIndex) {
 			this._unlockedColumnStartIndex = this._unlockedColumnEndIndex - this._totalNoOfColumns > 0 ? this._unlockedColumnEndIndex - this._totalNoOfColumns : 0
+		}
+
+		if (this._rowEndIndex > this.data.length - 1) {
+			this._rowRenderTrackers = {}
+			this._rowEndIndex = this.data.length - 1
+		} else {
+			if (this.data.length - 1 < this.NO_OF_RENDER_CONTENT_TO_ADD && this._rowEndIndex !== this.data.length - 1) {
+				this._rowRenderTrackers = {}
+				this._rowEndIndex = this.data.length - 1
+			}
 		}
 
 		return html`

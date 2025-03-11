@@ -1,5 +1,25 @@
 package entities
 
+type MetadataModelVerbRes struct {
+	Message                      string                        `json:"message,omitempty"`
+	MetadataModelVerboseResponse *MetadataModelVerboseResponse `json:"metadata_model_verbose_response,omitempty"`
+}
+
+type MetadataModelVerboseResponse struct {
+	MetadataModel map[string]any                      `json:"metadata_model,omitempty"`
+	Data          []*MetadataModelVerboseResponseData `json:"data,omitempty"`
+}
+
+type MetadataModelVerboseResponseData struct {
+	Status []MetadataModelVerboseResponseStatus `json:"status,omitempty"`
+	Data   []any                                `json:"data,omitempty"`
+}
+
+type MetadataModelVerboseResponseStatus struct {
+	StatusCode    []int    `json:"status_code,omitempty"`
+	StatusMessage []string `json:"status_message,omitempty"`
+}
+
 type MetadataModelSearch struct {
 	QueryConditions []MetadataModelQueryConditions `json:"query_conditions,omitempty"`
 	MetadataModel   map[string]any                 `json:"metadata_model,omitempty"`

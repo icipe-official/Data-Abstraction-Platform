@@ -1,4 +1,4 @@
-package ruleauthorizations
+package authorizationrules
 
 import (
 	"context"
@@ -21,69 +21,9 @@ import (
 func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 	router := chi.NewRouter()
 
-	router.Post("/create", func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/group/rule-authorizations/create")})
-
-		authedIamCredential, err := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
-		if err != nil {
-			intlib.SendJsonErrorResponse(err, w)
-			return
-		}
-
-		newGroupRuleAuthorizations := make([]*intdoment.GroupRuleAuthorization, 0)
-		if err := json.NewDecoder(r.Body).Decode(&newGroupRuleAuthorizations); err != nil {
-			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
-			return
-		}
-
-		s := initApiCoreService(ctx, webService)
-		if s == nil {
-			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
-			return
-		}
-
-		verboseResponse := intlib.UrlSearchParamGetBool(r, intlib.URL_SEARCH_PARAM_VERBOSE_RESPONSE, false)
-
-		var authContextDirectoryGroupID uuid.UUID
-		if value, err := intlib.UrlSearchParamGetUuid(r, intlib.URL_SEARCH_PARAM_AUTH_CONTEXT_DIRECTORY_GROUP_ID); err != nil {
-			if directoryGroup, err := s.ServiceDirectoryGroupsFindOneByIamCredentialID(ctx, authedIamCredential.ID[0]); err != nil {
-				intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
-				return
-			} else {
-				if directoryGroup == nil {
-					intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
-					return
-				}
-				authContextDirectoryGroupID = directoryGroup.ID[0]
-			}
-		} else {
-			authContextDirectoryGroupID = value
-		}
-
-		if code, verbres, err := s.ServiceGroupRuleAuthorizationsInsertMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, newGroupRuleAuthorizations); err != nil {
-			intlib.SendJsonErrorResponse(err, w)
-			return
-		} else {
-			intlib.SendJsonResponse(code, verbres, w)
-			webService.Logger.Log(
-				ctx,
-				slog.LevelInfo+1,
-				fmt.Sprintln(
-					"action create",
-					intdoment.GroupRuleAuthorizationsRepository().RepositoryName,
-				),
-				ctx.Value(intlib.LOG_ATTR_CTX_KEY),
-				"authenicated iam credential",
-				intlib.JsonStringifyMust(authedIamCredential),
-				"verbose response data",
-				intlib.JsonStringifyMust(verbres.MetadataModelVerboseResponse.Data),
-			)
-		}
-	})
-
 	router.Route("/search", func(searchRouter chi.Router) {
 		searchRouter.Post("/", func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/group/rule-authorizations/search")})
+			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/group/authorization-rules/search")})
 
 			authedIamCredential, err := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
 			if err != nil {
@@ -118,7 +58,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 
 			mmSearchModelWasEmpty := false
 			if mmSearch.MetadataModel == nil {
-				if value, err := s.ServiceGroupRuleAuthorizationsGetMetadataModel(
+				if value, err := s.ServiceGroupAuthorizationRulesGetMetadataModel(
 					ctx,
 					intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
 					1,
@@ -142,7 +82,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			skipIfFGDisabled := intlib.UrlSearchParamGetBool(r, intlib.URL_SEARCH_PARAM_SKIP_IF_FG_DISABLED, true)
 			whereAfterJoin := intlib.UrlSearchParamGetBool(r, intlib.URL_SEARCH_PARAM_WHERE_AFTER_JOIN, false)
 
-			if searchResults, err := s.ServiceGroupRuleAuthorizationsSearch(
+			if searchResults, err := s.ServiceGroupAuthorizationRulesSearch(
 				ctx,
 				mmSearch,
 				webService.PostgresRepository,
@@ -165,7 +105,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 					ctx,
 					slog.LevelInfo+1,
 					fmt.Sprintln(
-						intdoment.GroupRuleAuthorizationsRepository().RepositoryName,
+						intdoment.GroupAuthorizationRulesRepository().RepositoryName,
 						"searched successfully",
 					),
 					ctx.Value(intlib.LOG_ATTR_CTX_KEY),
@@ -176,7 +116,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 		})
 
 		searchRouter.Get("/metadata-model", func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/group/rule-authorizations/search/metadata-model")})
+			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/group/authorization-rules/search/metadata-model")})
 
 			authedIamCredential, err := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
 			if err != nil {
@@ -213,7 +153,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 				targetJoinDepth = 1
 			}
 
-			if value, err := s.ServiceGroupRuleAuthorizationsGetMetadataModel(
+			if value, err := s.ServiceGroupAuthorizationRulesGetMetadataModel(
 				ctx,
 				intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
 				targetJoinDepth,
@@ -226,7 +166,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 					ctx,
 					slog.LevelInfo+1,
 					fmt.Sprintln(
-						intdoment.GroupRuleAuthorizationsRepository().RepositoryName,
+						intdoment.GroupAuthorizationRulesRepository().RepositoryName,
 						"metadata-model successfully retrieved",
 					),
 					ctx.Value(intlib.LOG_ATTR_CTX_KEY),
@@ -246,7 +186,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 	acceptedHTMLPartialNames := []string{intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID}
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/group/rule-authorizations")})
+		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/group/authorization-rules")})
 		s := initWebsiteService(ctx, webService)
 		if s == nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
@@ -299,7 +239,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 			}
 		}
 
-		if htmlContent, err := s.ServiceGetGroupRuleAuthorizationsPageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential, authContextDirectoryGroupID, data); err != nil {
+		if htmlContent, err := s.ServiceGetGroupAuthorizationRulesPageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential, authContextDirectoryGroupID, data); err != nil {
 			intlib.SendJsonErrorResponse(err, w)
 		} else {
 			intlib.WebsiteSendHTMLResponse(htmlContent, w)
@@ -309,7 +249,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 	return router
 }
 
-func initWebsiteService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteGroupRuleAuthorizationsWebsiteService {
+func initWebsiteService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteGroupAuthorizationRulesWebsiteService {
 	if value, err := NewService(webService); err != nil {
 		errmsg := fmt.Errorf("initialize website service failed, error: %v", err)
 		if value.logger != nil {
@@ -324,7 +264,7 @@ func initWebsiteService(ctx context.Context, webService *inthttp.WebService) int
 	}
 }
 
-func initApiCoreService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteGroupRuleAuthorizationsApiCoreService {
+func initApiCoreService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteGroupAuthorizationRulesApiCoreService {
 	if value, err := NewService(webService); err != nil {
 		errmsg := fmt.Errorf("initialize api core service failed, error: %v", err)
 		if value.logger != nil {

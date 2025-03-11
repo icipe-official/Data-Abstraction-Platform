@@ -3,7 +3,6 @@ namespace _GroupAuthorizationRules {
 		ID = 'id',
 		RuleGroup = 'rule_group',
 		Description = 'description',
-		Tags = 'tags',
 		CreatedOn = 'created_on',
 		LastUpdatedOn = 'last_updated_on',
 		FullTextSearch = 'full_text_search'
@@ -17,7 +16,6 @@ namespace _GroupAuthorizationRules {
 			rule_group?: string[]
 		}[]
 		description?: string[]
-		tags?: string[]
 		created_on?: string[]
 		last_updated_on?: string[]
 	}

@@ -140,22 +140,21 @@ func (n *PostgresSelectQuery) GroupAuthorizationRulesGetSelectQuery(ctx context.
 			selectQuery.Where[intdoment.GroupAuthorizationRulesRepository().Description] = value
 		}
 	}
-
-	if _, ok := selectQuery.Columns.Fields[intdoment.GroupAuthorizationRulesRepository().Tags][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.GroupAuthorizationRulesRepository().Tags, "", PROCESS_QUERY_CONDITION_AS_ARRAY, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.GroupAuthorizationRulesRepository().Tags] = value
-		}
-	}
 	if _, ok := selectQuery.Columns.Fields[intdoment.GroupAuthorizationRulesRepository().CreatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
 		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.GroupAuthorizationRulesRepository().CreatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
 			selectQuery.Where[intdoment.GroupAuthorizationRulesRepository().CreatedOn] = value
 		}
 	}
 	if _, ok := selectQuery.Columns.Fields[intdoment.GroupAuthorizationRulesRepository().LastUpdatedOn][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().LastUpdatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.DirectoryGroupsRepository().LastUpdatedOn] = value
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.GroupAuthorizationRulesRepository().LastUpdatedOn, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.GroupAuthorizationRulesRepository().LastUpdatedOn] = value
 		}
 	}
+
+	if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, selectQuery.TableName, "", "", "", intdoment.GroupAuthorizationRulesRepository().FullTextSearch); len(value) > 0 {
+		selectQuery.Where[intdoment.GroupAuthorizationRulesRepository().RepositoryName] = value
+	}
+
 	if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, selectQuery.TableName, "", "", "", intdoment.GroupAuthorizationRulesRepository().FullTextSearch); len(value) > 0 {
 		selectQuery.Where[intdoment.GroupAuthorizationRulesRepository().RepositoryName] = value
 	}

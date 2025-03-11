@@ -328,12 +328,12 @@ class Layout extends LitElement {
 												<input
 													class="self-center checkbox checkbox-primary"
 													type="checkbox"
-													.checked=${this._appContext.appcontext.usecurrentdirectorygroupasauthcontext || false}
+													.checked=${this._appContext.appcontext.donotusecurrentdirectorygroupasauthcontext || false}
 													@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 														if (e.currentTarget.checked) {
-															this._appContextProvider.Updateusecurrentdirectorygroupasauthcontext(true)
+															this._appContextProvider.Updatedonotusecurrentdirectorygroupasauthcontext(true)
 														} else {
-															this._appContextProvider.Updateusecurrentdirectorygroupasauthcontext(true)
+															this._appContextProvider.Updatedonotusecurrentdirectorygroupasauthcontext(true)
 														}
 													}}
 												/>
@@ -394,6 +394,21 @@ class Layout extends LitElement {
 															this._appContextProvider.Updatewhereafterjoin(true)
 														} else {
 															this._appContextProvider.Updatewhereafterjoin(false)
+														}
+													}}
+												/>
+											</div>
+											<div class="flex justify-between w-full">
+												<div class="h-fit self-center font-bold break-words">detailed database responses?</div>
+												<input
+													class="self-center checkbox checkbox-primary"
+													type="checkbox"
+													.checked=${this._appContext.appcontext.verboseresponse || false}
+													@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+														if (e.currentTarget.checked) {
+															this._appContextProvider.Updateverboseresponse(true)
+														} else {
+															this._appContextProvider.Updateverboseresponse(false)
 														}
 													}}
 												/>

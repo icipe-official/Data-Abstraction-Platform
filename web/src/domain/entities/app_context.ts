@@ -7,11 +7,12 @@ namespace _AppContext {
 		iamdirectorygroupid?: string
 		currentdirectorygroupidpath?: string
 		currentdirectorygroupidpathtitle?: string
-		usecurrentdirectorygroupasauthcontext?: boolean
+		donotusecurrentdirectorygroupasauthcontext?: boolean
 		targetjoindepth?: number
 		skipiffgdisabled?: boolean
 		skipifdataextraction?: boolean
 		whereafterjoin?: boolean
+		verboseresponse?: boolean
 	}
 
 	export const APP_CONTEXT_SESSION_STORAGE_KEY = 'app-context'

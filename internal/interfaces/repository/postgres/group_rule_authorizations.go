@@ -2,10 +2,12 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/brunoga/deep"
@@ -14,7 +16,184 @@ import (
 	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
+	"github.com/jackc/pgx/v5"
 )
+
+func (n *PostrgresRepository) RepoGroupRuleAuthorizationsInsertOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.GroupRuleAuthorization, columns []string) (*intdoment.GroupRuleAuthorization, error) {
+	groupRuleAuthorizationsMModel, err := intlib.MetadataModelGet(intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, err)
+	}
+
+	if len(columns) == 0 {
+		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(groupRuleAuthorizationsMModel, intdoment.GroupRuleAuthorizationsRepository().RepositoryName, false, false); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, err)
+		} else {
+			columns = dbColumnFields.ColumnFieldsReadOrder
+		}
+	}
+
+	if !slices.Contains(columns, intdoment.GroupRuleAuthorizationsRepository().ID) {
+		columns = append(columns, intdoment.GroupRuleAuthorizationsRepository().ID)
+	}
+
+	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsCreateSystemGroup, fmt.Errorf("start transaction to create system group failed, error: %v", err))
+	}
+
+	query := fmt.Sprintf(
+		"INSERT INTO %[1]s (%[2]s, %[3]s, %[4]s) VALUES ($1, $2, $3) RETURNING %[5]s;",
+		intdoment.GroupRuleAuthorizationsRepository().RepositoryName,               //1
+		intdoment.GroupRuleAuthorizationsRepository().DirectoryGroupsID,            //2
+		intdoment.GroupRuleAuthorizationsRepository().GroupAuthorizationsRuleID,    //3
+		intdoment.GroupRuleAuthorizationsRepository().GroupAuthorizationsRuleGroup, //4
+		strings.Join(columns, "  , "),                                              //5
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoGroupRuleAuthorizationsInsertOne))
+
+	rows, err := n.db.Query(ctx, query, datum.DirectoryGroupsID[0], datum.GroupAuthorizationRuleID[0].GroupAuthorizationRulesID[0], datum.GroupAuthorizationRuleID[0].GroupAuthorizationRulesGroup[0])
+	if err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, fmt.Errorf("insert %s failed, err: %v", intdoment.GroupRuleAuthorizationsRepository().RepositoryName, err))
+	}
+	defer rows.Close()
+	dataRows := make([]any, 0)
+	for rows.Next() {
+		if r, err := rows.Values(); err != nil {
+			transaction.Rollback(ctx)
+			return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, err)
+		} else {
+			dataRows = append(dataRows, r)
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(groupRuleAuthorizationsMModel, nil, false, false, columns)
+	if err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, err)
+	}
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, err)
+	}
+
+	if len(array2DToObject.Objects()) == 0 {
+		transaction.Rollback(ctx)
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoGroupRuleAuthorizationsInsertOne))
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, fmt.Errorf("no %s found", intdoment.GroupRuleAuthorizationsRepository().RepositoryName))
+	}
+
+	if len(array2DToObject.Objects()) > 1 {
+		transaction.Rollback(ctx)
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoGroupRuleAuthorizationsInsertOne))
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, fmt.Errorf("more than one %s found", intdoment.GroupRuleAuthorizationsRepository().RepositoryName))
+	}
+
+	groupRuleAuthorization := new(intdoment.GroupRuleAuthorization)
+	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, err)
+	} else {
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing groupRuleAuthorization", "groupRuleAuthorization", string(jsonData), "function", intlib.FunctionName(n.RepoGroupRuleAuthorizationsInsertOne))
+		if err := json.Unmarshal(jsonData, groupRuleAuthorization); err != nil {
+			transaction.Rollback(ctx)
+			return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, err)
+		}
+	}
+
+	query = fmt.Sprintf(
+		"INSERT INTO %[1]s (%[2]s, %[3]s) VALUES ($1, $2);",
+		intdoment.GroupRuleAuthorizationsIDsRepository().RepositoryName,                   //1
+		intdoment.GroupRuleAuthorizationsIDsRepository().ID,                               //2
+		intdoment.GroupRuleAuthorizationsIDsRepository().CreationIamGroupAuthorizationsID, //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoGroupRuleAuthorizationsInsertOne))
+
+	if _, err := n.db.Exec(ctx, query, groupRuleAuthorization.ID[0], iamAuthRule.ID); err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, fmt.Errorf("retrieve %s failed, err: %v", intdoment.GroupRuleAuthorizationsIDsRepository().RepositoryName, err))
+	}
+
+	if err := transaction.Commit(ctx); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, fmt.Errorf("commit transaction to create %s failed, error: %v", intdoment.GroupRuleAuthorizationsRepository().RepositoryName, err))
+	}
+
+	return groupRuleAuthorization, nil
+}
+
+func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneActiveRule(ctx context.Context, directoryGroupID uuid.UUID, groupAuthorizationRuleID string, groupAuthorizationRuleGroup string, columns []string) (*intdoment.GroupRuleAuthorization, error) {
+	groupRuleAuthorizationsMModel, err := intlib.MetadataModelGet(intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, err)
+	}
+
+	if len(columns) == 0 {
+		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(groupRuleAuthorizationsMModel, intdoment.GroupRuleAuthorizationsRepository().RepositoryName, false, false); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, err)
+		} else {
+			columns = dbColumnFields.ColumnFieldsReadOrder
+		}
+	}
+
+	if !slices.Contains(columns, intdoment.GroupRuleAuthorizationsRepository().ID) {
+		columns = append(columns, intdoment.GroupRuleAuthorizationsRepository().ID)
+	}
+
+	query := fmt.Sprintf(
+		"SELECT %[1]s FROM %[2]s WHERE %[3]s = $1 AND %[4]s = $2 AND %[5]s = $3 AND %[6]s IS NULL;",
+		strings.Join(columns, "  , "),                                              //1
+		intdoment.GroupRuleAuthorizationsRepository().RepositoryName,               //2
+		intdoment.GroupRuleAuthorizationsRepository().DirectoryGroupsID,            //3
+		intdoment.GroupRuleAuthorizationsRepository().GroupAuthorizationsRuleID,    //4
+		intdoment.GroupRuleAuthorizationsRepository().GroupAuthorizationsRuleGroup, //5
+		intdoment.GroupRuleAuthorizationsRepository().DeactivatedOn,                //6
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoGroupRuleAuthorizationsFindOneActiveRule))
+
+	rows, err := n.db.Query(ctx, query, directoryGroupID, groupAuthorizationRuleID, groupAuthorizationRuleGroup)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, fmt.Errorf("retrieve %s failed, err: %v", intdoment.GroupRuleAuthorizationsRepository().RepositoryName, err))
+	}
+	defer rows.Close()
+	dataRows := make([]any, 0)
+	for rows.Next() {
+		if r, err := rows.Values(); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, err)
+		} else {
+			dataRows = append(dataRows, r)
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(groupRuleAuthorizationsMModel, nil, false, false, columns)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, err)
+	}
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, err)
+	}
+
+	if len(array2DToObject.Objects()) == 0 {
+		return nil, nil
+	}
+
+	if len(array2DToObject.Objects()) > 1 {
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoGroupRuleAuthorizationsFindOneActiveRule))
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, fmt.Errorf("more than one %s found", intdoment.GroupRuleAuthorizationsRepository().RepositoryName))
+	}
+
+	groupRuleAuthorization := new(intdoment.GroupRuleAuthorization)
+	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, err)
+	} else {
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing groupRuleAuthorization", "groupRuleAuthorization", string(jsonData), "function", intlib.FunctionName(n.RepoGroupRuleAuthorizationsFindOneActiveRule))
+		if err := json.Unmarshal(jsonData, groupRuleAuthorization); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, err)
+		}
+	}
+
+	return groupRuleAuthorization, nil
+}
 
 func (n *PostrgresRepository) RepoGroupRuleAuthorizationsSearch(
 	ctx context.Context,

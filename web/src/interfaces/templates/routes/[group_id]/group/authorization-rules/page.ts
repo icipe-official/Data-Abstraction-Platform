@@ -1,0 +1,1 @@
+import '@lib/components/group/authorization-rules/component'

@@ -57,12 +57,20 @@ namespace Url {
 	export const enum SearchParams {
 		TARGET_JOIN_DEPTH = 'target_join_depth',
 		SUB_QUERY = 'sub_query',
-		VERBOSE_RESPONSE = 'verbose',
+		VERBOSE_RESPONSE = 'verbose_response',
 		SKIP_IF_DATA_EXTRACTION = 'skip_if_data_extraction',
 		SKIP_IF_FG_DISABLED = 'skip_if_fg_disabled',
 		AUTH_CONTEXT_DIRECTORY_GROUP_ID = 'auth_context_directory_group_id',
 		START_SEARCH_DIRECTORY_GROUP_ID = 'start_search_directory_group_id',
-		DIRECTORY_GROUP_ID = 'directory_group_id'
+		DIRECTORY_GROUP_ID = 'directory_group_id',
+		ACTION = 'action'
+	}
+
+	export const enum Action {
+		CREATE = 'create',
+		RETRIEVE = 'retrieve',
+		UPDATE = 'update',
+		DELETE = 'delete'
 	}
 
 	export function AddBaseUrl(url: URL) {
@@ -109,7 +117,7 @@ namespace Url {
 				description: 'Create and manage groups. Groups put together related resources thereby making it easier to manage them as well as who has access to what.'
 			},
 			{
-				path: '/directory/groups?action=create',
+				path: `/directory/groups?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Directory Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -126,7 +134,7 @@ namespace Url {
 				description: 'Create new groups. Such groups will be children of the current group and you will be able to see resources of those groups and their children from the current group.'
 			},
 			{
-				path: '/directory/groups?action=search',
+				path: `/directory/groups?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Directory Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -145,7 +153,7 @@ namespace Url {
 				description: 'Search for groups that are children of the current group.'
 			},
 			{
-				path: '/directory/groups?action=update',
+				path: `/directory/groups?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Directory Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -162,7 +170,7 @@ namespace Url {
 				description: 'Update groups.'
 			},
 			{
-				path: '/directory/groups?action=delete',
+				path: `/directory/groups?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Directory Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -199,7 +207,7 @@ namespace Url {
 				description: 'Create and manage information about people.'
 			},
 			{
-				path: '/directory?action=create',
+				path: `/directory?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Directory Information',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -212,7 +220,7 @@ namespace Url {
 				description: 'Create new people ;).'
 			},
 			{
-				path: '/directory?action=search',
+				path: `/directory?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Directory Information',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -227,7 +235,7 @@ namespace Url {
 				description: 'Search for directory information.'
 			},
 			{
-				path: '/directory?action=update',
+				path: `/directory?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Directory Information',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -240,7 +248,7 @@ namespace Url {
 				description: 'Update directory information.'
 			},
 			{
-				path: '/directory?action=delete',
+				path: `/directory?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Directory Information',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -281,7 +289,7 @@ namespace Url {
 				description: 'View and manage credentials that grant users access to different resources within the system.'
 			},
 			{
-				path: '/iam/credentials?action=search',
+				path: `/iam/credentials?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Iam Credentials',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -300,7 +308,7 @@ namespace Url {
 				description: 'Search for iam credentials information.'
 			},
 			{
-				path: '/iam/credentials?action=update',
+				path: `/iam/credentials?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Iam Credentials',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -317,7 +325,7 @@ namespace Url {
 				description: "Update iam credentials' directory_id information."
 			},
 			{
-				path: '/iam/credentials?action=delete',
+				path: `/iam/credentials?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Iam Credentials',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -358,7 +366,7 @@ namespace Url {
 				description: "Create and manage authorization rules that grant users with credentials the ability to perform certain activities in the context of a group within the platform. NB>Requires group to be first granted said role in 'Group Rule Authorizations'."
 			},
 			{
-				path: '/iam/group/authorizations?action=create',
+				path: `/iam/group/authorizations?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Iam Group Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -373,7 +381,7 @@ namespace Url {
 				description: 'Create new iam-group-authorizations.'
 			},
 			{
-				path: '/iam/group/authorizations?action=search',
+				path: `/iam/group/authorizations?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Iam Group Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -390,7 +398,7 @@ namespace Url {
 				description: 'Search for iam-group-authorizations information.'
 			},
 			{
-				path: '/iam/group/authorizations?action=delete',
+				path: `/iam/group/authorizations?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Iam Group Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -408,7 +416,7 @@ namespace Url {
 	}
 
 	export const groupRuleAuthorizationsNavigation: IGroupNavigationInfo = {
-		title: 'Group Rule Authorzations',
+		title: 'Group Rule Authorizations',
 		icon: html`
 			<div class="flex gap-x-1 self-center">
 				<!--mdi:account-group source: https://icon-sets.iconify.design-->
@@ -428,7 +436,7 @@ namespace Url {
 		navinfo: [
 			{
 				path: '/group/rule-authorizations',
-				title: 'Group Rule Authorzations',
+				title: 'Group Rule Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
 						<!--mdi:account-group source: https://icon-sets.iconify.design-->
@@ -446,8 +454,8 @@ namespace Url {
 				description: 'Create and manage authorizations rules that can be assigned to users with credentials within a group.'
 			},
 			{
-				path: '/iam/group/authorizations?action=create',
-				title: 'Create Group Rule Authorzations',
+				path: `/group/rule-authorizations?${SearchParams.ACTION}=${Action.CREATE}`,
+				title: 'Create Group Rule Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
 						<!--mdi:account-group source: https://icon-sets.iconify.design-->
@@ -467,8 +475,8 @@ namespace Url {
 				description: 'Create new authorizations rules.'
 			},
 			{
-				path: '/group/rule-authorizations?action=search',
-				title: 'Search Group Rule Authorzations',
+				path: `/group/rule-authorizations?${SearchParams.ACTION}=${Action.RETRIEVE}`,
+				title: 'Search Group Rule Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
 						<!--mdi:account-group source: https://icon-sets.iconify.design-->
@@ -490,8 +498,8 @@ namespace Url {
 				description: 'Search for authorizations rules.'
 			},
 			{
-				path: '/group/rule-authorizations?action=delete',
-				title: 'Delete Group Rule Authorzations',
+				path: `/group/rule-authorizations?${SearchParams.ACTION}=${Action.DELETE}`,
+				title: 'Delete Group Rule Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
 						<!--mdi:account-group source: https://icon-sets.iconify.design-->
@@ -537,7 +545,7 @@ namespace Url {
 				description: 'View and update the tags of various roles that can be assigned to groups and therefore users with credentials in the platform.'
 			},
 			{
-				path: '/group/authorization-rules?action=search',
+				path: `/group/authorization-rules?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Group Authorization Rules',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -555,7 +563,7 @@ namespace Url {
 				description: 'Search for authorizations rules.'
 			},
 			{
-				path: '/group/authorization-rules?action=update',
+				path: `/group/authorization-rules?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Group Authorization Rules',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -611,7 +619,7 @@ namespace Url {
 				description: 'Create, update, and delete information that forms the building blocks of incorporating unstructured data (JSON) within the platform.'
 			},
 			{
-				path: '/metadata-models?action=create',
+				path: `/metadata-models?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Metadata-Models',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -632,7 +640,7 @@ namespace Url {
 				description: 'Create new metadata-models.'
 			},
 			{
-				path: '/metadata-models?action=search',
+				path: `/metadata-models?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Metadata-Models',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -655,7 +663,7 @@ namespace Url {
 				description: 'Search for metadata-models.'
 			},
 			{
-				path: '/metadata-models?action=update',
+				path: `/metadata-models?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Metadata-Models',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -676,7 +684,7 @@ namespace Url {
 				description: 'Update metadata-models.'
 			},
 			{
-				path: '/metadata-models?action=delete',
+				path: `/metadata-models?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Metadata-Models',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -721,7 +729,7 @@ namespace Url {
 				description: 'Upload and manage files stored in the platform.'
 			},
 			{
-				path: '/storage/files?action=create',
+				path: `/storage/files?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Storage Files',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -742,7 +750,7 @@ namespace Url {
 				description: 'Create new files.'
 			},
 			{
-				path: '/storage/files?action=search',
+				path: `/storage/files?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Storage Files',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -765,7 +773,7 @@ namespace Url {
 				description: 'Search for files.'
 			},
 			{
-				path: '/storage/files?action=update',
+				path: `/storage/files?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Storage Files',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -786,7 +794,7 @@ namespace Url {
 				description: "Update file's information."
 			},
 			{
-				path: '/storage/files?action=delete',
+				path: `/storage/files?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Storage Files',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -831,7 +839,7 @@ namespace Url {
 				description: 'Create and manage storage drives used to store files.'
 			},
 			{
-				path: '/storage/drives?action=create',
+				path: `/storage/drives?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Storage Drives',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -846,7 +854,7 @@ namespace Url {
 				description: 'Create new storage drives.'
 			},
 			{
-				path: '/storage/drives?action=search',
+				path: `/storage/drives?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Storage Drives',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -863,7 +871,7 @@ namespace Url {
 				description: 'Search for storage drives.'
 			},
 			{
-				path: '/storage/drives?action=update',
+				path: `/storage/drives?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Storage Drives',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -878,7 +886,7 @@ namespace Url {
 				description: 'Update storage drives.'
 			},
 			{
-				path: '/storage/drives?action=delete',
+				path: `/storage/drives?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Storage Drives',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -933,7 +941,7 @@ namespace Url {
 				description: 'Manage storage drives assigned to various groups.'
 			},
 			{
-				path: '/storage/drives/groups?action=create',
+				path: `/storage/drives/groups?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Storage Drives Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -954,7 +962,7 @@ namespace Url {
 				description: 'Create new storage-drives-group.'
 			},
 			{
-				path: '/storage/drives/groups?action=search',
+				path: `/storage/drives/groups?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Storage Drives Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -977,7 +985,7 @@ namespace Url {
 				description: 'Search for storage-drives-group.'
 			},
 			{
-				path: '/storage/drives/groups?action=update',
+				path: `/storage/drives/groups?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Storage Drives Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -998,7 +1006,7 @@ namespace Url {
 				description: 'Update storage-drives-group.'
 			},
 			{
-				path: '/storage/drives/groups?action=delete',
+				path: `/storage/drives/groups?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Storage Drives Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -1063,7 +1071,7 @@ namespace Url {
 				description: 'Manage default metadata-models used for viewing and updating directory data information. Scoped to per group.'
 			},
 			{
-				path: '/metadata-models/directory?action=create',
+				path: `/metadata-models/directory?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Default Metadata-Models for Directory',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -1086,7 +1094,7 @@ namespace Url {
 				description: 'Create new metadata-models directory.'
 			},
 			{
-				path: '/metadata-models/directory?action=search',
+				path: `/metadata-models/directory?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Default Metadata-Models for Directory',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -1111,7 +1119,7 @@ namespace Url {
 				description: 'Search for metadata-models directory.'
 			},
 			{
-				path: '/metadata-models/directory?action=update',
+				path: `/metadata-models/directory?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Default Metadata-Models for Directory',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -1134,7 +1142,7 @@ namespace Url {
 				description: 'Update metadata-models directory.'
 			},
 			{
-				path: '/metadata-models/directory?action=delete',
+				path: `/metadata-models/directory?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Default Metadata-Models for Directory',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -1201,7 +1209,7 @@ namespace Url {
 				description: 'Manage default metadata-models used for viewing and updating directory groups data information. Scoped to per group.'
 			},
 			{
-				path: '/metadata-models/directory/groups?action=create',
+				path: `/metadata-models/directory/groups?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Default Metadata-Models for Directory Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -1224,7 +1232,7 @@ namespace Url {
 				description: 'Create new metadata-models directory groups.'
 			},
 			{
-				path: '/metadata-models/directory/groups?action=search',
+				path: `/metadata-models/directory/groups?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Default Metadata-Models for Directory Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -1249,7 +1257,7 @@ namespace Url {
 				description: 'Search for metadata-models directory groups.'
 			},
 			{
-				path: '/metadata-models/directory/groups?action=update',
+				path: `/metadata-models/directory/groups?${SearchParams.ACTION}=${Action.UPDATE}`,
 				title: 'Update Default Metadata-Models for Directory Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -1272,7 +1280,7 @@ namespace Url {
 				description: 'Update metadata-models directory groups.'
 			},
 			{
-				path: '/metadata-models/directory/groups?action=delete',
+				path: `/metadata-models/directory/groups?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Default Metadata-Models for Directory Groups',
 				icon: html`
 					<div class="flex gap-x-1 self-center">

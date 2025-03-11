@@ -164,7 +164,7 @@ class Component extends LitElement {
 										return html`<div class="break-words flex-[9.5] self-center">No message...</div>`
 									})()}
 									${(() => {
-										if (typeof this._toastMetadataModelSearchResults !== 'undefined' && this._toastMetadataModelSearchResults !== null) {
+										if (this._toastMetadataModelSearchResults?.metadata_model) {
 											return html`
 												<button
 													class="link link-hover font-bold italic w-full text-left self-center"
@@ -231,7 +231,7 @@ class Component extends LitElement {
 					</header>
 					<main class="flex-[9.5] p-2 gap-x-1 max-w-[90vw] overflow-hidden max-h-[90vh] flex">
 						${(() => {
-							if (typeof this._toastMetadataModelSearchResults !== 'undefined' && this._toastMetadataModelSearchResults !== null) {
+							if (this._toastMetadataModelSearchResults?.metadata_model) {
 								return html`
 									${(() => {
 										if (this._showFilterPanel) {
@@ -266,9 +266,8 @@ class Component extends LitElement {
 									${(() => {
 										if (!this._showFilterPanel || this._windowWidth > 1000) {
 											return html`
-												<div class="flex-[3] overflow-hidden flex rounded-md bg-white">
+												<div class="flex-[3] border-[1px] border-gray-400 rounded-md h-fit max-h-[70vh] max-w-full flex overflow-hidden">
 													<metadata-model-view-table
-														class="flex-[1]"
 														.addclickcolumn=${false}
 														.multiselectcolumns=${false}
 														.addselectcolumn=${false}

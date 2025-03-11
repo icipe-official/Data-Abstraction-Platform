@@ -6,6 +6,7 @@ import (
 	inthttp "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http"
 	"github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/directory"
 	directorygroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/directory/groups"
+	authorizationrules "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/group/authorization-rules"
 	ruleauthorizations "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/group/rule-authorizations"
 	"github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/iam"
 	iamcredentials "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/iam/credentials"
@@ -32,6 +33,7 @@ func InitApiCoreRouter(router *chi.Mux, webService *inthttp.WebService) {
 			authedRouter.Mount("/metadata-models", metadatamodels.ApiCoreRouter(webService))
 			authedRouter.Route("/group", func(groupRouter chi.Router) {
 				groupRouter.Mount("/rule-authorizations", ruleauthorizations.ApiCoreRouter(webService))
+				groupRouter.Mount("/authorization-rules", authorizationrules.ApiCoreRouter(webService))
 			})
 		})
 	})

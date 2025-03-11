@@ -11,7 +11,7 @@
             }
         ],
         "description": [
-            "add new rules for current directory-group. This includes rules that did not exist in current group."
+            "add new rules for current directory-group. This includes rules that did not exist in current group therefeore consider this a privileged rule."
         ]
     },
     {

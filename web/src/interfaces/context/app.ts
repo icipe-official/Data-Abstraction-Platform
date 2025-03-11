@@ -9,7 +9,6 @@ export enum StorageKey {
 	AppContext = `${Lib.APP_PREFIX}-${Entities.AppContext.APP_CONTEXT_SESSION_STORAGE_KEY}`
 }
 
-
 export const APP_CONTEXT_UPDATE_EVENT = `${Lib.APP_PREFIX}:appcontextupdate`
 
 export class AppContextProvider implements IAppContextProvider {
@@ -23,7 +22,7 @@ export class AppContextProvider implements IAppContextProvider {
 					this._appcontext = JSON.parse(value)
 					if (!this._appcontext) {
 						this._appcontext = {
-							usecurrentdirectorygroupasauthcontext: true,
+							donotusecurrentdirectorygroupasauthcontext: false,
 							targetjoindepth: 1,
 							skipiffgdisabled: true,
 							skipifdataextraction: true,
@@ -141,21 +140,21 @@ export class AppContextProvider implements IAppContextProvider {
 		this._updateContext()
 	}
 
-	Updateusecurrentdirectorygroupasauthcontext(value: boolean | undefined) {
-		if (Json.AreValuesEqual(this._appcontext?.usecurrentdirectorygroupasauthcontext, value)) {
+	Updatedonotusecurrentdirectorygroupasauthcontext(value: boolean | undefined) {
+		if (Json.AreValuesEqual(this._appcontext?.donotusecurrentdirectorygroupasauthcontext, value)) {
 			return
 		}
 		if (typeof value === 'undefined') {
 			if (this._appcontext) {
-				delete this._appcontext.usecurrentdirectorygroupasauthcontext
+				delete this._appcontext.donotusecurrentdirectorygroupasauthcontext
 			}
 		} else {
 			if (!this._appcontext) {
 				this._appcontext = {
-					usecurrentdirectorygroupasauthcontext: value
+					donotusecurrentdirectorygroupasauthcontext: value
 				}
 			} else {
-				this._appcontext.usecurrentdirectorygroupasauthcontext = value
+				this._appcontext.donotusecurrentdirectorygroupasauthcontext = value
 			}
 		}
 		this._updateContext()
@@ -241,6 +240,26 @@ export class AppContextProvider implements IAppContextProvider {
 		this._updateContext()
 	}
 
+	Updateverboseresponse(value: boolean | undefined) {
+		if (Json.AreValuesEqual(this._appcontext?.verboseresponse, value)) {
+			return
+		}
+		if (typeof value === 'undefined') {
+			if (this._appcontext) {
+				delete this._appcontext.verboseresponse
+			}
+		} else {
+			if (!this._appcontext) {
+				this._appcontext = {
+					verboseresponse: value
+				}
+			} else {
+				this._appcontext.verboseresponse = value
+			}
+		}
+		this._updateContext()
+	}
+
 	private _updateContext() {
 		if (typeof this._appcontext === 'object') {
 			window.sessionStorage.setItem(StorageKey.AppContext, JSON.stringify(this._appcontext))
@@ -286,6 +305,14 @@ export class AppContextConsumer implements ReactiveController, IAppContextConsum
 			return dgid
 		}
 		return undefined
+	}
+
+	Getauthcontextdirectorygroupid() {
+		if (this.appcontext?.donotusecurrentdirectorygroupasauthcontext) {
+			return this.appcontext.iamdirectorygroupid || ''
+		} else {
+			return this.GetCurrentdirectorygroupid() || ''
+		}
 	}
 
 	hostConnected(): void {

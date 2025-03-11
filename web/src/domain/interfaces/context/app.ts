@@ -8,13 +8,15 @@ export interface IAppContextProvider {
 	UpdateIamdirectorygroupid: (value: string | undefined) => void
 	UpdateCurrentDirectorygroupPath: (title: string | undefined) => void
 	Updatetargetjoindepth: (value: number | undefined) => void
-	Updateusecurrentdirectorygroupasauthcontext: (value: boolean | undefined) => void
+	Updatedonotusecurrentdirectorygroupasauthcontext: (value: boolean | undefined) => void
 	Updateskipiffgdisabled: (value: boolean | undefined) => void
 	Updateskipifdataextraction: (value: boolean | undefined) => void
 	Updatewhereafterjoin: (value: boolean | undefined) => void
+	Updateverboseresponse: (value: boolean | undefined) => void
 }
 
 export interface IAppContextConsumer {
 	appcontext: Entities.AppContext.Interface | undefined
 	GetCurrentdirectorygroupid: () => string | undefined
+	Getauthcontextdirectorygroupid: () => string
 }

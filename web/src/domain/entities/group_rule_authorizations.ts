@@ -13,7 +13,7 @@ namespace _GroupRuleAuthorizations {
 	export interface Interface {
 		id?: string[]
 		directory_groups_id?: string[]
-		group_rule_authorizations_id?: {
+		group_authorization_rules_id?: {
 			group_authorization_rules_id?: string[]
 			group_authorization_rules_group?: string[]
 		}[]
