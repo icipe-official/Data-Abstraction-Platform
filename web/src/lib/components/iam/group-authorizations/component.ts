@@ -18,11 +18,11 @@ import Log from '@lib/log'
 import MetadataModelUtils from '@lib/metadata_model_utils'
 import Json from '@lib/json'
 
-@customElement('group-rule-authorizations')
+@customElement('iam-group-authorizations')
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
 
-	@property({ type: Object }) data?: { directorygroupsid?: string; }
+	@property({ type: Object }) data?: { directorygroupsid?: string; iamcredentialsid?: string }
 
 	private _metadataModelsSearch: IMetadataModelSearchController
 	private _appContext: IAppContextConsumer
@@ -43,7 +43,7 @@ class Component extends LitElement {
 		if (action) {
 			switch (action) {
 				case Url.Action.CREATE:
-					this._showCreateNewGroupRuleAuthorizations = true
+					this._showCreateNewIamGroupAuthorizations = true
 					break
 				case Url.Action.RETRIEVE:
 					this._showFilterMenu = true
@@ -72,7 +72,7 @@ class Component extends LitElement {
 		this._fieldAnyMetadataModels = new FieldAnyMetadataModel()
 		this._currentTargetJoinDepth = this._appContext.appcontext?.targetjoindepth
 
-		this._metadataModelsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Group.RuleAuthorizations}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Group.RuleAuthorizations}${Url.MetadataModelSearchPath}`)
+		this._metadataModelsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Iam.GroupRuleAuthorizations}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Iam.GroupRuleAuthorizations}${Url.MetadataModelSearchPath}`)
 	}
 
 	private _currentTargetJoinDepth: number | undefined = undefined
@@ -83,10 +83,10 @@ class Component extends LitElement {
 
 			if (this._currentTargetJoinDepth !== currentTargetJoinDepth || !this._metadataModelsSearch.searchmetadatamodel || Object.keys(this._metadataModelsSearch.searchmetadatamodel).length === 0) {
 				this._currentTargetJoinDepth = currentTargetJoinDepth as number | undefined
-				await this._metadataModelsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, this._currentTargetJoinDepth && this._currentTargetJoinDepth !== 1 ? this._currentTargetJoinDepth : 1, signal)
+				await this._metadataModelsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, this._currentTargetJoinDepth && (this._currentTargetJoinDepth < 0 || this._currentTargetJoinDepth > 2) ? this._currentTargetJoinDepth : 2, signal)
 				const groupAuthorizationRulesMM = Json.GetValueInObject(
 					this._metadataModelsSearch.searchmetadatamodel,
-					'$.$GROUP_FIELDS[*].group_authorization_rules_id.$GROUP_FIELDS[*].group_rule_authorizations_join_group_authorization_rules'.replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]')
+					'$.$GROUP_FIELDS[*].group_rule_authorizations_id_join_group_rule_authorizations.$GROUP_FIELDS[*].group_authorization_rules_id.$GROUP_FIELDS[*].group_rule_authorizations_join_group_authorization_rules'.replace(new RegExp(MetadataModel.ARRAY_INDEX_PLACEHOLDER_REGEX_SEARCH, 'g'), '[0]')
 				)
 				if (groupAuthorizationRulesMM) {
 					this._groupAuthorizationRulesFtsTableCollectionName = groupAuthorizationRulesMM[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME]
@@ -101,7 +101,7 @@ class Component extends LitElement {
 		let newQc: MetadataModel.QueryConditions = {}
 		if (this._metadataModelsSearch.searchmetadatamodel) {
 			if (this._fullTextSearchQuery.length > 0) {
-				newQc['$.group_authorization_rules_id[*].group_rule_authorizations_join_group_authorization_rules'] = {
+				newQc['$.group_rule_authorizations_id_join_group_rule_authorizations[*].group_authorization_rules_id[*].group_rule_authorizations_join_group_authorization_rules'] = {
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_NAME]: this._groupAuthorizationRulesFtsTableCollectionName,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._groupAuthorizationRulesFtsTableCollectionUid,
 					[MetadataModel.QcProperties.D_FULL_TEXT_SEARCH_QUERY]: this._fullTextSearchQuery
@@ -202,15 +202,15 @@ class Component extends LitElement {
 		}
 	}
 
-	private async _handleDeleteGroupRuleAuthorizations(selectedDataIndexes: number[]) {
+	private async _handleDeleteIamGroupAuthorizations(selectedDataIndexes: number[]) {
 		const data = selectedDataIndexes.map((dIndex) => this._metadataModelsSearch.searchresults.data![dIndex])
 
 		try {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting/deactivating ${Entities.GroupRuleAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
+			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting/deactivating ${Entities.IamGroupAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
-			const fetchUrl = new URL(`${Url.ApiUrlPaths.Group.RuleAuthorizations}/${Url.Action.DELETE}`)
+			const fetchUrl = new URL(`${Url.ApiUrlPaths.Iam.GroupRuleAuthorizations}/${Url.Action.DELETE}`)
 			fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
 			fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
 			if (this._appContext.appcontext?.verboseresponse) {
@@ -246,8 +246,8 @@ class Component extends LitElement {
 
 	private _mmQueryPanelImported = false
 	private _importMMQueryPanel = new Task(this, {
-		task: async ([showQueryPanel, directoryGroupsShowQueryPanel, groupAuthorizationRulesShowQueryPanel]) => {
-			if (this._mmQueryPanelImported || (!showQueryPanel && !directoryGroupsShowQueryPanel && !groupAuthorizationRulesShowQueryPanel)) {
+		task: async ([showQueryPanel, iamCredentialsShowQueryPanel, groupAuthorizationRulesShowQueryPanel]) => {
+			if (this._mmQueryPanelImported || (!showQueryPanel && !iamCredentialsShowQueryPanel && !groupAuthorizationRulesShowQueryPanel)) {
 				return
 			}
 			Log.Log(Log.Level.DEBUG, this.localName, '_importMMQueryPanel')
@@ -255,13 +255,13 @@ class Component extends LitElement {
 			await import('@lib/components/metadata-model/view/query-panel/component')
 			this._mmQueryPanelImported = true
 		},
-		args: () => [this._showQueryPanel, this._directoryGroupsShowQueryPanel, this._groupAuthorizationRulesShowQueryPanel]
+		args: () => [this._showQueryPanel, this._iamCredentialsShowQueryPanel, this._groupRuleAuthorizationsShowQueryPanel]
 	})
 
 	private _mmTableImported = false
 	private _importMMTableTask = new Task(this, {
-		task: async ([mmsearchResultsData, directoryGRoupSearchResultsData, groupAuthRulesSearchResultsData]) => {
-			if (this._mmTableImported || ((!mmsearchResultsData || mmsearchResultsData.length === 0) && (!directoryGRoupSearchResultsData || directoryGRoupSearchResultsData.length === 0) && (!groupAuthRulesSearchResultsData || groupAuthRulesSearchResultsData.length === 0))) {
+		task: async ([mmsearchResultsData, iamCredentialsSearchResultsData, groupAuthRulesSearchResultsData]) => {
+			if (this._mmTableImported || ((!mmsearchResultsData || mmsearchResultsData.length === 0) && (!iamCredentialsSearchResultsData || iamCredentialsSearchResultsData.length === 0) && (!groupAuthRulesSearchResultsData || groupAuthRulesSearchResultsData.length === 0))) {
 				return
 			}
 			Log.Log(Log.Level.DEBUG, this.localName, '_importMMTableTask')
@@ -269,7 +269,7 @@ class Component extends LitElement {
 			await import('@lib/components/metadata-model/view/table/component')
 			this._mmQueryPanelImported = true
 		},
-		args: () => [this._metadataModelsSearch.searchresults.data, this._directoryGroupsSearch?.searchresults.data, this._groupAuthorizationRulesSearch?.searchresults.data]
+		args: () => [this._metadataModelsSearch.searchresults.data, this._iamCredentialsSearch?.searchresults.data, this._groupRuleAuthorizationsSearch?.searchresults.data]
 	})
 
 	@state() private _fullTextSearchQuery: string = ''
@@ -284,102 +284,94 @@ class Component extends LitElement {
 
 	@state() private _createGroupRuleAuthorizationsStep: number = 0
 
-	@state() private _showCreateNewGroupRuleAuthorizations = false
+	@state() private _showCreateNewIamGroupAuthorizations = false
 
-	@state() private _directoryGroupsShowQueryPanel = false
-	private _directoryGroupsSearch?: IMetadataModelSearchController
-	@state() _directoryGroupsQueryConditions: MetadataModel.QueryConditions[] = []
+	@state() private _iamCredentialsShowQueryPanel = false
+	private _iamCredentialsSearch?: IMetadataModelSearchController
+	@state() _iamCredentialsQueryConditions: MetadataModel.QueryConditions[] = []
 	@state() private _directoryGroupsFilterExcludeIndexes: number[] = []
-	@state() private _selectedDirectoryGroupsIndexes: number[] = []
-
-	private _setupDirectoryGroupsSearchTask = new Task(this, {
-		task: async ([directorygroupsid, currTargetJoinDepth, showCreate, step, showQueryPanel], { signal }) => {
-			if (directorygroupsid) {
+	@state() private _selectedIamCredentialsIndexes: number[] = []
+	private _setupIamCredentialsSearchTask = new Task(this, {
+		task: async ([iamcredentialsid, currTargetJoinDepth, showCreate, step, showQueryPanel], { signal }) => {
+			if (iamcredentialsid) {
 				return
 			}
 
 			if (!showCreate || step !== 0) {
 				return
 			}
-			Log.Log(Log.Level.DEBUG, this.localName, 'this._setupDirectoryGroupsSearchTask')
+			Log.Log(Log.Level.DEBUG, this.localName, 'this._setupIamCredentialsSearchTask')
 
-			if (!this._directoryGroupsSearch) {
-				this._directoryGroupsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Directory.Groups}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Directory.Groups}${Url.MetadataModelSearchPath}`)
+			if (!this._iamCredentialsSearch) {
+				this._iamCredentialsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Iam.Credentials}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Iam.Credentials}${Url.MetadataModelSearchPath}`)
 			}
 
-			if (showQueryPanel && (this._currentTargetJoinDepth !== currTargetJoinDepth || !this._directoryGroupsSearch?.searchmetadatamodel || Object.keys(this._directoryGroupsSearch?.searchmetadatamodel).length == 0)) {
+			if (showQueryPanel && (this._currentTargetJoinDepth !== currTargetJoinDepth || !this._iamCredentialsSearch?.searchmetadatamodel || Object.keys(this._iamCredentialsSearch?.searchmetadatamodel).length == 0)) {
 				this._currentTargetJoinDepth = currTargetJoinDepth
-				await this._directoryGroupsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, (currTargetJoinDepth as number | undefined) || 1, signal)
+				await this._iamCredentialsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, (currTargetJoinDepth as number | undefined) || 1, signal)
 			}
 		},
-		args: () => [this.data?.directorygroupsid, this._appContext.appcontext?.targetjoindepth, this._showCreateNewGroupRuleAuthorizations, this._createGroupRuleAuthorizationsStep, this._directoryGroupsShowQueryPanel, this._directoryGroupsSearch?.searchmetadatamodel]
+		args: () => [this.data?.iamcredentialsid, this._appContext.appcontext?.targetjoindepth, this._showCreateNewIamGroupAuthorizations, this._createGroupRuleAuthorizationsStep, this._iamCredentialsShowQueryPanel, this._iamCredentialsSearch?.searchmetadatamodel]
 	})
 
-	@state() private _groupAuthorizationRulesShowQueryPanel = false
-	private _groupAuthorizationRulesSearch?: IMetadataModelSearchController
-	@state() _groupAuthorizationRulesQueryConditions: MetadataModel.QueryConditions[] = []
-	@state() private _groupAuthorizationRulesFilterExcludeIndexes: number[] = []
-	@state() private _selectedGroupAuthorizationRulesIndexes: number[] = []
-	private _setupGroupAuthorizationRulesSearchTask = new Task(this, {
+	@state() private _groupRuleAuthorizationsShowQueryPanel = false
+	private _groupRuleAuthorizationsSearch?: IMetadataModelSearchController
+	@state() _groupRuleAuthorizationsQueryConditions: MetadataModel.QueryConditions[] = []
+	@state() private _groupRuleAuthorizationsFilterExcludeIndexes: number[] = []
+	@state() private _selectedGroupRuleAuthorizationsIndexes: number[] = []
+	private _setupGroupRuleAuthorizationsSearchTask = new Task(this, {
 		task: async ([showCreate, step, showQueryPanel], { signal }) => {
 			if (!showCreate || step !== 1) {
 				return
 			}
-			Log.Log(Log.Level.DEBUG, this.localName, 'this._setupGroupAuthorizationRulesSearchTask')
+			Log.Log(Log.Level.DEBUG, this.localName, 'this._setupGroupRuleAuthorizationsSearchTask')
 
-			if (!this._groupAuthorizationRulesSearch) {
-				this._groupAuthorizationRulesSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Group.AuthorizationRules}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Group.AuthorizationRules}${Url.MetadataModelSearchPath}`)
+			if (!this._groupRuleAuthorizationsSearch) {
+				this._groupRuleAuthorizationsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Group.RuleAuthorizations}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Group.RuleAuthorizations}${Url.MetadataModelSearchPath}`)
 			}
 
-			if (showQueryPanel && (!this._groupAuthorizationRulesSearch.searchmetadatamodel || Object.keys(this._groupAuthorizationRulesSearch.searchmetadatamodel).length == 0)) {
-				await this._groupAuthorizationRulesSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, this._appContext.appcontext?.targetjoindepth || 1, signal)
+			if (showQueryPanel && (!this._groupRuleAuthorizationsSearch.searchmetadatamodel || Object.keys(this._groupRuleAuthorizationsSearch.searchmetadatamodel).length == 0)) {
+				await this._groupRuleAuthorizationsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, this._appContext.appcontext?.targetjoindepth || 1, signal)
 			}
 		},
-		args: () => [this._showCreateNewGroupRuleAuthorizations, this._createGroupRuleAuthorizationsStep, this._groupAuthorizationRulesShowQueryPanel]
+		args: () => [this._showCreateNewIamGroupAuthorizations, this._createGroupRuleAuthorizationsStep, this._groupRuleAuthorizationsShowQueryPanel]
 	})
 
-	private async _handleCreateGroupRuleAuthorizations() {
-		if (!this._directoryGroupsSearch?.searchresults.data || !this._groupAuthorizationRulesSearch?.searchresults.data) {
+	private async _handleCreateIamGroupAuthorizations() {
+		if (!this._iamCredentialsSearch?.searchresults.data || !this._groupRuleAuthorizationsSearch?.searchresults.data) {
 			return
 		}
 
-		let directoryGroups: Entities.DirectoryGroups.Interface[] = []
-		if (this.data?.directorygroupsid) {
-			directoryGroups.push({
-				id: [this.data?.directorygroupsid]
+		let iamCredentials: Entities.IamCredentials.Interface[] = []
+		if (this.data?.iamcredentialsid) {
+			iamCredentials.push({
+				id: [this.data.iamcredentialsid]
 			})
 		} else {
-			for (const dIndex of this._selectedDirectoryGroupsIndexes) {
-				const dg: Entities.DirectoryGroups.Interface = this._directoryGroupsSearch.searchresults.data[dIndex]
+			for (const dIndex of this._selectedIamCredentialsIndexes) {
+				const dg: Entities.IamCredentials.Interface = this._iamCredentialsSearch.searchresults.data[dIndex]
 				if (Array.isArray(dg.id) && typeof dg.id[0] === 'string') {
-					directoryGroups.push({
+					iamCredentials.push({
 						id: [dg.id[0]]
 					})
 				}
 			}
 		}
 
-		let newGroupRuleAuthorizations: Entities.GroupRuleAuthorizations.Interface[] = []
-		for (const dg of directoryGroups) {
-			for (const gdIndex of this._selectedGroupAuthorizationRulesIndexes) {
-				const gar: Entities.GroupAuthorizationRules.Interface = this._groupAuthorizationRulesSearch.searchresults.data[gdIndex]
-				if (Array.isArray(gar.group_authorization_rules_id) && gar.group_authorization_rules_id.length === 1) {
-					if (Array.isArray(gar.group_authorization_rules_id[0].id) && typeof gar.group_authorization_rules_id[0].id[0] === 'string' && Array.isArray(gar.group_authorization_rules_id[0].rule_group) && typeof gar.group_authorization_rules_id[0].rule_group[0] === 'string') {
-						newGroupRuleAuthorizations.push({
-							directory_groups_id: dg.id,
-							group_authorization_rules_id: [
-								{
-									group_authorization_rules_id: gar.group_authorization_rules_id[0].id,
-									group_authorization_rules_group: gar.group_authorization_rules_id[0].rule_group
-								}
-							]
-						})
-					}
+		let newIamGroupAuthorizations: Entities.IamGroupAuthorizations.Interface[] = []
+		for (const ic of iamCredentials) {
+			for (const gdIndex of this._selectedGroupRuleAuthorizationsIndexes) {
+				const gra: Entities.GroupRuleAuthorizations.Interface = this._groupRuleAuthorizationsSearch.searchresults.data[gdIndex]
+				if (Array.isArray(gra.id) && gra.id.length == 1) {
+					newIamGroupAuthorizations.push({
+						iam_credentials_id: ic.id,
+						group_rule_authorizations_id: gra.id
+					})
 				}
 			}
 		}
 
-		if (newGroupRuleAuthorizations.length === 0) {
+		if (newIamGroupAuthorizations.length === 0) {
 			return
 		}
 
@@ -388,19 +380,19 @@ class Component extends LitElement {
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
-			const fetchUrl = new URL(`${Url.ApiUrlPaths.Group.RuleAuthorizations}/${Url.Action.CREATE}`)
+			const fetchUrl = new URL(`${Url.ApiUrlPaths.Iam.GroupRuleAuthorizations}/${Url.Action.CREATE}`)
 			fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
 			fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
 			if (this._appContext.appcontext?.verboseresponse) {
 				fetchUrl.searchParams.append(Url.SearchParams.VERBOSE_RESPONSE, `${true}`)
 			}
 
-			Log.Log(Log.Level.DEBUG, this.localName, fetchUrl, newGroupRuleAuthorizations)
+			Log.Log(Log.Level.DEBUG, this.localName, fetchUrl, newIamGroupAuthorizations)
 
 			const fetchResponse = await fetch(fetchUrl, {
 				method: 'POST',
 				credentials: 'include',
-				body: JSON.stringify(newGroupRuleAuthorizations)
+				body: JSON.stringify(newIamGroupAuthorizations)
 			})
 
 			const fetchData = await fetchResponse.json()
@@ -426,14 +418,14 @@ class Component extends LitElement {
 		return html`
 			<div class="flex-1 flex flex-col rounded-md bg-white shadow-md shadow-gray-800 overflow-hidden p-2 gap-y-1">
 				${(() => {
-					if (this._showCreateNewGroupRuleAuthorizations) {
+					if (this._showCreateNewIamGroupAuthorizations) {
 						return html`
 							<header class="flex-[0.5] flex gap-x-1 z-[2]">
-								<button class="btn btn-circle btn-ghost flex justify-center" @click=${() => (this._showCreateNewGroupRuleAuthorizations = false)}>
+								<button class="btn btn-circle btn-ghost flex justify-center" @click=${() => (this._showCreateNewIamGroupAuthorizations = false)}>
 									<!--mdi:arrow-back source: https://icon-sets.iconify.design-->
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${Theme.Color.PRIMARY}" d="M20 11v2H8l5.5 5.5l-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5L8 11z" /></svg>
 								</button>
-								<div class="h-fit w-fit flex gap-x-1 text-primary self-center">Create New Group Rule Authorizations</div>
+								<div class="h-fit w-fit flex gap-x-1 text-primary self-center">Create New Iam Group Authorizations</div>
 							</header>
 							<div class="divider"></div>
 							<nav class="w-fit steps self-center h-fit z-[1]">
@@ -443,9 +435,9 @@ class Component extends LitElement {
 										e.preventDefault()
 										this._createGroupRuleAuthorizationsStep = 0
 									}}
-									.disabled=${typeof this.data?.directorygroupsid === 'string'}
+									.disabled=${typeof this.data?.iamcredentialsid === 'string'}
 								>
-									<div class="break-words pl-4 pr-4">Pick Directory Group(s)</div>
+									<div class="break-words pl-4 pr-4">Pick Iam Credential(s)</div>
 								</button>
 								<button
 									class="step ${this._createGroupRuleAuthorizationsStep >= 1 ? 'step-secondary' : ''}"
@@ -463,14 +455,14 @@ class Component extends LitElement {
 										this._createGroupRuleAuthorizationsStep = 2
 									}}
 								>
-									<div class="break-words pl-4 pr-4">Create Group Rule Authorizations</div>
+									<div class="break-words pl-4 pr-4">Create Iam Group Authorizations</div>
 								</button>
 							</nav>
 							<main class="flex-[9] flex flex-col gap-y-1 overflow-hidden z-[1]">
 								${(() => {
 									switch (this._createGroupRuleAuthorizationsStep) {
 										case 0:
-											return this._setupDirectoryGroupsSearchTask.render({
+											return this._setupIamCredentialsSearchTask.render({
 												pending: () => html`
 													<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
 														<div class="flex">
@@ -483,7 +475,7 @@ class Component extends LitElement {
 												complete: () => html`
 													<section class="flex-[9] flex gap-x-1 overflow-hidden">
 														${(() => {
-															if (!this._directoryGroupsShowQueryPanel) {
+															if (!this._iamCredentialsShowQueryPanel) {
 																return nothing
 															}
 
@@ -501,13 +493,13 @@ class Component extends LitElement {
 																		`,
 																		complete: () => html`
 																			<metadata-model-view-query-panel
-																				.metadatamodel=${this._directoryGroupsSearch!.searchmetadatamodel}
-																				.queryconditions=${this._directoryGroupsQueryConditions}
+																				.metadatamodel=${this._iamCredentialsSearch!.searchmetadatamodel}
+																				.queryconditions=${this._iamCredentialsQueryConditions}
 																				@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
-																					this._directoryGroupsSearch!.UpdateMetadatamodel(e.detail.value)
+																					this._iamCredentialsSearch!.UpdateMetadatamodel(e.detail.value)
 																				}}
 																				@metadata-model-view-query-panel:updatequeryconditions=${(e: CustomEvent) => {
-																					this._directoryGroupsQueryConditions = structuredClone(e.detail.value)
+																					this._iamCredentialsQueryConditions = structuredClone(e.detail.value)
 																				}}
 																			></metadata-model-view-query-panel>
 																		`,
@@ -524,14 +516,14 @@ class Component extends LitElement {
 															`
 														})()}
 														${(() => {
-															if (this._windowWidth < 1000 && this._directoryGroupsShowQueryPanel) {
+															if (this._windowWidth < 1000 && this._iamCredentialsShowQueryPanel) {
 																return nothing
 															}
 
 															return html`
 																<div class="flex-[3] flex flex-col gap-y-2 overflow-hidden">
 																	${(() => {
-																		if (this._directoryGroupsSearch!.searchmetadatamodel && this._directoryGroupsSearch!.searchresults.data && this._directoryGroupsSearch!.searchresults.data.length > 0) {
+																		if (this._iamCredentialsSearch!.searchmetadatamodel && this._iamCredentialsSearch!.searchresults.data && this._iamCredentialsSearch!.searchresults.data.length > 0) {
 																			return this._importMMTableTask.render({
 																				pending: () => html`
 																					<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
@@ -545,15 +537,15 @@ class Component extends LitElement {
 																				complete: () => html`
 																					<div class="grow-[9] border-[1px] border-gray-400 rounded-md h-fit max-h-full max-w-full flex overflow-hidden">
 																						<metadata-model-view-table
-																							.metadatamodel=${this._directoryGroupsSearch!.searchmetadatamodel}
-																							.data=${this._directoryGroupsSearch!.searchresults.data!}
+																							.metadatamodel=${this._iamCredentialsSearch!.searchmetadatamodel}
+																							.data=${this._iamCredentialsSearch!.searchresults.data!}
 																							.getmetadatamodel=${this._fieldAnyMetadataModels}
 																							.filterexcludeindexes=${this._directoryGroupsFilterExcludeIndexes}
 																							.addselectcolumn=${true}
 																							.addclickcolumn=${false}
-																							.selecteddataindexes=${this._selectedDirectoryGroupsIndexes}
+																							.selecteddataindexes=${this._selectedIamCredentialsIndexes}
 																							@metadata-model-view-table:selecteddataindexesupdate=${(e: CustomEvent) => {
-																								this._selectedDirectoryGroupsIndexes = structuredClone(e.detail.value)
+																								this._selectedIamCredentialsIndexes = structuredClone(e.detail.value)
 																							}}
 																						></metadata-model-view-table>
 																					</div>
@@ -571,7 +563,7 @@ class Component extends LitElement {
 																	})()}
 																	<section class="shrink-[9] overflow-auto flex justify-center bg-gray-300 rounded-md w-full h-full min-h-[100px]">
 																		<div class="self-center flex-1 flex flex-col max-md:max-w-[80%] min-w-fit min-h-fit gap-y-10">
-																			<div class="text-xl font-bold break-words text-center">Step 1: Pick the directory group(s) you'd like to assign particular roles.</div>
+																			<div class="text-xl font-bold break-words text-center">Step 1: Pick the iam credential(s) you'd like to assign particular roles.</div>
 																		</div>
 																	</section>
 																</div>
@@ -580,13 +572,13 @@ class Component extends LitElement {
 													</section>
 													<div class="join md:min-w-[30%] max-md:w-full self-center">
 														${(() => {
-															if (this._directoryGroupsSearch!.searchmetadatamodel && this._directoryGroupsSearch!.searchresults.data && this._directoryGroupsSearch!.searchresults.data.length > 0) {
+															if (this._iamCredentialsSearch!.searchmetadatamodel && this._iamCredentialsSearch!.searchresults.data && this._iamCredentialsSearch!.searchresults.data.length > 0) {
 																return html`
 																	<button
 																		class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 																		@click=${(e: Event) => {
 																			e.preventDefault()
-																			this._directoryGroupsFilterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._directoryGroupsSearch!.searchresults.data!))
+																			this._directoryGroupsFilterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._iamCredentialsSearch!.searchresults.data!))
 																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._directoryGroupsFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
 																		}}
 																	>
@@ -623,8 +615,8 @@ class Component extends LitElement {
 															@click=${async () => {
 																try {
 																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
-																	await this._directoryGroupsSearch!.Search(
-																		this._directoryGroupsQueryConditions,
+																	await this._iamCredentialsSearch!.Search(
+																		this._iamCredentialsQueryConditions,
 																		this._appContext.appcontext?.iamdirectorygroupid,
 																		this._appContext.GetCurrentdirectorygroupid(),
 																		this._appContext.appcontext?.targetjoindepth || 1,
@@ -635,7 +627,7 @@ class Component extends LitElement {
 
 																	window.dispatchEvent(
 																		new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, {
-																			detail: { toastType: Lib.ToastType.SUCCESS, toastMessage: `${Array.isArray(this._directoryGroupsSearch!.searchresults.data) ? this._directoryGroupsSearch!.searchresults.data.length : 0} results found` },
+																			detail: { toastType: Lib.ToastType.SUCCESS, toastMessage: `${Array.isArray(this._iamCredentialsSearch!.searchresults.data) ? this._iamCredentialsSearch!.searchresults.data.length : 0} results found` },
 																			bubbles: true,
 																			composed: true
 																		})
@@ -671,7 +663,7 @@ class Component extends LitElement {
 															class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 															@click=${(e: Event) => {
 																e.preventDefault()
-																this._directoryGroupsShowQueryPanel = !this._directoryGroupsShowQueryPanel
+																this._iamCredentialsShowQueryPanel = !this._iamCredentialsShowQueryPanel
 															}}
 														>
 															<div class="flex gap-x-1 self-center">
@@ -680,7 +672,7 @@ class Component extends LitElement {
 																	<path fill="${Theme.Color.SECONDARY_CONTENT}" d="M14 12v7.88c.04.3-.06.62-.29.83a.996.996 0 0 1-1.41 0l-2.01-2.01a.99.99 0 0 1-.29-.83V12h-.03L4.21 4.62a1 1 0 0 1 .17-1.4c.19-.14.4-.22.62-.22h14c.22 0 .43.08.62.22a1 1 0 0 1 .17 1.4L14.03 12z" />
 																</svg>
 																${(() => {
-																	if (this._directoryGroupsShowQueryPanel) {
+																	if (this._iamCredentialsShowQueryPanel) {
 																		return html`
 																			<!--mdi:eye source: https://icon-sets.iconify.design-->
 																			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -707,7 +699,7 @@ class Component extends LitElement {
 																if (this._windowWidth < 700) {
 																	return nothing
 																}
-																return html`<div class="text-center text-sm font-bold text-secondary-content break-words">${this._directoryGroupsShowQueryPanel ? 'Hide' : 'Show'} Filter Query Panel</div>`
+																return html`<div class="text-center text-sm font-bold text-secondary-content break-words">${this._iamCredentialsShowQueryPanel ? 'Hide' : 'Show'} Filter Query Panel</div>`
 															})()}
 														</button>
 													</div>
@@ -716,13 +708,13 @@ class Component extends LitElement {
 													console.error(e)
 													return html`
 														<div class="flex-[2] flex flex-col justify-center items-center shadow-inner shadow-gray-800 rounded-md p-1">
-															<span class="w-fit text-error font-bold">Error: Could not get directory-groups metadata-model.</span>
+															<span class="w-fit text-error font-bold">Error: Could not get iam-credentials metadata-model.</span>
 														</div>
 													`
 												}
 											})
 										case 1:
-											return this._setupGroupAuthorizationRulesSearchTask.render({
+											return this._setupGroupRuleAuthorizationsSearchTask.render({
 												pending: () => html`
 													<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
 														<div class="flex">
@@ -735,7 +727,7 @@ class Component extends LitElement {
 												complete: () => html`
 													<section class="flex-[9] flex gap-x-1 overflow-hidden">
 														${(() => {
-															if (!this._groupAuthorizationRulesShowQueryPanel) {
+															if (!this._groupRuleAuthorizationsShowQueryPanel) {
 																return nothing
 															}
 
@@ -753,13 +745,13 @@ class Component extends LitElement {
 																		`,
 																		complete: () => html`
 																			<metadata-model-view-query-panel
-																				.metadatamodel=${this._groupAuthorizationRulesSearch!.searchmetadatamodel}
-																				.queryconditions=${this._groupAuthorizationRulesQueryConditions}
+																				.metadatamodel=${this._groupRuleAuthorizationsSearch!.searchmetadatamodel}
+																				.queryconditions=${this._groupRuleAuthorizationsQueryConditions}
 																				@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
-																					this._groupAuthorizationRulesSearch!.UpdateMetadatamodel(e.detail.value)
+																					this._groupRuleAuthorizationsSearch!.UpdateMetadatamodel(e.detail.value)
 																				}}
 																				@metadata-model-view-query-panel:updatequeryconditions=${(e: CustomEvent) => {
-																					this._groupAuthorizationRulesQueryConditions = structuredClone(e.detail.value)
+																					this._groupRuleAuthorizationsQueryConditions = structuredClone(e.detail.value)
 																				}}
 																			></metadata-model-view-query-panel>
 																		`,
@@ -776,14 +768,14 @@ class Component extends LitElement {
 															`
 														})()}
 														${(() => {
-															if (this._windowWidth < 1000 && this._groupAuthorizationRulesShowQueryPanel) {
+															if (this._windowWidth < 1000 && this._groupRuleAuthorizationsShowQueryPanel) {
 																return nothing
 															}
 
 															return html`
 																<div class="flex-[3] flex flex-col gap-y-2 overflow-hidden">
 																	${(() => {
-																		if (this._groupAuthorizationRulesSearch!.searchmetadatamodel && this._groupAuthorizationRulesSearch!.searchresults.data && this._groupAuthorizationRulesSearch!.searchresults.data.length > 0) {
+																		if (this._groupRuleAuthorizationsSearch!.searchmetadatamodel && this._groupRuleAuthorizationsSearch!.searchresults.data && this._groupRuleAuthorizationsSearch!.searchresults.data.length > 0) {
 																			return this._importMMTableTask.render({
 																				pending: () => html`
 																					<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
@@ -797,15 +789,15 @@ class Component extends LitElement {
 																				complete: () => html`
 																					<div class="grow-[9] border-[1px] border-gray-400 rounded-md h-fit max-h-full max-w-full flex overflow-hidden">
 																						<metadata-model-view-table
-																							.metadatamodel=${this._groupAuthorizationRulesSearch!.searchmetadatamodel}
-																							.data=${this._groupAuthorizationRulesSearch!.searchresults.data!}
+																							.metadatamodel=${this._groupRuleAuthorizationsSearch!.searchmetadatamodel}
+																							.data=${this._groupRuleAuthorizationsSearch!.searchresults.data!}
 																							.getmetadatamodel=${this._fieldAnyMetadataModels}
-																							.filterexcludeindexes=${this._groupAuthorizationRulesFilterExcludeIndexes}
+																							.filterexcludeindexes=${this._groupRuleAuthorizationsFilterExcludeIndexes}
 																							.addselectcolumn=${true}
 																							.addclickcolumn=${false}
-																							.selecteddataindexes=${this._selectedGroupAuthorizationRulesIndexes}
+																							.selecteddataindexes=${this._selectedGroupRuleAuthorizationsIndexes}
 																							@metadata-model-view-table:selecteddataindexesupdate=${(e: CustomEvent) => {
-																								this._selectedGroupAuthorizationRulesIndexes = structuredClone(e.detail.value)
+																								this._selectedGroupRuleAuthorizationsIndexes = structuredClone(e.detail.value)
 																							}}
 																						></metadata-model-view-table>
 																					</div>
@@ -823,7 +815,7 @@ class Component extends LitElement {
 																	})()}
 																	<section class="shrink-[9] overflow-auto flex justify-center bg-gray-300 rounded-md w-full h-full min-h-[100px]">
 																		<div class="self-center flex-1 flex flex-col max-md:max-w-[80%] min-w-fit min-h-fit gap-y-10">
-																			<div class="text-xl font-bold break-words text-center">Step 2: Pick the rule(s) you'd like to assign to the selected directory groups.</div>
+																			<div class="text-xl font-bold break-words text-center">Step 2: Pick the role(s) you'd like to assign to the selected iam credentials.</div>
 																		</div>
 																	</section>
 																</div>
@@ -832,14 +824,14 @@ class Component extends LitElement {
 													</section>
 													<div class="join md:min-w-[30%] max-md:w-full self-center">
 														${(() => {
-															if (this._groupAuthorizationRulesSearch!.searchmetadatamodel && this._groupAuthorizationRulesSearch!.searchresults.data && this._groupAuthorizationRulesSearch!.searchresults.data.length > 0) {
+															if (this._groupRuleAuthorizationsSearch!.searchmetadatamodel && this._groupRuleAuthorizationsSearch!.searchresults.data && this._groupRuleAuthorizationsSearch!.searchresults.data.length > 0) {
 																return html`
 																	<button
 																		class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 																		@click=${(e: Event) => {
 																			e.preventDefault()
-																			this._groupAuthorizationRulesFilterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._groupAuthorizationRulesSearch!.searchresults.data!))
-																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._groupAuthorizationRulesFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
+																			this._groupRuleAuthorizationsFilterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._groupRuleAuthorizationsSearch!.searchresults.data!))
+																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._groupRuleAuthorizationsFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
 																		}}
 																	>
 																		<div class="flex gap-x-1 self-center">
@@ -875,8 +867,8 @@ class Component extends LitElement {
 															@click=${async () => {
 																try {
 																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
-																	await this._groupAuthorizationRulesSearch!.Search(
-																		this._groupAuthorizationRulesQueryConditions,
+																	await this._groupRuleAuthorizationsSearch!.Search(
+																		this._groupRuleAuthorizationsQueryConditions,
 																		this._appContext.appcontext?.iamdirectorygroupid,
 																		this._appContext.GetCurrentdirectorygroupid(),
 																		this._appContext.appcontext?.targetjoindepth || 1,
@@ -887,7 +879,7 @@ class Component extends LitElement {
 
 																	window.dispatchEvent(
 																		new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, {
-																			detail: { toastType: Lib.ToastType.SUCCESS, toastMessage: `${Array.isArray(this._groupAuthorizationRulesSearch!.searchresults.data) ? this._groupAuthorizationRulesSearch!.searchresults.data.length : 0} results found` },
+																			detail: { toastType: Lib.ToastType.SUCCESS, toastMessage: `${Array.isArray(this._groupRuleAuthorizationsSearch!.searchresults.data) ? this._groupRuleAuthorizationsSearch!.searchresults.data.length : 0} results found` },
 																			bubbles: true,
 																			composed: true
 																		})
@@ -923,7 +915,7 @@ class Component extends LitElement {
 															class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 															@click=${(e: Event) => {
 																e.preventDefault()
-																this._groupAuthorizationRulesShowQueryPanel = !this._groupAuthorizationRulesShowQueryPanel
+																this._groupRuleAuthorizationsShowQueryPanel = !this._groupRuleAuthorizationsShowQueryPanel
 															}}
 														>
 															<div class="flex gap-x-1 self-center">
@@ -932,7 +924,7 @@ class Component extends LitElement {
 																	<path fill="${Theme.Color.SECONDARY_CONTENT}" d="M14 12v7.88c.04.3-.06.62-.29.83a.996.996 0 0 1-1.41 0l-2.01-2.01a.99.99 0 0 1-.29-.83V12h-.03L4.21 4.62a1 1 0 0 1 .17-1.4c.19-.14.4-.22.62-.22h14c.22 0 .43.08.62.22a1 1 0 0 1 .17 1.4L14.03 12z" />
 																</svg>
 																${(() => {
-																	if (this._groupAuthorizationRulesShowQueryPanel) {
+																	if (this._groupRuleAuthorizationsShowQueryPanel) {
 																		return html`
 																			<!--mdi:eye source: https://icon-sets.iconify.design-->
 																			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -959,7 +951,7 @@ class Component extends LitElement {
 																if (this._windowWidth < 700) {
 																	return nothing
 																}
-																return html`<div class="text-center text-sm font-bold text-secondary-content break-words">${this._groupAuthorizationRulesShowQueryPanel ? 'Hide' : 'Show'} Filter Query Panel</div>`
+																return html`<div class="text-center text-sm font-bold text-secondary-content break-words">${this._groupRuleAuthorizationsShowQueryPanel ? 'Hide' : 'Show'} Filter Query Panel</div>`
 															})()}
 														</button>
 													</div>
@@ -968,7 +960,7 @@ class Component extends LitElement {
 													console.error(e)
 													return html`
 														<div class="flex-[2] flex flex-col justify-center items-center shadow-inner shadow-gray-800 rounded-md p-1">
-															<span class="w-fit text-error font-bold">Error: Could not get group authorization rules metadata-model.</span>
+															<span class="w-fit text-error font-bold">Error: Could not get group rule authorizations metadata-model.</span>
 														</div>
 													`
 												}
@@ -981,11 +973,11 @@ class Component extends LitElement {
 														<button
 															class="btn btn-secondary self-center md:min-w-[30%] max-md:w-full p-2 min-h-fit h-fit"
 															@click=${() => {
-																this._handleCreateGroupRuleAuthorizations()
+																this._handleCreateIamGroupAuthorizations()
 															}}
-															.disabled=${(!this.data?.directorygroupsid && this._selectedDirectoryGroupsIndexes.length === 0) || this._selectedGroupAuthorizationRulesIndexes.length === 0}
+															.disabled=${(!this.data?.iamcredentialsid && this._selectedIamCredentialsIndexes.length === 0) || this._selectedGroupRuleAuthorizationsIndexes.length === 0}
 														>
-															Create Group Rule Authorizations
+															Create Iam Group Authorizations
 														</button>
 													</div>
 												</section>
@@ -1296,9 +1288,9 @@ class Component extends LitElement {
 																.addselectcolumn=${true}
 																.selecteddataindexesactions=${[
 																	{
-																		actionName: 'Delete/deactivate selected group rule authorizations',
+																		actionName: 'Delete/deactivate selected iam group authorizations',
 																		action: (selectedDataIndexes: number[]) => {
-																			this._handleDeleteGroupRuleAuthorizations(selectedDataIndexes)
+																			this._handleDeleteIamGroupAuthorizations(selectedDataIndexes)
 																		}
 																	}
 																]}
@@ -1322,10 +1314,10 @@ class Component extends LitElement {
 													if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0) {
 														return nothing
 													}
-													return html` <div class="text-xl font-bold break-words text-center">${Url.groupRuleAuthorizationsNavigation.description}</div> `
+													return html` <div class="text-xl font-bold break-words text-center">${Url.iamGroupAuthorizationsNavigation.description}</div> `
 												})()}
 												<div class="flex justify-evenly flex-wrap gap-8">
-													<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showCreateNewGroupRuleAuthorizations = true)}>
+													<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showCreateNewIamGroupAuthorizations = true)}>
 														<div class="flex gap-x-1 self-center">
 															<!--mdi:account-group source: https://icon-sets.iconify.design-->
 															<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
@@ -1344,7 +1336,7 @@ class Component extends LitElement {
 															if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
 																return nothing
 															}
-															return html`<div>Create New Group Rule Authorizations</div>`
+															return html`<div>Create New Iam Group Authorizations</div>`
 														})()}
 													</button>
 													<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showQueryPanel = true)}>
@@ -1368,7 +1360,7 @@ class Component extends LitElement {
 															if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
 																return nothing
 															}
-															return html`<div>Search Group Rule Authorizations</div>`
+															return html`<div>Search Iam Group Authorizations</div>`
 														})()}
 													</button>
 													<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showQueryPanel = true)}>
@@ -1390,7 +1382,7 @@ class Component extends LitElement {
 															if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
 																return nothing
 															}
-															return html`<div>Delete Group Rule Authorizations</div>`
+															return html`<div>Delete Iam Group Authorizations</div>`
 														})()}
 													</button>
 												</div>
@@ -1409,6 +1401,6 @@ class Component extends LitElement {
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'group-rule-authorizations': Component
+		'iam-group-authorizations': Component
 	}
 }

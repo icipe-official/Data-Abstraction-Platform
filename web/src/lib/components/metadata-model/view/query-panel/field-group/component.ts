@@ -486,7 +486,7 @@ class Component extends LitElement {
 														.handleselectfieldgroup=${this.handleselectfieldgroup}
 														.handlegetfieldgroupquerycondition=${this.handlegetfieldgroupquerycondition}
 														.handledeletefieldgroupquerycondition=${this.handledeletefieldgroupquerycondition}
-														handleupdatefieldgroupquerycondition=${this.handleupdatefieldgroupquerycondition}
+														.handleupdatefieldgroupquerycondition=${this.handleupdatefieldgroupquerycondition}
 														.showhidegroupfields=${() => {
 															this.showgroupfields = !this.showgroupfields
 														}}

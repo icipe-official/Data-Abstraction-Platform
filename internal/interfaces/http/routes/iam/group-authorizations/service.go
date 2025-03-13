@@ -1,4 +1,4 @@
-package ruleauthorizations
+package groupauthorizations
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/gofrs/uuid/v5"
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
@@ -15,19 +16,19 @@ import (
 	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 )
 
-func (n *service) ServiceGroupRuleAuthorizationsDeleteMany(
+func (n *service) ServiceIamGroupAuthorizationsDeleteMany(
 	ctx context.Context,
 	iamCredential *intdoment.IamCredentials,
 	iamAuthorizationRules *intdoment.IamAuthorizationRules,
 	authContextDirectoryGroupID uuid.UUID,
 	verboseResponse bool,
-	data []*intdoment.GroupRuleAuthorization,
+	data []*intdoment.IamGroupAuthorizations,
 ) (int, *intdoment.MetadataModelVerbRes, error) {
 	verbres := new(intdoment.MetadataModelVerbRes)
 	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
 	if verboseResponse {
 		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsDeleteMany, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsDeleteMany, err).Error())
 			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
 		} else {
 			verbres.MetadataModelVerboseResponse.MetadataModel = d
@@ -40,9 +41,55 @@ func (n *service) ServiceGroupRuleAuthorizationsDeleteMany(
 	for _, datum := range data {
 		verbRes := new(intdoment.MetadataModelVerboseResponseData)
 
-		if len(datum.DirectoryGroupsID) > 0 && len(datum.ID) > 0 {
+		if len(datum.ID) > 0 {
+			groupRuleAuthorization, err := n.repo.RepoGroupRuleAuthorizationsFindOneByIamGroupAuthorizationID(ctx, datum.ID[0], nil)
+			if err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsDeleteMany, err).Error())
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("get %s failed", intdoment.GroupRuleAuthorizationsRepository().RepositoryName), err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			}
+			if groupRuleAuthorization == nil {
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusNotFound}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusNotFound)}
+				failed += 1
+				goto appendNewVerboseResponse
+			}
+			if len(groupRuleAuthorization.DeactivatedOn) > 0 {
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
+				failed += 1
+				goto appendNewVerboseResponse
+			}
+
+			if value, err := n.repo.RepoIamGroupAuthorizationsFindOneInactiveRule(ctx, datum.ID[0], nil); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsDeleteMany, err).Error())
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("validate deactivated %s failed", intdoment.IamGroupAuthorizationsRepository().RepositoryName), err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			} else {
+				if value != nil {
+					verbRes.Data = []any{datum}
+					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+					verbRes.Status[0].StatusCode = []int{http.StatusBadRequest}
+					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusBadRequest), fmt.Sprintf("%s already deactivated", intdoment.IamGroupAuthorizationsRepository().RepositoryName)}
+					failed += 1
+					goto appendNewVerboseResponse
+				}
+			}
+
 			iamAuthorizationRule := new(intdoment.IamAuthorizationRule)
-			if datum.DirectoryGroupsID[0].String() != authContextDirectoryGroupID.String() {
+			if groupRuleAuthorization.DirectoryGroupsID[0].String() != authContextDirectoryGroupID.String() {
 				if iar, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
 					ctx,
 					iamCredential,
@@ -50,7 +97,7 @@ func (n *service) ServiceGroupRuleAuthorizationsDeleteMany(
 					[]*intdoment.IamGroupAuthorizationRule{
 						{
 							ID:        intdoment.AUTH_RULE_DELETE_OTHERS,
-							RuleGroup: intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATIONS,
+							RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 						},
 					},
 					iamAuthorizationRules,
@@ -72,8 +119,8 @@ func (n *service) ServiceGroupRuleAuthorizationsDeleteMany(
 					iamAuthorizationRule = iar[0]
 				}
 
-				if value, err := n.repo.RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx, authContextDirectoryGroupID, datum.DirectoryGroupsID[0]); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsDeleteMany, err).Error())
+				if value, err := n.repo.RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx, authContextDirectoryGroupID, groupRuleAuthorization.DirectoryGroupsID[0]); err != nil {
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsDeleteMany, err).Error())
 					verbRes.Data = []any{datum}
 					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -98,7 +145,7 @@ func (n *service) ServiceGroupRuleAuthorizationsDeleteMany(
 					[]*intdoment.IamGroupAuthorizationRule{
 						{
 							ID:        intdoment.AUTH_RULE_DELETE,
-							RuleGroup: intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATIONS,
+							RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 						},
 					},
 					iamAuthorizationRules,
@@ -121,27 +168,8 @@ func (n *service) ServiceGroupRuleAuthorizationsDeleteMany(
 				}
 			}
 
-			if value, err := n.repo.RepoGroupRuleAuthorizationsFindOneInactiveRule(ctx, datum.ID[0], nil); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsDeleteMany, err).Error())
-				verbRes.Data = []any{datum}
-				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
-				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("validate deactivated %s failed", intdoment.GroupRuleAuthorizationsRepository().RepositoryName), err.Error()}
-				failed += 1
-				goto appendNewVerboseResponse
-			} else {
-				if value != nil {
-					verbRes.Data = []any{datum}
-					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-					verbRes.Status[0].StatusCode = []int{http.StatusBadRequest}
-					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusBadRequest), fmt.Sprintf("%s already deactivated", intdoment.GroupRuleAuthorizationsRepository().RepositoryName)}
-					failed += 1
-					goto appendNewVerboseResponse
-				}
-			}
-
-			if err := n.repo.RepoGroupRuleAuthorizationsDeleteOne(ctx, iamAuthorizationRule, datum); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsDeleteMany, err).Error())
+			if err := n.repo.RepoIamGroupAuthorizationsDeleteOne(ctx, iamAuthorizationRule, datum); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsDeleteMany, err).Error())
 				verbRes.Data = []any{datum}
 				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -172,19 +200,19 @@ func (n *service) ServiceGroupRuleAuthorizationsDeleteMany(
 	return http.StatusOK, verbres, nil
 }
 
-func (n *service) ServiceGroupRuleAuthorizationsInsertMany(
+func (n *service) ServiceIamGroupAuthorizationsInsertMany(
 	ctx context.Context,
 	iamCredential *intdoment.IamCredentials,
 	iamAuthorizationRules *intdoment.IamAuthorizationRules,
 	authContextDirectoryGroupID uuid.UUID,
 	verboseResponse bool,
-	data []*intdoment.GroupRuleAuthorization,
+	data []*intdoment.IamGroupAuthorizations,
 ) (int, *intdoment.MetadataModelVerbRes, error) {
 	verbres := new(intdoment.MetadataModelVerbRes)
 	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
 	if verboseResponse {
 		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsInsertMany, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsInsertMany, err).Error())
 			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
 		} else {
 			verbres.MetadataModelVerboseResponse.MetadataModel = d
@@ -197,41 +225,95 @@ func (n *service) ServiceGroupRuleAuthorizationsInsertMany(
 	for _, datum := range data {
 		verbRes := new(intdoment.MetadataModelVerboseResponseData)
 
-		if len(datum.DirectoryGroupsID) > 0 && len(datum.GroupAuthorizationRuleID) > 0 &&
-			len(datum.GroupAuthorizationRuleID[0].GroupAuthorizationRulesID) > 0 && len(datum.GroupAuthorizationRuleID[0].GroupAuthorizationRulesGroup) > 0 {
-			iamAuthorizationRule := new(intdoment.IamAuthorizationRule)
-			if datum.DirectoryGroupsID[0].String() != authContextDirectoryGroupID.String() {
-				if iar, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
-					ctx,
-					iamCredential,
-					authContextDirectoryGroupID,
-					[]*intdoment.IamGroupAuthorizationRule{
-						{
-							ID:        intdoment.AUTH_RULE_CREATE_OTHERS,
-							RuleGroup: intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATIONS,
-						},
-					},
-					iamAuthorizationRules,
-				); err != nil {
-					verbRes.Data = []any{datum}
-					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
-					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), "get iam auth rule failed", err.Error()}
-					failed += 1
-					goto appendNewVerboseResponse
-				} else if iar == nil {
-					verbRes.Data = []any{datum}
-					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-					verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
-					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
-					failed += 1
-					goto appendNewVerboseResponse
-				} else {
-					iamAuthorizationRule = iar[0]
-				}
+		if len(datum.IamCredentialsID) > 0 && len(datum.GroupRuleAuthorizationsID) > 0 {
+			groupRuleAuthorization, err := n.repo.RepoGroupRuleAuthorizationsFindActiveOneByID(ctx, datum.GroupRuleAuthorizationsID[0], nil)
+			if err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsInsertMany, err).Error())
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("get %s failed", intdoment.GroupRuleAuthorizationsRepository().RepositoryName), err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			}
+			if groupRuleAuthorization == nil {
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
+				failed += 1
+				goto appendNewVerboseResponse
+			}
 
-				if value, err := n.repo.RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx, authContextDirectoryGroupID, datum.DirectoryGroupsID[0]); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsInsertMany, err).Error())
+			if value, err := n.repo.RepoIamGroupAuthorizationsFindOneActiveRule(
+				ctx,
+				datum.IamCredentialsID[0],
+				groupRuleAuthorization.ID[0],
+				nil,
+			); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsInsertMany, err).Error())
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("validate existance %s failed", intdoment.IamGroupAuthorizationsRepository().RepositoryName), err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			} else {
+				if value != nil {
+					verbRes.Data = []any{datum}
+					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+					verbRes.Status[0].StatusCode = []int{http.StatusBadRequest}
+					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusBadRequest), fmt.Sprintf("%s already exists", intdoment.IamGroupAuthorizationsRepository().RepositoryName)}
+					failed += 1
+					goto appendNewVerboseResponse
+				}
+			}
+
+			if !strings.HasPrefix(groupRuleAuthorization.GroupAuthorizationRuleID[0].GroupAuthorizationRulesID[0], intdoment.AUTH_RULE_ASSIGN_PREFIX) {
+				groupRuleAuthorization.GroupAuthorizationRuleID[0].GroupAuthorizationRulesID[0] = intdoment.AUTH_RULE_ASSIGN_PREFIX + groupRuleAuthorization.GroupAuthorizationRuleID[0].GroupAuthorizationRulesID[0]
+			}
+
+			iamAuthorizationRule := new(intdoment.IamAuthorizationRule)
+			if iar, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+				ctx,
+				iamCredential,
+				authContextDirectoryGroupID,
+				[]*intdoment.IamGroupAuthorizationRule{
+					{
+						ID:        groupRuleAuthorization.GroupAuthorizationRuleID[0].GroupAuthorizationRulesID[0],
+						RuleGroup: groupRuleAuthorization.GroupAuthorizationRuleID[0].GroupAuthorizationRulesGroup[0],
+					},
+					{
+						ID:        intdoment.AUTH_RULE_ASSIGN_ALL,
+						RuleGroup: groupRuleAuthorization.GroupAuthorizationRuleID[0].GroupAuthorizationRulesGroup[0],
+					},
+					{
+						ID:        intdoment.AUTH_RULE_CREATE,
+						RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
+					},
+				},
+				iamAuthorizationRules,
+			); err != nil {
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), "get iam auth rule failed", err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			} else if iar == nil {
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
+				failed += 1
+				goto appendNewVerboseResponse
+			} else {
+				iamAuthorizationRule = iar[0]
+			}
+
+			if authContextDirectoryGroupID.String() != groupRuleAuthorization.DirectoryGroupsID[0].String() {
+				if value, err := n.repo.RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx, authContextDirectoryGroupID, groupRuleAuthorization.DirectoryGroupsID[0]); err != nil {
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsInsertMany, err).Error())
 					verbRes.Data = []any{datum}
 					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -248,77 +330,10 @@ func (n *service) ServiceGroupRuleAuthorizationsInsertMany(
 						goto appendNewVerboseResponse
 					}
 				}
-
-				if value, err := n.repo.RepoGroupRuleAuthorizationsFindOneActiveRule(ctx, authContextDirectoryGroupID, datum.GroupAuthorizationRuleID[0].GroupAuthorizationRulesID[0], datum.GroupAuthorizationRuleID[0].GroupAuthorizationRulesGroup[0], nil); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsInsertMany, err).Error())
-					verbRes.Data = []any{datum}
-					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
-					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("validate %s failed", intdoment.GroupRuleAuthorizationsRepository().RepositoryName), err.Error()}
-					failed += 1
-					goto appendNewVerboseResponse
-				} else {
-					if value == nil {
-						verbRes.Data = []any{datum}
-						verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-						verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
-						verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
-						failed += 1
-						goto appendNewVerboseResponse
-					}
-				}
-			} else {
-				if iar, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
-					ctx,
-					iamCredential,
-					authContextDirectoryGroupID,
-					[]*intdoment.IamGroupAuthorizationRule{
-						{
-							ID:        intdoment.AUTH_RULE_CREATE,
-							RuleGroup: intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATIONS,
-						},
-					},
-					iamAuthorizationRules,
-				); err != nil {
-					verbRes.Data = []any{datum}
-					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
-					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), "get iam auth rule failed", err.Error()}
-					failed += 1
-					goto appendNewVerboseResponse
-				} else if iar == nil {
-					verbRes.Data = []any{datum}
-					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-					verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
-					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
-					failed += 1
-					goto appendNewVerboseResponse
-				} else {
-					iamAuthorizationRule = iar[0]
-				}
 			}
 
-			if value, err := n.repo.RepoGroupRuleAuthorizationsFindOneActiveRule(ctx, datum.DirectoryGroupsID[0], datum.GroupAuthorizationRuleID[0].GroupAuthorizationRulesID[0], datum.GroupAuthorizationRuleID[0].GroupAuthorizationRulesGroup[0], nil); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsInsertMany, err).Error())
-				verbRes.Data = []any{datum}
-				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
-				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("validate existance %s failed", intdoment.GroupRuleAuthorizationsRepository().RepositoryName), err.Error()}
-				failed += 1
-				goto appendNewVerboseResponse
-			} else {
-				if value != nil {
-					verbRes.Data = []any{datum}
-					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
-					verbRes.Status[0].StatusCode = []int{http.StatusBadRequest}
-					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusBadRequest), fmt.Sprintf("%s already exists", intdoment.GroupRuleAuthorizationsRepository().RepositoryName)}
-					failed += 1
-					goto appendNewVerboseResponse
-				}
-			}
-
-			if value, err := n.repo.RepoGroupRuleAuthorizationsInsertOne(ctx, iamAuthorizationRule, datum, nil); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsInsertMany, err).Error())
+			if value, err := n.repo.RepoIamGroupAuthorizationsInsertOne(ctx, iamAuthorizationRule, datum, nil); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsInsertMany, err).Error())
 				verbRes.Data = []any{datum}
 				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -344,7 +359,7 @@ func (n *service) ServiceGroupRuleAuthorizationsInsertMany(
 		verbres.MetadataModelVerboseResponse.Data = append(verbres.MetadataModelVerboseResponse.Data, verbRes)
 	}
 
-	verbres.Message = fmt.Sprintf("Create %[1]s: %[2]d/%[4]d successful and %[3]d/%[4]d failed", intdoment.GroupRuleAuthorizationsRepository().RepositoryName, successful, failed, len(data))
+	verbres.Message = fmt.Sprintf("Create %[1]s: %[2]d/%[4]d successful and %[3]d/%[4]d failed", intdoment.IamGroupAuthorizationsRepository().RepositoryName, successful, failed, len(data))
 
 	return http.StatusOK, verbres, nil
 }
@@ -365,7 +380,7 @@ func (n *service) ServiceIamGroupAuthorizationsGetAuthorized(
 	)
 }
 
-func (n *service) ServiceGetGroupRuleAuthorizationsPageHtml(
+func (n *service) ServiceGetIamGroupAuthorizationsPageHtml(
 	ctx context.Context,
 	websiteTemplate intdomint.WebsiteTemplates,
 	openid intdomint.OpenID,
@@ -381,26 +396,26 @@ func (n *service) ServiceGetGroupRuleAuthorizationsPageHtml(
 		switch partialName {
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES:
 			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
 				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 				}
 			}
 
-			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_RULE_AUTHORIZATIONS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_GROUP_AUTHORIZATIONS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID:
-			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_RULE_AUTHORIZATIONS_PAGE); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_GROUP_AUTHORIZATIONS_PAGE); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
 				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 				}
 			}
@@ -409,45 +424,45 @@ func (n *service) ServiceGetGroupRuleAuthorizationsPageHtml(
 		}
 	} else {
 		if baseTemplate, routesData, err := intlib.WebsiteGetRoutesLayout(ctx, openid, websiteTemplate, iamCredential, authContextDirectoryGroupID); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		} else {
 			if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 			data, err = intlibjson.SetValueInObject(data, fmt.Sprintf("%s.%s", intdoment.WEBSITE_PATH_ROUTES, intdoment.WEBSITE_PATH_KEY_DATA), routesData)
 			if err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 			}
 		}
 
 		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 
-		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_RULE_AUTHORIZATIONS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_GROUP_AUTHORIZATIONS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 	}
 
 	if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_LIB_PAGES_ERROR, intdoment.WEBSITE_HTMLTMPL_PRTL_ERROR); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 	}
 
 	if htmlContent, err := websiteTemplate.WebstieTemplateGetHtmlContext(ctx, data); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupRuleAuthorizationsPageHtml, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamGroupAuthorizationsPageHtml, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 	} else {
 		return &htmlContent, nil
 	}
 }
 
-func (n *service) ServiceGroupRuleAuthorizationsSearch(
+func (n *service) ServiceIamGroupAuthorizationsSearch(
 	ctx context.Context,
 	mmsearch *intdoment.MetadataModelSearch,
 	repo intdomint.IamRepository,
@@ -459,7 +474,7 @@ func (n *service) ServiceGroupRuleAuthorizationsSearch(
 	skipIfDataExtraction bool,
 	whereAfterJoin bool,
 ) (*intdoment.MetadataModelSearchResults, error) {
-	if value, err := n.repo.RepoGroupRuleAuthorizationsSearch(
+	if value, err := n.repo.RepoIamGroupAuthorizationsSearch(
 		ctx,
 		mmsearch,
 		repo,
@@ -471,16 +486,16 @@ func (n *service) ServiceGroupRuleAuthorizationsSearch(
 		skipIfDataExtraction,
 		whereAfterJoin,
 	); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsSearch, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsSearch, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	} else {
 		return value, nil
 	}
 }
 
-func (n *service) ServiceGroupRuleAuthorizationsGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error) {
-	if value, err := metadataModelRetrieve.GroupRuleAuthorizationsGetMetadataModel(ctx, 0, targetJoinDepth, nil); err != nil {
-		n.logger.Log(ctx, slog.LevelWarn+1, intlib.FunctionNameAndError(n.ServiceGroupRuleAuthorizationsGetMetadataModel, err).Error())
+func (n *service) ServiceIamGroupAuthorizationsGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error) {
+	if value, err := metadataModelRetrieve.IamGroupAuthorizationsGetMetadataModel(ctx, 0, targetJoinDepth, nil); err != nil {
+		n.logger.Log(ctx, slog.LevelWarn+1, intlib.FunctionNameAndError(n.ServiceIamGroupAuthorizationsGetMetadataModel, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	} else {
 		return value, nil
@@ -525,6 +540,6 @@ func NewService(webService *inthttp.WebService) (*service, error) {
 }
 
 type service struct {
-	repo   intdomint.RouteGroupRuleAuthorizationsRepository
+	repo   intdomint.RouteIamGroupAuthorizationsRepository
 	logger intdomint.Logger
 }

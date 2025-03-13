@@ -24,7 +24,7 @@ func RedirectRouter(webService *inthttp.WebService) *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/login")})
+		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 
 		s := initWebsiteService(ctx, webService)
 		if s == nil {
@@ -96,7 +96,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 	acceptedHTMLPartialNames := []string{intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID}
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/")})
+		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 		s := initWebsiteService(ctx, webService)
 		if s == nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)

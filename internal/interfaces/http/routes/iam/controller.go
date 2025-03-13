@@ -20,7 +20,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("iam/login")})
+		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 
 		s := initApiCoreService(ctx, webService)
 		if s == nil {
@@ -75,7 +75,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 		authedRoutes.Use(intlib.IamAuthenticationMiddleware(webService.Logger, webService.Env, webService.OpenID, webService.IamCookie, webService.PostgresRepository))
 
 		authedRoutes.Get("/logout", func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("iam/logout")})
+			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 
 			authedIamCredential, err := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
 			if err != nil {

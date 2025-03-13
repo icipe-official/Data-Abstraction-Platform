@@ -5,10 +5,25 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/httplog/v2"
 )
+
+const (
+	LOG_ACTION_CREATE string = "create"
+	LOG_ACTION_UPDATE string = "update"
+	LOG_ACTION_DELETE string = "delete"
+)
+
+func LogSectionName(path string, env *EnvVariables) string {
+	return strings.Replace(path, env.env[ENV_WEB_SERVICE_BASE_PATH], "/", 1)
+}
+
+func LogAction(action string, repoName string) string {
+	return "action " + action + " " + repoName + " executed"
+}
 
 const LogSectionAttrKey string = "section"
 

@@ -105,6 +105,26 @@ func (n *MetadataModelRetrieve) IamGroupAuthorizationsGetMetadataModel(ctx conte
 				}
 			}
 		}
+
+		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.IamGroupAuthorizationsRepository().RepositoryName, intdoment.IamGroupAuthorizationsIDsRepository().RepositoryName)]; !ok || !skipMMJoin {
+			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.IamGroupAuthorizationsRepository().RepositoryName, intdoment.IamGroupAuthorizationsIDsRepository().RepositoryName)
+			if childMetadataModel, err := n.DefaultAuthorizationIDsGetMetadataModel(
+				ctx,
+				intdoment.IamGroupAuthorizationsIDsRepository().RepositoryName,
+				currentJoinDepth+1,
+				newTargetJoinDepth,
+				nil,
+				intdoment.IamGroupAuthorizationsIDsRepository().CreationIamGroupAuthorizationsID,
+				intdoment.IamGroupAuthorizationsIDsRepository().DeactivationIamGroupAuthorizationsID,
+			); err != nil {
+				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.IamGroupAuthorizationsGetMetadataModel))
+			} else {
+				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(parentMetadataModel, childMetadataModel, "", false, newChildMetadataModelfgSuffix, nil)
+				if err != nil {
+					return nil, intlib.FunctionNameAndError(n.IamGroupAuthorizationsGetMetadataModel, err)
+				}
+			}
+		}
 	}
 
 	return parentMetadataModel, nil

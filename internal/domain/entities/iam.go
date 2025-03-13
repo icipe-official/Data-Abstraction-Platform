@@ -32,6 +32,8 @@ const (
 	AUTH_RULE_GROUP_STORAGE_DRIVES                   string = "storage_drives"
 	AUTH_RULE_GROUP_STORAGE_FILES                    string = "storage_files"
 
+	AUTH_RULE_ASSIGN_PREFIX string = "assign_"
+
 	AUTH_RULE_CREATE                 string = "create"
 	AUTH_RULE_ASSIGN_CREATE          string = "assign_create"
 	AUTH_RULE_CREATE_OTHERS          string = "create_others"

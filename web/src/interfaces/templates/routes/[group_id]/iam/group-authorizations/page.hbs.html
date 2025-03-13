@@ -1,0 +1,6 @@
+{{#if Context.Error.Message }} {{> error Context.Error }} {{else}}
+<head>
+	<script type="module" src="./page.ts"></script>
+</head>
+<iam-group-authorizations class="max-w-[99%] max-h-[99%] pt-1 pb-1"></iam-group-authorizations>
+{{/if}}

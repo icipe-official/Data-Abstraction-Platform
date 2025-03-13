@@ -131,8 +131,9 @@ export class MetadataModelSearchController implements ReactiveController, IMetad
 		skipIfDataExtraction: boolean | undefined,
 		signal: AbortSignal | null | undefined
 	) {
-		let metadataModelSearch: Entities.MetadataModel.ISearch = {
-			metadata_model: this.searchmetadatamodel
+		let metadataModelSearch: Entities.MetadataModel.ISearch = {}
+		if (this.searchmetadatamodel && Object.keys(this.searchmetadatamodel).length > 0) {
+			metadataModelSearch.metadata_model = this.searchmetadatamodel
 		}
 		if (Array.isArray(queryConditions) && queryConditions.length > 0) {
 			metadataModelSearch.query_conditions = queryConditions
@@ -167,6 +168,9 @@ export class MetadataModelSearchController implements ReactiveController, IMetad
 			this.searchresults = structuredClone(fetchData)
 			if (!Array.isArray(this.searchresults.data)) {
 				this.searchresults.data = []
+			}
+			if (this.searchresults.metadata_model) {
+				this.searchmetadatamodel = this.searchresults.metadata_model
 			}
 			this._host.requestUpdate()
 		} else {

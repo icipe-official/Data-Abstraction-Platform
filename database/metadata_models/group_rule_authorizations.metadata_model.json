@@ -13,7 +13,7 @@
                 "$FIELD_UI": "text",
                 "$FIELD_GROUP_IS_PRIMARY_KEY": true,
                 "$FIELD_GROUP_INPUT_DISABLE": true,
-                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorization",
+                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorizations",
                 "$DATABASE_FIELD_COLUMN_NAME": "id"
             },
             "group_authorization_rules_id": {
@@ -30,7 +30,7 @@
                             "$FIELD_UI": "text",
                             "$FIELD_GROUP_INPUT_DISABLE": true,
                             "$DATABASE_FIELD_COLUMN_NAME": "group_authorization_rules_id",
-                            "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorization"
+                            "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorizations"
                         },
                         "group_authorization_rules_group": {
                             "$FIELD_GROUP_KEY": "$.$GROUP_FIELDS[*].group_authorization_rules_id.$GROUP_FIELDS[*].group_authorization_rules_group",
@@ -38,7 +38,7 @@
                             "$FIELD_GROUP_MAX_ENTRIES": 1,
                             "$FIELD_DATATYPE": "text",
                             "$FIELD_UI": "text",
-                            "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorization",
+                            "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorizations",
                             "$DATABASE_FIELD_COLUMN_NAME": "group_authorization_rules_group",
                             "$FIELD_GROUP_INPUT_DISABLE": true
                         }
@@ -48,8 +48,8 @@
                     "group_authorization_rules_id",
                     "group_authorization_rules_group"
                 ],
-                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorization",
-                "$DATABASE_TABLE_COLLECTION_NAME": "group_rule_authorization"
+                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorizations",
+                "$DATABASE_TABLE_COLLECTION_NAME": "group_rule_authorizations"
             },
             "created_on": {
                 "$FIELD_GROUP_KEY": "$.$GROUP_FIELDS[*].created_on",
@@ -57,7 +57,7 @@
                 "$FIELD_GROUP_MAX_ENTRIES": 1,
                 "$FIELD_DATATYPE": "timestamp",
                 "$FIELD_UI": "datetime",
-                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorization",
+                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorizations",
                 "$DATABASE_FIELD_COLUMN_NAME": "created_on",
                 "$FIELD_DATETIME_FORMAT": "yyyy-mm-dd hh:mm",
                 "$FIELD_GROUP_INPUT_DISABLE": true
@@ -69,7 +69,7 @@
                 "$FIELD_DATATYPE": "timestamp",
                 "$FIELD_UI": "datetime",
                 "$FIELD_GROUP_INPUT_DISABLE": true,
-                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorization",
+                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorizations",
                 "$DATABASE_FIELD_COLUMN_NAME": "deactivated_on",
                 "$FIELD_DATETIME_FORMAT": "yyyy-mm-dd hh:mm"
             },
@@ -80,7 +80,7 @@
                 "$FIELD_DATATYPE": "text",
                 "$FIELD_UI": "text",
                 "$DATABASE_FIELD_COLUMN_NAME": "directory_groups_id",
-                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorization",
+                "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorizations",
                 "$FIELD_GROUP_INPUT_DISABLE": true
             }
         }
@@ -92,6 +92,6 @@
         "created_on",
         "deactivated_on"
     ],
-    "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorization",
-    "$DATABASE_TABLE_COLLECTION_NAME": "group_rule_authorization"
+    "$DATABASE_TABLE_COLLECTION_UID": "group_rule_authorizations",
+    "$DATABASE_TABLE_COLLECTION_NAME": "group_rule_authorizations"
 }

@@ -24,7 +24,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 	acceptedHTMLPartialNames := []string{intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID}
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/directory/groups")})
+		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 		s := initWebsiteService(ctx, webService)
 		if s == nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
@@ -92,7 +92,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 
 	router.Route("/search", func(searchRouter chi.Router) {
 		searchRouter.Post("/", func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/directory/groups/search")})
+			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 
 			authedIamCredential, err := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
 			if err != nil {
@@ -185,7 +185,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 		})
 
 		searchRouter.Get("/metadata-model", func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("/directory/groups/search/metadata-model")})
+			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 
 			authedIamCredential, err := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
 			if err != nil {

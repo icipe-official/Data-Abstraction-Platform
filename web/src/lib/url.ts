@@ -23,6 +23,8 @@ namespace Url {
 			Groups: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/directory/groups`
 		},
 		Iam: {
+			Credentials: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/iam/credentials`,
+			GroupRuleAuthorizations: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/iam/group-authorizations`,
 			Logout: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/iam/logout`
 		},
 		MetadataModel: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/metadata-model`,
@@ -48,6 +50,8 @@ namespace Url {
 			Url: string
 		}
 		Iam: {
+			GroupRuleAuthorizations: string
+			Credentials: string
 			Logout: string
 		}
 		MetadataModel: string
@@ -355,7 +359,7 @@ namespace Url {
 		description: "Create and manage authorization rules that grant users with credentials the ability to perform certain activities in the context of a group within the platform. NB>Requires group to be first granted said role in 'Group Rule Authorizations'.",
 		navinfo: [
 			{
-				path: '/iam/group/authorizations',
+				path: '/iam/group-authorizations',
 				title: 'Iam Group Authorizations',
 				icon: html`
 					<!--mdi:security-account source: https://icon-sets.iconify.design-->
@@ -366,7 +370,7 @@ namespace Url {
 				description: "Create and manage authorization rules that grant users with credentials the ability to perform certain activities in the context of a group within the platform. NB>Requires group to be first granted said role in 'Group Rule Authorizations'."
 			},
 			{
-				path: `/iam/group/authorizations?${SearchParams.ACTION}=${Action.CREATE}`,
+				path: `/iam/group-authorizations?${SearchParams.ACTION}=${Action.CREATE}`,
 				title: 'Create Iam Group Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -381,7 +385,7 @@ namespace Url {
 				description: 'Create new iam-group-authorizations.'
 			},
 			{
-				path: `/iam/group/authorizations?${SearchParams.ACTION}=${Action.RETRIEVE}`,
+				path: `/iam/group-authorizations?${SearchParams.ACTION}=${Action.RETRIEVE}`,
 				title: 'Search Iam Group Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">
@@ -398,7 +402,7 @@ namespace Url {
 				description: 'Search for iam-group-authorizations information.'
 			},
 			{
-				path: `/iam/group/authorizations?${SearchParams.ACTION}=${Action.DELETE}`,
+				path: `/iam/group-authorizations?${SearchParams.ACTION}=${Action.DELETE}`,
 				title: 'Delete Iam Group Authorizations',
 				icon: html`
 					<div class="flex gap-x-1 self-center">

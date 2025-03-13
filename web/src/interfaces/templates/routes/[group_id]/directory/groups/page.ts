@@ -15,6 +15,7 @@ import { Task } from '@lit/task'
 import MetadataModel from '@lib/metadata_model'
 import Lib from '@lib/lib'
 import Entities from '@domentities'
+import MetadataModelUtils from '@lib/metadata_model_utils'
 
 @customElement('directory-groups-page')
 class Page extends LitElement {
@@ -140,7 +141,7 @@ class Page extends LitElement {
 		try {
 			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 			await this._metadataModelsSearch.Search(
-				Object.keys(newQc).length > 0 ? [...this.queryConditions, newQc] : this.queryConditions,
+				Object.keys(newQc).length > 0 ? MetadataModelUtils.InsertNewQueryConditionToQueryConditions(newQc, this.queryConditions)  : this.queryConditions,
 				this._appContext.appcontext?.iamdirectorygroupid,
 				this._appContext.GetCurrentdirectorygroupid(),
 				this._appContext.appcontext?.targetjoindepth || 1,

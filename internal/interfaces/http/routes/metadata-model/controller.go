@@ -21,7 +21,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 	router.Use(intlib.IamAuthenticationMiddleware(webService.Logger, webService.Env, webService.OpenID, webService.IamCookie, webService.PostgresRepository))
 
 	router.Get("/{metadata_model_action_id}/{directory_group_id}", func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue("metadata-model")})
+		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 
 		metadataModelRepoName := chi.URLParam(r, "metadata_model_action_id")
 		if len(metadataModelRepoName) == 0 {

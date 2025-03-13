@@ -27,9 +27,9 @@ const (
 
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_GROUP_AUTHORIZATIONS_PAGE string = "routes/[group_id]/iam/group-authorizations/page"
 
-	WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_GROUP_AUTHORIZATION_RULES_PAGE string = "routes/[group_id]/group/authorization-rules/page"
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE string = "routes/[group_id]/group/authorization-rules/page"
 
-	WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_GROUP_RULE_AUTHORIZATIONS_PAGE string = "routes/[group_id]/group/rule-authorizations/page"
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_RULE_AUTHORIZATIONS_PAGE string = "routes/[group_id]/group/rule-authorizations/page"
 
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT string = "routes/[group_id]/layout"
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_PAGE   string = "routes/[group_id]/page"

@@ -78,12 +78,12 @@ func (n *service) ServiceGetGroupAuthorizationRulesPageHtml(
 				}
 			}
 
-			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_GROUP_AUTHORIZATION_RULES_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
 				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID:
-			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_GROUP_AUTHORIZATION_RULES_PAGE); err != nil {
+			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE); err != nil {
 				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
@@ -116,7 +116,7 @@ func (n *service) ServiceGetGroupAuthorizationRulesPageHtml(
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 
-		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_GROUP_AUTHORIZATION_RULES_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
 			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}

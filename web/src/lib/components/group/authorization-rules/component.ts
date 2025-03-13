@@ -14,6 +14,8 @@ import Url from '@lib/url'
 import { Task } from '@lit/task'
 import MetadataModel from '@lib/metadata_model'
 import Entities from '@domentities'
+import MetadataModelUtils from '@lib/metadata_model_utils'
+import Log from '@lib/log'
 
 @customElement('group-authorization-rules')
 class Component extends LitElement {
@@ -53,12 +55,30 @@ class Component extends LitElement {
 
 	private _getMetatadaModelsMmTask = new Task(this, {
 		task: async () => {
+			if (!this._showQueryPanel && !this._fullTextSearchQuery && !this._dateOfCreationFrom && !this._dateOfCreationTo && !this._dateOfLastUpdatedOnFrom && !this._dateOfLastUpdatedOnTo) {
+				return
+			}
+			Log.Log(Log.Level.DEBUG, this.localName, '_getMetatadaModelsMmTask')
+
 			if (Object.keys(this._metadataModelsSearch.searchmetadatamodel).length === 0 || !this._metadataModelsSearch.searchmetadatamodel) {
-				await this._metadataModelsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, this._appContext.appcontext?.targetjoindepth || 1, undefined)
-				await import('@lib/components/metadata-model/view/query-panel/component')
+				await this._metadataModelsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, 0, undefined)
 			}
 		},
 		args: () => [this._showQueryPanel, this._fullTextSearchQuery, this._dateOfCreationFrom, this._dateOfCreationTo, this._dateOfLastUpdatedOnFrom, this._dateOfLastUpdatedOnTo]
+	})
+
+	private _mmQueryPanelImported = false
+	private _importMMQueryPanel = new Task(this, {
+		task: async ([showQueryPanel]) => {
+			if (this._mmQueryPanelImported || !showQueryPanel) {
+				return
+			}
+			Log.Log(Log.Level.DEBUG, this.localName, '_importMMQueryPanel')
+
+			await import('@lib/components/metadata-model/view/query-panel/component')
+			this._mmQueryPanelImported = true
+		},
+		args: () => [this._showQueryPanel]
 	})
 
 	private async _handleDatabaseSearch() {
@@ -141,7 +161,7 @@ class Component extends LitElement {
 		try {
 			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 			await this._metadataModelsSearch.Search(
-				Object.keys(newQc).length > 0 ? [...this.queryConditions, newQc] : this.queryConditions,
+				Object.keys(newQc).length > 0 ? MetadataModelUtils.InsertNewQueryConditionToQueryConditions(newQc, this.queryConditions) : this.queryConditions,
 				this._appContext.appcontext?.iamdirectorygroupid,
 				this._appContext.GetCurrentdirectorygroupid(),
 				this._appContext.appcontext?.targetjoindepth || 1,
@@ -166,11 +186,18 @@ class Component extends LitElement {
 		}
 	}
 
+	private _mmTableImported = false
 	private _importMMTableTask = new Task(this, {
-		task: async () => {
+		task: async ([mmsearchResultsData]) => {
+			if (this._mmTableImported || !mmsearchResultsData || mmsearchResultsData.length === 0) {
+				return
+			}
+			Log.Log(Log.Level.DEBUG, this.localName, '_importMMTableTask')
+
 			await import('@lib/components/metadata-model/view/table/component')
+			this._mmQueryPanelImported = true
 		},
-		args: () => []
+		args: () => [this._metadataModelsSearch.searchresults.data]
 	})
 
 	@state() private _fullTextSearchQuery: string = ''
@@ -306,16 +333,37 @@ class Component extends LitElement {
 								return html`
 									<section class="flex-[2] flex flex-col overflow-hidden gap-y-2">
 										<div class="flex-[9] flex overflow-hidden shadow-inner shadow-gray-800 rounded-md">
-											<metadata-model-view-query-panel
-												.metadatamodel=${this._metadataModelsSearch.searchmetadatamodel}
-												.queryconditions=${this.queryConditions}
-												@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
-													this._metadataModelsSearch.UpdateMetadatamodel(e.detail.value)
-												}}
-												@metadata-model-view-query-panel:updatequeryconditions=${(e: CustomEvent) => {
-													this.queryConditions = structuredClone(e.detail.value)
-												}}
-											></metadata-model-view-query-panel>
+											${this._importMMQueryPanel.render({
+												pending: () => html`
+													<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
+														<div class="flex">
+															<span class="loading loading-ball loading-sm text-accent"></span>
+															<span class="loading loading-ball loading-md text-secondary"></span>
+															<span class="loading loading-ball loading-lg text-primary"></span>
+														</div>
+													</div>
+												`,
+												complete: () => html`
+													<metadata-model-view-query-panel
+														.metadatamodel=${this._metadataModelsSearch.searchmetadatamodel}
+														.queryconditions=${this.queryConditions}
+														@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
+															this._metadataModelsSearch.UpdateMetadatamodel(e.detail.value)
+														}}
+														@metadata-model-view-query-panel:updatequeryconditions=${(e: CustomEvent) => {
+															this.queryConditions = structuredClone(e.detail.value)
+														}}
+													></metadata-model-view-query-panel>
+												`,
+												error: (e) => {
+													console.error(e)
+													return html`
+														<div class="flex-[2] flex flex-col justify-center items-center shadow-inner shadow-gray-800 rounded-md p-1">
+															<span class="w-fit text-error font-bold">Error: Could not get metadata-model query panel component.</span>
+														</div>
+													`
+												}
+											})}
 										</div>
 										<div class="join">
 											${(() => {
@@ -454,7 +502,7 @@ class Component extends LitElement {
 											if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0) {
 												return nothing
 											}
-											return html` <div class="text-xl font-bold break-words text-center">View and update the tags of various roles that can be assigned to groups and therefore users with credentials in the platform.</div> `
+											return html` <div class="text-xl font-bold break-words text-center">${Url.groupAuthorizationRulesNavigation.description}</div> `
 										})()}
 										<div class="flex justify-evenly flex-wrap gap-8">
 											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showQueryPanel = true)}>

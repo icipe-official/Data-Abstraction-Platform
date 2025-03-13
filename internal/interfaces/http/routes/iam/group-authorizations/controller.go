@@ -1,4 +1,4 @@
-package ruleauthorizations
+package groupauthorizations
 
 import (
 	"context"
@@ -21,6 +21,8 @@ import (
 func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 	router := chi.NewRouter()
 
+	router.Use(intlib.IamAuthenticationMiddleware(webService.Logger, webService.Env, webService.OpenID, webService.IamCookie, webService.PostgresRepository))
+
 	router.Post("/delete", func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 
@@ -30,7 +32,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			return
 		}
 
-		data := make([]*intdoment.GroupRuleAuthorization, 0)
+		data := make([]*intdoment.IamGroupAuthorizations, 0)
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
 			return
@@ -60,7 +62,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			authContextDirectoryGroupID = value
 		}
 
-		if code, verbres, err := s.ServiceGroupRuleAuthorizationsDeleteMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, data); err != nil {
+		if code, verbres, err := s.ServiceIamGroupAuthorizationsDeleteMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, data); err != nil {
 			intlib.SendJsonErrorResponse(err, w)
 			return
 		} else {
@@ -68,7 +70,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			webService.Logger.Log(
 				ctx,
 				slog.LevelInfo+1,
-				intlib.LogAction(intlib.LOG_ACTION_DELETE, intdoment.GroupRuleAuthorizationsRepository().RepositoryName),
+				intlib.LogAction(intlib.LOG_ACTION_DELETE, intdoment.IamGroupAuthorizationsRepository().RepositoryName),
 				ctx.Value(intlib.LOG_ATTR_CTX_KEY),
 				"authenicated iam credential",
 				intlib.JsonStringifyMust(authedIamCredential),
@@ -87,7 +89,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			return
 		}
 
-		data := make([]*intdoment.GroupRuleAuthorization, 0)
+		data := make([]*intdoment.IamGroupAuthorizations, 0)
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
 			return
@@ -117,7 +119,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			authContextDirectoryGroupID = value
 		}
 
-		if code, verbres, err := s.ServiceGroupRuleAuthorizationsInsertMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, data); err != nil {
+		if code, verbres, err := s.ServiceIamGroupAuthorizationsInsertMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, data); err != nil {
 			intlib.SendJsonErrorResponse(err, w)
 			return
 		} else {
@@ -125,7 +127,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			webService.Logger.Log(
 				ctx,
 				slog.LevelInfo+1,
-				intlib.LogAction(intlib.LOG_ACTION_CREATE, intdoment.GroupRuleAuthorizationsRepository().RepositoryName),
+				intlib.LogAction(intlib.LOG_ACTION_CREATE, intdoment.IamGroupAuthorizationsRepository().RepositoryName),
 				ctx.Value(intlib.LOG_ATTR_CTX_KEY),
 				"authenicated iam credential",
 				intlib.JsonStringifyMust(authedIamCredential),
@@ -172,7 +174,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 
 			mmSearchModelWasEmpty := false
 			if mmSearch.MetadataModel == nil {
-				if value, err := s.ServiceGroupRuleAuthorizationsGetMetadataModel(
+				if value, err := s.ServiceIamGroupAuthorizationsGetMetadataModel(
 					ctx,
 					intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
 					1,
@@ -196,7 +198,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			skipIfFGDisabled := intlib.UrlSearchParamGetBool(r, intlib.URL_SEARCH_PARAM_SKIP_IF_FG_DISABLED, true)
 			whereAfterJoin := intlib.UrlSearchParamGetBool(r, intlib.URL_SEARCH_PARAM_WHERE_AFTER_JOIN, false)
 
-			if searchResults, err := s.ServiceGroupRuleAuthorizationsSearch(
+			if searchResults, err := s.ServiceIamGroupAuthorizationsSearch(
 				ctx,
 				mmSearch,
 				webService.PostgresRepository,
@@ -219,7 +221,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 					ctx,
 					slog.LevelInfo+1,
 					fmt.Sprintln(
-						intdoment.GroupRuleAuthorizationsRepository().RepositoryName,
+						intdoment.IamGroupAuthorizationsRepository().RepositoryName,
 						"searched successfully",
 					),
 					ctx.Value(intlib.LOG_ATTR_CTX_KEY),
@@ -267,7 +269,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 				targetJoinDepth = 1
 			}
 
-			if value, err := s.ServiceGroupRuleAuthorizationsGetMetadataModel(
+			if value, err := s.ServiceIamGroupAuthorizationsGetMetadataModel(
 				ctx,
 				intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
 				targetJoinDepth,
@@ -280,7 +282,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 					ctx,
 					slog.LevelInfo+1,
 					fmt.Sprintln(
-						intdoment.GroupRuleAuthorizationsRepository().RepositoryName,
+						intdoment.IamGroupAuthorizationsRepository().RepositoryName,
 						"metadata-model successfully retrieved",
 					),
 					ctx.Value(intlib.LOG_ATTR_CTX_KEY),
@@ -340,7 +342,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 			[]*intdoment.IamGroupAuthorizationRule{
 				{
 					ID:        "",
-					RuleGroup: intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATIONS,
+					RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_GROUP_AUTHORIZATIONS,
 				},
 			},
 			nil,
@@ -353,7 +355,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 			}
 		}
 
-		if htmlContent, err := s.ServiceGetGroupRuleAuthorizationsPageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential, authContextDirectoryGroupID, data); err != nil {
+		if htmlContent, err := s.ServiceGetIamGroupAuthorizationsPageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential, authContextDirectoryGroupID, data); err != nil {
 			intlib.SendJsonErrorResponse(err, w)
 		} else {
 			intlib.WebsiteSendHTMLResponse(htmlContent, w)
@@ -363,7 +365,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 	return router
 }
 
-func initWebsiteService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteGroupRuleAuthorizationsWebsiteService {
+func initWebsiteService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteIamGroupAuthorizationsWebsiteService {
 	if value, err := NewService(webService); err != nil {
 		errmsg := fmt.Errorf("initialize website service failed, error: %v", err)
 		if value.logger != nil {
@@ -378,7 +380,7 @@ func initWebsiteService(ctx context.Context, webService *inthttp.WebService) int
 	}
 }
 
-func initApiCoreService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteGroupRuleAuthorizationsApiCoreService {
+func initApiCoreService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteIamGroupAuthorizationsApiCoreService {
 	if value, err := NewService(webService); err != nil {
 		errmsg := fmt.Errorf("initialize api core service failed, error: %v", err)
 		if value.logger != nil {
