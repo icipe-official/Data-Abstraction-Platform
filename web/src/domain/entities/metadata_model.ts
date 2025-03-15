@@ -16,9 +16,19 @@ namespace _MetadataModel {
 		data?: any[]
 	}
 
-	export function GetToastFromJsonVerboseResponse(data: any) {
+	export interface IVerboseResponse {
+		message?: string
+		metadata_model_verbose_response?: {
+			metadata_model?: any
+			data?: any[]
+		}
+		successful?: number
+		failed?: number
+	}
+
+	export function GetToastFromJsonVerboseResponse(data: IVerboseResponse) {
 		let toastdata: any = {}
-		if (typeof data.message !== 'undefined') {
+		if (typeof data.message === 'string') {
 			toastdata.toastMessage = data.message
 		}
 		if (data.metadata_model_verbose_response) {

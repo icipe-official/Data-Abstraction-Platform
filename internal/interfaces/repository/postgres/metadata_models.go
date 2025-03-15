@@ -2,10 +2,12 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/brunoga/deep"
@@ -14,7 +16,549 @@ import (
 	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
+	"github.com/jackc/pgx/v5"
 )
+
+func (n *PostrgresRepository) RepoMetadataModelsDeleteOne(
+	ctx context.Context,
+	iamAuthRule *intdoment.IamAuthorizationRule,
+	datum *intdoment.MetadataModels,
+) error {
+	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return intlib.FunctionNameAndError(n.RepoMetadataModelsDeleteOne, fmt.Errorf("start transaction to delete %s failed, error: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+	}
+
+	query := fmt.Sprintf(
+		"DELETE FROM %[1]s WHERE %[2]s = $1;",
+		intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName, //1
+		intdoment.MetadataModelsAuthorizationIDsRepository().ID,             //2
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsDeleteOne))
+
+	if _, err := transaction.Exec(ctx, query, datum.ID[0]); err == nil {
+		query := fmt.Sprintf(
+			"DELETE FROM %[1]s WHERE %[2]s = $1;",
+			intdoment.MetadataModelsRepository().RepositoryName, //1
+			intdoment.MetadataModelsRepository().ID,             //2
+		)
+		n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsDeleteOne))
+		if _, err := transaction.Exec(ctx, query, datum.ID[0]); err == nil {
+			if err := transaction.Commit(ctx); err != nil {
+				return intlib.FunctionNameAndError(n.RepoMetadataModelsDeleteOne, fmt.Errorf("commit transaction to delete %s failed, error: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+			}
+			return nil
+		} else {
+			transaction.Rollback(ctx)
+		}
+	}
+
+	transaction, err = n.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return intlib.FunctionNameAndError(n.RepoMetadataModelsDeleteOne, fmt.Errorf("start transaction to deactivate %s failed, error: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+	}
+
+	query = fmt.Sprintf(
+		"UPDATE %[1]s SET %[2]s = $1 WHERE %[3]s = $2;",
+		intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName,                       //1
+		intdoment.MetadataModelsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID, //2
+		intdoment.MetadataModelsAuthorizationIDsRepository().ID,                                   //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsDeleteOne))
+	if _, err := transaction.Exec(ctx, query, datum.ID[0], iamAuthRule.ID[0]); err == nil {
+		transaction.Rollback(ctx)
+		return intlib.FunctionNameAndError(n.RepoMetadataModelsDeleteOne, fmt.Errorf("update %s failed, err: %v", intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName, err))
+	}
+
+	query = fmt.Sprintf(
+		"UPDATE %[1]s SET %[2]s = NOW() WHERE %[3]s = $1;",
+		intdoment.MetadataModelsRepository().RepositoryName, //1
+		intdoment.MetadataModelsRepository().DeactivatedOn,  //2
+		intdoment.MetadataModelsRepository().ID,             //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsDeleteOne))
+	if _, err := transaction.Exec(ctx, query, datum.ID[0]); err == nil {
+		transaction.Rollback(ctx)
+		return intlib.FunctionNameAndError(n.RepoMetadataModelsDeleteOne, fmt.Errorf("update %s failed, err: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+	}
+
+	if err := transaction.Commit(ctx); err != nil {
+		return intlib.FunctionNameAndError(n.RepoMetadataModelsDeleteOne, fmt.Errorf("commit transaction to update deactivation of %s failed, error: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+	}
+
+	return nil
+}
+
+func (n *PostrgresRepository) RepoMetadataModelsFindOneForDeletionByID(
+	ctx context.Context,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	authContextDirectoryGroupID uuid.UUID,
+	datum *intdoment.MetadataModels,
+	columns []string,
+) (*intdoment.MetadataModels, *intdoment.IamAuthorizationRule, error) {
+	metadataModelsMModel, err := intlib.MetadataModelGet(intdoment.MetadataModelsRepository().RepositoryName)
+	if err != nil {
+		return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, err)
+	}
+
+	if len(columns) == 0 {
+		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(metadataModelsMModel, intdoment.MetadataModelsRepository().RepositoryName, false, false); err != nil {
+			return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, err)
+		} else {
+			columns = dbColumnFields.ColumnFieldsReadOrder
+		}
+	}
+
+	if !slices.Contains(columns, intdoment.MetadataModelsRepository().ID) {
+		columns = append(columns, intdoment.MetadataModelsRepository().ID)
+	}
+
+	dataRows := make([]any, 0)
+	iamAuthRule := new(intdoment.IamAuthorizationRule)
+	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		iamCredential,
+		authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_DELETE_SELF,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+			},
+		},
+		iamAuthorizationRules,
+	); err == nil && iamAuthorizationRule != nil {
+		if len(iamCredential.DirectoryID) == 0 {
+			return nil, nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+		}
+		query := fmt.Sprintf(
+			"SELECT %[1]s FROM %[2]s WHERE %[3]s = $1 AND %[4]s = $2;",
+			strings.Join(columns, " , "),                        //1
+			intdoment.MetadataModelsRepository().RepositoryName, //2
+			intdoment.MetadataModelsRepository().ID,             //3
+			intdoment.MetadataModelsRepository().DirectoryID,    //4
+		)
+		n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsFindOneForDeletionByID))
+
+		rows, err := n.db.Query(ctx, query, datum.ID[0], iamCredential.DirectoryID[0])
+		if err != nil {
+			return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, fmt.Errorf("retrieve %s failed, err: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+		}
+		defer rows.Close()
+		for rows.Next() {
+			if r, err := rows.Values(); err != nil {
+				return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, err)
+			} else {
+				dataRows = append(dataRows, r)
+			}
+		}
+		if len(dataRows) > 0 {
+			iamAuthRule = iamAuthorizationRule[0]
+		}
+	}
+
+	if len(dataRows) == 0 {
+		if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+			ctx,
+			iamCredential,
+			authContextDirectoryGroupID,
+			[]*intdoment.IamGroupAuthorizationRule{
+				{
+					ID:        intdoment.AUTH_RULE_DELETE,
+					RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+				},
+			},
+			iamAuthorizationRules,
+		); err == nil && iamAuthorizationRule != nil {
+			query := fmt.Sprintf(
+				"SELECT %[1]s FROM %[2]s WHERE %[3]s = $1 AND %[4]s = $2;",
+				strings.Join(columns, " , "),                           //1
+				intdoment.MetadataModelsRepository().RepositoryName,    //2
+				intdoment.MetadataModelsRepository().ID,                //3
+				intdoment.MetadataModelsRepository().DirectoryGroupsID, //4
+			)
+			n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsFindOneForDeletionByID))
+
+			rows, err := n.db.Query(ctx, query, datum.ID[0], authContextDirectoryGroupID)
+			if err != nil {
+				return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, fmt.Errorf("retrieve %s failed, err: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+			}
+			defer rows.Close()
+			for rows.Next() {
+				if r, err := rows.Values(); err != nil {
+					return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, err)
+				} else {
+					dataRows = append(dataRows, r)
+				}
+			}
+			if len(dataRows) > 0 {
+				iamAuthRule = iamAuthorizationRule[0]
+			}
+		}
+	}
+
+	if len(dataRows) == 0 {
+		if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+			ctx,
+			iamCredential,
+			authContextDirectoryGroupID,
+			[]*intdoment.IamGroupAuthorizationRule{
+				{
+					ID:        intdoment.AUTH_RULE_DELETE_OTHERS,
+					RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+				},
+			},
+			iamAuthorizationRules,
+		); err == nil && iamAuthorizationRule != nil {
+			cteName := fmt.Sprintf("%s_%s", intdoment.MetadataModelsRepository().RepositoryName, RECURSIVE_DIRECTORY_GROUPS_DEFAULT_CTE_NAME)
+			query := fmt.Sprintf(
+				"%[1]s SELECT %[2]s FROM %[3]s WHERE %[4]s = $1 AND %[5]s;",
+				RecursiveDirectoryGroupsSubGroupsCte(authContextDirectoryGroupID, cteName), //1
+				strings.Join(columns, " , "),                                               //2
+				intdoment.MetadataModelsRepository().RepositoryName,                        //3
+				intdoment.MetadataModelsRepository().ID,                                    //4
+				fmt.Sprintf("(%s) IN (SELECT %s FROM %s)", intdoment.MetadataModelsRepository().DirectoryGroupsID, intdoment.DirectoryGroupsSubGroupsRepository().SubGroupID, cteName), //5
+			)
+			n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsFindOneForDeletionByID))
+
+			rows, err := n.db.Query(ctx, query, datum.ID[0])
+			if err != nil {
+				return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, fmt.Errorf("retrieve %s failed, err: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+			}
+			defer rows.Close()
+			for rows.Next() {
+				if r, err := rows.Values(); err != nil {
+					return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, err)
+				} else {
+					dataRows = append(dataRows, r)
+				}
+			}
+			if len(dataRows) > 0 {
+				iamAuthRule = iamAuthorizationRule[0]
+			}
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(metadataModelsMModel, nil, false, false, columns)
+	if err != nil {
+		return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, err)
+	}
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, err)
+	}
+
+	if len(array2DToObject.Objects()) == 0 {
+		return nil, nil, nil
+	}
+
+	if len(array2DToObject.Objects()) > 1 {
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoMetadataModelsFindOneForDeletionByID))
+		return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, fmt.Errorf("more than one %s found", intdoment.MetadataModelsRepository().RepositoryName))
+	}
+
+	metadataModel := new(intdoment.MetadataModels)
+	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
+		return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, err)
+	} else {
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing metadataModel", "metadataModel", string(jsonData), "function", intlib.FunctionName(n.RepoMetadataModelsFindOneForDeletionByID))
+		if err := json.Unmarshal(jsonData, metadataModel); err != nil {
+			return nil, nil, intlib.FunctionNameAndError(n.RepoMetadataModelsFindOneForDeletionByID, err)
+		}
+	}
+
+	return metadataModel, iamAuthRule, nil
+}
+
+func (n *PostrgresRepository) RepoMetadataModelsUpdateOne(
+	ctx context.Context,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	authContextDirectoryGroupID uuid.UUID,
+	datum *intdoment.MetadataModels,
+	columns []string,
+) error {
+	query := ""
+	where := ""
+
+	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		iamCredential,
+		authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_UPDATE_OTHERS,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+			},
+		},
+		iamAuthorizationRules,
+	); err == nil && iamAuthorizationRule != nil {
+		cteName := fmt.Sprintf("%s_%s", intdoment.MetadataModelsRepository().RepositoryName, RECURSIVE_DIRECTORY_GROUPS_DEFAULT_CTE_NAME)
+		query = RecursiveDirectoryGroupsSubGroupsCte(authContextDirectoryGroupID, cteName)
+		where = fmt.Sprintf("(%s) IN (SELECT %s FROM %s)", intdoment.MetadataModelsRepository().DirectoryGroupsID, intdoment.DirectoryGroupsSubGroupsRepository().SubGroupID, cteName)
+	}
+	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		iamCredential,
+		authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_UPDATE,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+			},
+		},
+		iamAuthorizationRules,
+	); err == nil && iamAuthorizationRule != nil {
+		whereQuery := fmt.Sprintf("%s = '%s'", intdoment.MetadataModelsRepository().DirectoryGroupsID, authContextDirectoryGroupID.String())
+		if len(where) > 0 {
+			where += " OR " + whereQuery
+		} else {
+			where = whereQuery
+		}
+	}
+	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		iamCredential,
+		authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_UPDATE_SELF,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+			},
+		},
+		iamAuthorizationRules,
+	); err == nil && iamAuthorizationRule != nil {
+		whereQuery := ""
+		if len(iamCredential.DirectoryID) > 0 {
+			whereQuery = fmt.Sprintf("%s = '%s'", intdoment.MetadataModelsRepository().DirectoryID, iamCredential.DirectoryID[0].String())
+		} else {
+			whereQuery = fmt.Sprintf("%s = TRUE", intdoment.MetadataModelsRepository().EditUnauthorized)
+		}
+
+		if len(where) > 0 {
+			where += " OR " + whereQuery
+		} else {
+			where = whereQuery
+		}
+	}
+	if len(where) == 0 {
+		where = fmt.Sprintf("%s = TRUE", intdoment.MetadataModelsRepository().EditUnauthorized)
+	}
+
+	valuesToUpdate := make([]any, 0)
+	columnsToUpdate := make([]string, 0)
+	if v, c, err := n.RepoMetadataModelsValidateAndGetColumnsAndData(datum, false); err != nil {
+		return err
+	} else if len(c) == 0 || len(v) == 0 {
+		return intlib.NewError(http.StatusBadRequest, "no values to update")
+	} else {
+		valuesToUpdate = append(valuesToUpdate, v...)
+		columnsToUpdate = append(columnsToUpdate, c...)
+	}
+
+	nextPlaceholder := 1
+	query += fmt.Sprintf(
+		" UPDATE %[1]s SET %[2]s WHERE %[3]s = %[4]s AND %[5]s IS NULL AND %[6]s;",
+		intdoment.MetadataModelsRepository().RepositoryName,    //1
+		GetUpdateSetColumns(columnsToUpdate, &nextPlaceholder), //2
+		intdoment.MetadataModelsRepository().ID,                //3
+		GetandUpdateNextPlaceholder(&nextPlaceholder),          //4
+		intdoment.MetadataModelsRepository().DeactivatedOn,     //5
+		where, //6
+	)
+	query = strings.TrimLeft(query, " \n")
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsUpdateOne))
+	valuesToUpdate = append(valuesToUpdate, datum.ID[0])
+
+	if _, err := n.db.Exec(ctx, query, valuesToUpdate...); err != nil {
+		return intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, fmt.Errorf("update %s failed, err: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+	}
+
+	return nil
+}
+
+func (n *PostrgresRepository) RepoMetadataModelsInsertOne(
+	ctx context.Context,
+	iamAuthRule *intdoment.IamAuthorizationRule,
+	directoryID uuid.UUID,
+	directoryGroupID uuid.UUID,
+	datum *intdoment.MetadataModels,
+	columns []string,
+) (*intdoment.MetadataModels, error) {
+	metadataModelsMModel, err := intlib.MetadataModelGet(intdoment.MetadataModelsRepository().RepositoryName)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, err)
+	}
+
+	if len(columns) == 0 {
+		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(metadataModelsMModel, intdoment.MetadataModelsRepository().RepositoryName, false, false); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, err)
+		} else {
+			columns = dbColumnFields.ColumnFieldsReadOrder
+		}
+	}
+
+	if !slices.Contains(columns, intdoment.MetadataModelsRepository().ID) {
+		columns = append(columns, intdoment.MetadataModelsRepository().ID)
+	}
+
+	valuesToInsert := []any{directoryGroupID, directoryID}
+	columnsToInsert := []string{intdoment.MetadataModelsRepository().DirectoryGroupsID, intdoment.MetadataModelsRepository().DirectoryID}
+	if v, c, err := n.RepoMetadataModelsValidateAndGetColumnsAndData(datum, true); err != nil {
+		return nil, err
+	} else {
+		valuesToInsert = append(valuesToInsert, v...)
+		columnsToInsert = append(columnsToInsert, c...)
+	}
+
+	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, fmt.Errorf("start transaction to create %s failed, error: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+	}
+
+	query := fmt.Sprintf(
+		"INSERT INTO %[1]s (%[2]s) VALUES (%[3]s) RETURNING %[4]s;",
+		intdoment.MetadataModelsRepository().RepositoryName,          //1
+		strings.Join(columnsToInsert, " , "),                         //2
+		GetQueryPlaceholderString(len(valuesToInsert), &[]int{1}[0]), //3
+		strings.Join(columns, " , "),                                 //4
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsInsertOne))
+
+	rows, err := transaction.Query(ctx, query, valuesToInsert...)
+	if err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, fmt.Errorf("insert %s failed, err: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+	}
+
+	defer rows.Close()
+	dataRows := make([]any, 0)
+	for rows.Next() {
+		if r, err := rows.Values(); err != nil {
+			transaction.Rollback(ctx)
+			return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, err)
+		} else {
+			dataRows = append(dataRows, r)
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(metadataModelsMModel, nil, false, false, columns)
+	if err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, err)
+	}
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, err)
+	}
+
+	if len(array2DToObject.Objects()) == 0 {
+		transaction.Rollback(ctx)
+		return nil, nil
+	}
+
+	if len(array2DToObject.Objects()) > 1 {
+		transaction.Rollback(ctx)
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoMetadataModelsInsertOne))
+		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, fmt.Errorf("more than one %s found", intdoment.MetadataModelsRepository().RepositoryName))
+	}
+
+	metadataModel := new(intdoment.MetadataModels)
+	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, err)
+	} else {
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing metadataModel", "metadataModel", string(jsonData), "function", intlib.FunctionName(n.RepoMetadataModelsInsertOne))
+		if err := json.Unmarshal(jsonData, metadataModel); err != nil {
+			transaction.Rollback(ctx)
+			return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, err)
+		}
+	}
+
+	query = fmt.Sprintf(
+		"INSERT INTO %[1]s (%[2]s, %[3]s) VALUES ($1, $2);",
+		intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName,                   //1
+		intdoment.MetadataModelsAuthorizationIDsRepository().ID,                               //2
+		intdoment.MetadataModelsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID, //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsInsertOne))
+
+	if _, err := transaction.Exec(ctx, query, metadataModel.ID[0], iamAuthRule.ID); err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, fmt.Errorf("insert %s failed, err: %v", intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName, err))
+	}
+
+	if err := transaction.Commit(ctx); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, fmt.Errorf("commit transaction to create %s failed, error: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+	}
+
+	return metadataModel, nil
+}
+
+func (n *PostrgresRepository) RepoMetadataModelsValidateAndGetColumnsAndData(mm *intdoment.MetadataModels, insert bool) ([]any, []string, error) {
+	values := make([]any, 0)
+	columns := make([]string, 0)
+
+	if len(mm.Name) == 0 || len(mm.Name[0]) < 4 {
+		if insert {
+			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsRepository().Name)
+		}
+	} else {
+		values = append(values, mm.Name[0])
+		columns = append(columns, intdoment.MetadataModelsRepository().Name)
+	}
+
+	if len(mm.Description) == 0 || len(mm.Description[0]) < 4 {
+		if insert {
+			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsRepository().Description)
+		}
+	} else {
+		values = append(values, mm.Description[0])
+		columns = append(columns, intdoment.MetadataModelsRepository().Description)
+	}
+
+	if len(mm.Data) == 0 {
+		if insert {
+			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsRepository().Data)
+		}
+	} else {
+		values = append(values, mm.Data[0])
+		columns = append(columns, intdoment.MetadataModelsRepository().Data)
+	}
+
+	if len(mm.EditAuthorized) > 0 {
+		values = append(values, mm.EditAuthorized[0])
+		columns = append(columns, intdoment.MetadataModelsRepository().EditAuthorized)
+	}
+
+	if len(mm.EditUnauthorized) > 0 {
+		values = append(values, mm.EditUnauthorized[0])
+		columns = append(columns, intdoment.MetadataModelsRepository().EditUnauthorized)
+	}
+
+	if len(mm.ViewAuthorized) > 0 {
+		values = append(values, mm.ViewAuthorized[0])
+		columns = append(columns, intdoment.MetadataModelsRepository().ViewAuthorized)
+	}
+
+	if len(mm.ViewUnauthorized) > 0 {
+		values = append(values, mm.ViewUnauthorized[0])
+		columns = append(columns, intdoment.MetadataModelsRepository().ViewUnauthorized)
+	}
+
+	if insert {
+		if len(mm.Tags) > 0 {
+			values = append(values, mm.Tags)
+			columns = append(columns, intdoment.MetadataModelsRepository().Tags)
+		}
+	} else {
+		if mm.Tags != nil && len(mm.Tags) >= 0 {
+			values = append(values, mm.Tags)
+			columns = append(columns, intdoment.MetadataModelsRepository().Tags)
+		}
+	}
+
+	return values, columns, nil
+}
 
 func (n *PostrgresRepository) RepoMetadataModelsSearch(
 	ctx context.Context,
@@ -82,28 +626,28 @@ func (n *PostrgresRepository) RepoMetadataModelsSearch(
 }
 
 func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, metadataModel map[string]any, metadataModelParentPath string) (*SelectQuery, error) {
-	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
-		ctx,
-		n.iamCredential,
-		n.authContextDirectoryGroupID,
-		[]*intdoment.IamGroupAuthorizationRule{
-			{
-				ID:        intdoment.AUTH_RULE_RETRIEVE_SELF,
-				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
-			},
-			{
-				ID:        intdoment.AUTH_RULE_RETRIEVE,
-				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
-			},
-			{
-				ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
-				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
-			},
-		},
-		n.iamAuthorizationRules,
-	); err != nil || iamAuthorizationRule == nil {
-		return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
-	}
+	// if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+	// 	ctx,
+	// 	n.iamCredential,
+	// 	n.authContextDirectoryGroupID,
+	// 	[]*intdoment.IamGroupAuthorizationRule{
+	// 		{
+	// 			ID:        intdoment.AUTH_RULE_RETRIEVE_SELF,
+	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+	// 		},
+	// 		{
+	// 			ID:        intdoment.AUTH_RULE_RETRIEVE,
+	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+	// 		},
+	// 		{
+	// 			ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
+	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+	// 		},
+	// 	},
+	// 	n.iamAuthorizationRules,
+	// ); err != nil || iamAuthorizationRule == nil {
+	// 	return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	// }
 
 	quoteColumns := true
 	if len(metadataModelParentPath) == 0 {
@@ -118,6 +662,7 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 		TableName: intdoment.MetadataModelsRepository().RepositoryName,
 		Query:     "",
 		Where:     make(map[string]map[int][][]string),
+		WhereAnd:  make([]string, 0),
 		Join:      make(map[string]*SelectQuery),
 		JoinQuery: make([]string, 0),
 	}
@@ -132,6 +677,44 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 		return nil, intlib.FunctionNameAndError(n.DirectoryGetSelectQuery, fmt.Errorf("extract database column fields failed, error: %v", err))
 	} else {
 		selectQuery.Columns = value
+	}
+
+	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		n.iamCredential,
+		n.authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+			},
+			{
+				ID:        intdoment.AUTH_RULE_RETRIEVE,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+			},
+		},
+		n.iamAuthorizationRules,
+	); err == nil && iamAuthorizationRule != nil {
+		selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewAuthorized))
+	} else if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		n.iamCredential,
+		n.authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_RETRIEVE_SELF,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
+			},
+		},
+		n.iamAuthorizationRules,
+	); err == nil && iamAuthorizationRule != nil {
+		if len(n.iamCredential.DirectoryID) > 0 {
+			selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = '%s'", selectQuery.TableUid, intdoment.MetadataModelsRepository().DirectoryGroupsID, n.iamCredential.DirectoryID[0].String()))
+		} else {
+			selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewUnauthorized))
+		}
+	} else {
+		selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewUnauthorized))
 	}
 
 	if !n.startSearchDirectoryGroupID.IsNil() {
@@ -278,9 +861,36 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 		}
 	}
 
-	directoryJoinDirectoryAuthorizationIDs := intlib.MetadataModelGenJoinKey(intdoment.MetadataModelsRepository().RepositoryName, intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName)
-	if value, err := n.extractChildMetadataModel(metadataModel, directoryJoinDirectoryAuthorizationIDs); err != nil {
-		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", directoryJoinDirectoryAuthorizationIDs, err))
+	directoryIDJoinDirectory := intlib.MetadataModelGenJoinKey(intdoment.MetadataModelsRepository().DirectoryID, intdoment.DirectoryRepository().RepositoryName)
+	if value, err := n.extractChildMetadataModel(metadataModel, directoryIDJoinDirectory); err != nil {
+		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", directoryIDJoinDirectory, err))
+	} else {
+		if sq, err := n.DirectoryGetSelectQuery(
+			ctx,
+			value,
+			metadataModelParentPath,
+		); err != nil {
+			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", directoryIDJoinDirectory, err))
+		} else {
+			if len(sq.Where) == 0 {
+				sq.JoinType = JOIN_LEFT
+			} else {
+				sq.JoinType = JOIN_INNER
+			}
+			sq.JoinQuery = make([]string, 1)
+			sq.JoinQuery[0] = fmt.Sprintf(
+				"%[1]s = %[2]s",
+				GetJoinColumnName(sq.TableUid, intdoment.DirectoryRepository().ID, true),                         //1
+				GetJoinColumnName(selectQuery.TableUid, intdoment.MetadataModelsRepository().DirectoryID, false), //2
+			)
+
+			selectQuery.Join[directoryIDJoinDirectory] = sq
+		}
+	}
+
+	metadatamodelsJoinDirectoryAuthorizationIDs := intlib.MetadataModelGenJoinKey(intdoment.MetadataModelsRepository().RepositoryName, intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName)
+	if value, err := n.extractChildMetadataModel(metadataModel, metadatamodelsJoinDirectoryAuthorizationIDs); err != nil {
+		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", metadatamodelsJoinDirectoryAuthorizationIDs, err))
 	} else {
 		if sq, err := n.AuthorizationIDsGetSelectQuery(
 			ctx,
@@ -291,7 +901,7 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 			intdoment.MetadataModelsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID,
 			intdoment.MetadataModelsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID,
 		); err != nil {
-			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", directoryJoinDirectoryAuthorizationIDs, err))
+			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", metadatamodelsJoinDirectoryAuthorizationIDs, err))
 		} else {
 			if len(sq.Where) == 0 {
 				sq.JoinType = JOIN_LEFT
@@ -305,7 +915,7 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 				GetJoinColumnName(selectQuery.TableUid, intdoment.MetadataModelsRepository().ID, false),       //2
 			)
 
-			selectQuery.Join[directoryJoinDirectoryAuthorizationIDs] = sq
+			selectQuery.Join[metadatamodelsJoinDirectoryAuthorizationIDs] = sq
 		}
 	}
 

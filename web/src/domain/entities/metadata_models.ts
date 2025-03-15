@@ -10,7 +10,7 @@ namespace _MetadataModels {
 		ViewAuthorized = 'view_authorized',
 		ViewUnauthorized = 'view_unauthorized',
 		Tags = 'tags',
-		Data = 'metadata_model',
+		Data = 'data',
 		CreatedOn = 'created_on',
 		LastUpdatedOn = 'last_updated_on',
 		DeactivatedOn = 'deactivated_on',

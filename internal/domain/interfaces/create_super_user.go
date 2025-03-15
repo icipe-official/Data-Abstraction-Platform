@@ -21,10 +21,12 @@ type CreateSuperUserRepository interface {
 	//
 	// will not check if role exists as it only anticipates finding intdoment.GroupRuleAuthorization.ID having been set.
 	RepoIamGroupAuthorizationsSystemRolesInsertMany(ctx context.Context, iamCredenial *intdoment.IamCredentials, groupRuleAuthorizations []intdoment.GroupRuleAuthorization) (int, error)
+	RepoDirectoryInsertOneAndUpdateIamCredentials(ctx context.Context, iamCredential *intdoment.IamCredentials) error
 }
 
 type CreateSuperUserService interface {
 	ServiceGetIamCredentials(ctx context.Context) (*intdoment.IamCredentials, error)
 	// return no of system roles assign to iam credential
 	ServiceAssignSystemRolesToIamCredential(ctx context.Context, iamCredential *intdoment.IamCredentials) (int, error)
+	ServiceCreateDirectoryForIamCredentials(ctx context.Context, iamCredential *intdoment.IamCredentials) error
 }

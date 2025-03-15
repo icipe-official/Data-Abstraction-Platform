@@ -10,6 +10,7 @@ import (
 	authorizationrules "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/group/authorization-rules"
 	ruleauthorizations "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/group/rule-authorizations"
 	"github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/home"
+	"github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/iam/credentials"
 	groupauthorizations "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/iam/group-authorizations"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 
@@ -34,6 +35,7 @@ func InitWebServiceWebsiteRouter(router *chi.Mux, webService *inthttp.WebService
 			groupRouter.Mount("/authorization-rules", authorizationrules.WebsiteRouter(webService))
 		})
 		baseRouter.Route("/iam", func(iamRouter chi.Router) {
+			iamRouter.Mount("/credentials", credentials.WebsiteRouter(webService))
 			iamRouter.Mount("/group-authorizations", groupauthorizations.WebsiteRouter(webService))
 		})
 	})

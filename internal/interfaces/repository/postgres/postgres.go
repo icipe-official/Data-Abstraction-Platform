@@ -172,6 +172,17 @@ func GetSelectQuery(selectQuery *SelectQuery, whereAfterJoin bool) (string, *Sel
 		query += " WHERE " + selectQueryExtract.DirectoryGroupsSubGroupsCTECondition
 		whereSet = true
 	}
+
+	if len(selectQueryExtract.WhereAnd) > 0 {
+		if whereSet {
+			query += " AND "
+		} else {
+			query += " WHERE "
+		}
+		query += selectQueryExtract.WhereAnd
+		whereSet = true
+	}
+
 	if len(where) > 0 {
 		if whereSet {
 			query += " AND "
@@ -203,6 +214,7 @@ func RecursiveDirectoryGroupsSubGroupsCte(parentGroupID uuid.UUID, cteName strin
 type SelectQueryExtract struct {
 	DirectoryGroupsSubGroupsCTE          string
 	DirectoryGroupsSubGroupsCTECondition string
+	WhereAnd                             string
 	Query                                string
 	JoinQuery                            []string
 	SelectColumns                        []string
@@ -261,11 +273,23 @@ func (n *ExtractSelectQuery) extract(selectQuery *SelectQuery, nested bool) *Sel
 	psq.Query += fmt.Sprintf(" %s FROM %s as %s", strings.Join(psq.SelectColumns, ","), selectQuery.TableName, selectQuery.TableUid)
 	psq.Query += " " + strings.Join(psq.JoinQuery, " ")
 	whereSet := false
+
 	if (nested || !n.whereAfterJoin) && len(selectQuery.DirectoryGroupsSubGroupsCTECondition) > 0 {
 		psq.Query += " WHERE " + selectQuery.DirectoryGroupsSubGroupsCTECondition
 		whereSet = true
 	} else {
 		psq.DirectoryGroupsSubGroupsCTECondition = selectQuery.DirectoryGroupsSubGroupsCTECondition
+	}
+
+	if (nested || !n.whereAfterJoin) && len(selectQuery.WhereAnd) > 0 {
+		if whereSet {
+			psq.Query += " AND " + strings.Join(selectQuery.WhereAnd, " AND ")
+		} else {
+			psq.Query += " WHERE " + strings.Join(selectQuery.WhereAnd, " AND ")
+		}
+		whereSet = true
+	} else {
+		psq.WhereAnd = strings.Join(selectQuery.WhereAnd, " AND ")
 	}
 
 	if !n.whereAfterJoin {
@@ -479,6 +503,7 @@ type SelectQuery struct {
 	Query                                string
 	Columns                              intlibmmodel.DatabaseColumnFields
 	Where                                map[string]map[int][][]string
+	WhereAnd                             []string
 	SortAsc                              map[string]bool
 	Limit                                string
 	Offset                               string

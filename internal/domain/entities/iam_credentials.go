@@ -36,6 +36,7 @@ type iamCredentialsRepository struct {
 	CreatedOn               string
 	LastUpdatedOn           string
 	DeactivatedOn           string
+	FullTextSearch          string
 }
 
 func IamCredentialsRepository() iamCredentialsRepository {
@@ -53,5 +54,6 @@ func IamCredentialsRepository() iamCredentialsRepository {
 		CreatedOn:               "created_on",
 		LastUpdatedOn:           "last_updated_on",
 		DeactivatedOn:           "deactivated_on",
+		FullTextSearch:          "full_text_search",
 	}
 }

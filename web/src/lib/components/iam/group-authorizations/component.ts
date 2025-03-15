@@ -175,7 +175,7 @@ class Component extends LitElement {
 			}
 		}
 		try {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 			await this._metadataModelsSearch.Search(
 				Object.keys(newQc).length > 0 ? MetadataModelUtils.InsertNewQueryConditionToQueryConditions(newQc, this.queryConditions) : this.queryConditions,
 				this._appContext.appcontext?.iamdirectorygroupid,
@@ -193,12 +193,12 @@ class Component extends LitElement {
 			console.error(e)
 			if (Array.isArray(e)) {
 				if (e[1] && typeof e[1] == 'object' && e[1].message) {
-					window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+					this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 				}
 			}
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 		} finally {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 		}
 	}
 
@@ -206,7 +206,7 @@ class Component extends LitElement {
 		const data = selectedDataIndexes.map((dIndex) => this._metadataModelsSearch.searchresults.data![dIndex])
 
 		try {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting/deactivating ${Entities.IamGroupAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting/deactivating ${Entities.IamGroupAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
@@ -225,22 +225,22 @@ class Component extends LitElement {
 				body: JSON.stringify(data)
 			})
 
-			const fetchData = await fetchResponse.json()
+			const fetchData: Entities.MetadataModel.IVerboseResponse = await fetchResponse.json()
 			if (fetchResponse.ok) {
-				window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) }, bubbles: true, composed: true }))
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: !fetchData.failed ? Lib.ToastType.SUCCESS : fetchData.successful && fetchData.successful > 0 ? Lib.ToastType.INFO : Lib.ToastType.ERROR, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) }, bubbles: true, composed: true }))
 			} else {
-				window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
 			}
 		} catch (e) {
 			console.error(e)
 			if (Array.isArray(e)) {
 				if (e[1] && typeof e[1] == 'object' && e[1].message) {
-					window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+					this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 				}
 			}
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 		} finally {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 		}
 	}
 
@@ -376,7 +376,7 @@ class Component extends LitElement {
 		}
 
 		try {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Creating new ${Entities.GroupRuleAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Creating new ${Entities.GroupRuleAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
@@ -395,22 +395,22 @@ class Component extends LitElement {
 				body: JSON.stringify(newIamGroupAuthorizations)
 			})
 
-			const fetchData = await fetchResponse.json()
+			const fetchData: Entities.MetadataModel.IVerboseResponse = await fetchResponse.json()
 			if (fetchResponse.ok) {
-				window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) }, bubbles: true, composed: true }))
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: !fetchData.failed ? Lib.ToastType.SUCCESS : fetchData.successful && fetchData.successful > 0 ? Lib.ToastType.INFO : Lib.ToastType.ERROR, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) }, bubbles: true, composed: true }))
 			} else {
-				window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
 			}
 		} catch (e) {
 			console.error(e)
 			if (Array.isArray(e)) {
 				if (e[1] && typeof e[1] == 'object' && e[1].message) {
-					window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+					this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 				}
 			}
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 		} finally {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 		}
 	}
 
@@ -579,7 +579,7 @@ class Component extends LitElement {
 																		@click=${(e: Event) => {
 																			e.preventDefault()
 																			this._directoryGroupsFilterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._iamCredentialsSearch!.searchresults.data!))
-																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._directoryGroupsFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
+																			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._directoryGroupsFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
 																		}}
 																	>
 																		<div class="flex gap-x-1 self-center">
@@ -614,7 +614,7 @@ class Component extends LitElement {
 															class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 															@click=${async () => {
 																try {
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 																	await this._iamCredentialsSearch!.Search(
 																		this._iamCredentialsQueryConditions,
 																		this._appContext.appcontext?.iamdirectorygroupid,
@@ -636,12 +636,12 @@ class Component extends LitElement {
 																	console.error(e)
 																	if (Array.isArray(e)) {
 																		if (e[1] && typeof e[1] == 'object' && e[1].message) {
-																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+																			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 																		}
 																	}
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 																} finally {
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 																}
 															}}
 														>
@@ -831,7 +831,7 @@ class Component extends LitElement {
 																		@click=${(e: Event) => {
 																			e.preventDefault()
 																			this._groupRuleAuthorizationsFilterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._groupRuleAuthorizationsSearch!.searchresults.data!))
-																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._groupRuleAuthorizationsFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
+																			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._groupRuleAuthorizationsFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
 																		}}
 																	>
 																		<div class="flex gap-x-1 self-center">
@@ -866,7 +866,7 @@ class Component extends LitElement {
 															class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 															@click=${async () => {
 																try {
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 																	await this._groupRuleAuthorizationsSearch!.Search(
 																		this._groupRuleAuthorizationsQueryConditions,
 																		this._appContext.appcontext?.iamdirectorygroupid,
@@ -888,12 +888,12 @@ class Component extends LitElement {
 																	console.error(e)
 																	if (Array.isArray(e)) {
 																		if (e[1] && typeof e[1] == 'object' && e[1].message) {
-																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+																			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 																		}
 																	}
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 																} finally {
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 																}
 															}}
 														>
@@ -1173,7 +1173,7 @@ class Component extends LitElement {
 																	class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 																	@click=${() => {
 																		this._filterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._metadataModelsSearch.searchresults.data!))
-																		window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._filterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
+																		this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._filterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
 																	}}
 																>
 																	<div class="flex gap-x-1 self-center">

@@ -38,5 +38,8 @@ func main() {
 	if err != nil {
 		log.Fatal("ERROR: Assign system roles to  iam credential failed, error: ", err)
 	}
+	if err := service.ServiceCreateDirectoryForIamCredentials(ctx, iamCredential); err != nil {
+		log.Println("Create Directory for Iam Credential failed, error:", err)
+	}
 	log.Printf("SUCCESS: %d system roles successfully assigned to iam credential with id: %v", successfulInserts, iamCredential.ID[0])
 }

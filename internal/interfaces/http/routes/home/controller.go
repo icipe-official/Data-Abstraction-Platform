@@ -121,7 +121,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 			if value, err := s.ServiceDirectoryGroupsGetMetadataModel(
 				ctx,
 				intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
-				-1,
+				1,
 			); err != nil {
 				intlib.SendJsonErrorResponse(err, w)
 				return

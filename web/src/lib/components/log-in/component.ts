@@ -30,7 +30,13 @@ class Component extends LitElement {
 
 	@state() private _currentPageTab: PageTab = PageTab.LOGIN
 
-	private _appContext: IAppContextConsumer = new AppContextConsumer(this)
+	constructor() {
+		super()
+		this._pageNavigation = new SpaPageNavigation(new AppContextProvider(undefined))
+		this._appContext = new AppContextConsumer(this)
+	}
+
+	private _appContext: IAppContextConsumer
 
 	private _directoryGroupsSearchController?: IMetadataModelSearchController
 
@@ -62,18 +68,18 @@ class Component extends LitElement {
 			})
 			const fetchData = await fetchResponse.json()
 			if (fetchResponse.ok) {
-				window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.SUCCESS, toastMessage: `logout by ${(fetchData as Entities.IamCredentials.Interface).id![0]}` }, bubbles: true, composed: true }))
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.SUCCESS, toastMessage: `logout by ${(fetchData as Entities.IamCredentials.Interface).id![0]}` }, bubbles: true, composed: true }))
 				window.location.reload()
 			} else {
 				throw [fetchResponse.status, fetchData]
 			}
 		} catch (e) {
 			console.error('logout failed', e)
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: 'logout failed' }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: 'logout failed' }, bubbles: true, composed: true }))
 		}
 	}
 
-	private _spaPageNavigation: ISpaPageNavigation = new SpaPageNavigation(new AppContextProvider(undefined))
+	private _pageNavigation: ISpaPageNavigation
 
 	protected render(): unknown {
 		return html`
@@ -128,15 +134,15 @@ class Component extends LitElement {
 														@metadata-model-view-table:rowclick=${async (e: CustomEvent) => {
 															const directoryGroup = e.detail.value as Entities.DirectoryGroups.Interface
 															if (Array.isArray(directoryGroup.id) && directoryGroup.id.length == 1) {
-																const url = new URL(Url.WebsitePaths.Home.Url, window.location.origin)
+																const url = new URL(Url.WebsitePaths.Home, window.location.origin)
 																url.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, directoryGroup.id![0])
 																const targetElement = document.querySelector(`#${import.meta.env.VITE_LAYOUT_ROUTES}`)
 																if (targetElement !== null) {
 																	try {
-																		await this._spaPageNavigation.Navigate(targetElement, url, 'Home')
+																		await this._pageNavigation.Navigate(targetElement, url, 'Home')
 																	} catch (e) {
 																		console.error('page navigation failed', e)
-																		window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: 'page navigation failed' }, bubbles: true, composed: true }))
+																		this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: 'page navigation failed' }, bubbles: true, composed: true }))
 																	}
 																}
 															}

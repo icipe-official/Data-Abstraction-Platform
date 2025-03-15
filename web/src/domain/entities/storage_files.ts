@@ -3,6 +3,7 @@ namespace _StorageFiles {
 		ID = 'id',
 		StorageDrivesID = 'storage_drives_id',
 		DirectoryGroupsID = 'directory_groups_id',
+		DirectoryID = 'directory_id',
 		StorageFileMimeType = 'storage_file_mime_type',
 		OriginalName = 'original_name',
 		Tags = 'tags',
@@ -22,6 +23,7 @@ namespace _StorageFiles {
 		id?: string[]
 		storage_drives_id?: string[]
 		directory_groups_id?: string[]
+		directory_id?: string[]
 		storage_file_mime_type?: string[]
 		original_name?: string[]
 		tags?: string[]

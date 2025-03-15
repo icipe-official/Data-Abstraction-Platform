@@ -3,6 +3,8 @@ package entities
 type MetadataModelVerbRes struct {
 	Message                      string                        `json:"message,omitempty"`
 	MetadataModelVerboseResponse *MetadataModelVerboseResponse `json:"metadata_model_verbose_response,omitempty"`
+	Successful                   int                           `json:"successful"`
+	Failed                       int                           `json:"failed"`
 }
 
 type MetadataModelVerboseResponse struct {

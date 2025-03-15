@@ -1,4 +1,4 @@
-package directorygroups
+package credentials
 
 import (
 	"context"
@@ -180,6 +180,90 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 	})
 
 	return router
+}
+
+func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
+	router := chi.NewRouter()
+
+	acceptedHTMLPartialNames := []string{intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID}
+
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(intlib.LogSectionName(r.URL.Path, webService.Env), webService.Env))})
+		s := initWebsiteService(ctx, webService)
+		if s == nil {
+			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+			return
+		}
+
+		isPartialRequest, partialName := intlib.WebsiteValidateHTMLPartialRequest(r, acceptedHTMLPartialNames)
+		var data any
+
+		authedIamCredential, err := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
+		if err != nil {
+			if d, err := intdoment.WebsiteAddErrorToHTMLTemplateContext(data, isPartialRequest, partialName, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized)); err != nil {
+				intlib.SendJsonErrorResponse(intlib.NewError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized)), w)
+				return
+			} else {
+				data = d
+			}
+		}
+
+		authContextDirectoryGroupID := uuid.Nil
+		if value, err := intlib.UrlSearchParamGetUuid(r, intlib.URL_SEARCH_PARAM_DIRECTORY_GROUP_ID); err != nil || value.IsNil() {
+			if authedIamCredential != nil {
+				if directoryGroup, err := s.ServiceDirectoryGroupsFindOneByIamCredentialID(ctx, authedIamCredential.ID[0]); err == nil {
+					if directoryGroup != nil {
+						authContextDirectoryGroupID = directoryGroup.ID[0]
+					}
+				}
+			}
+		} else {
+			authContextDirectoryGroupID = value
+		}
+
+		if iamAuthorizationRule, err := s.ServiceIamGroupAuthorizationsGetAuthorized(
+			ctx,
+			authedIamCredential,
+			authContextDirectoryGroupID,
+			[]*intdoment.IamGroupAuthorizationRule{
+				{
+					ID:        "",
+					RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_CREDENTIALS,
+				},
+			},
+			nil,
+		); err != nil || iamAuthorizationRule == nil {
+			if d, err := intdoment.WebsiteAddErrorToHTMLTemplateContext(data, isPartialRequest, partialName, http.StatusForbidden, http.StatusText(http.StatusForbidden)); err != nil {
+				intlib.SendJsonErrorResponse(intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden)), w)
+				return
+			} else {
+				data = d
+			}
+		}
+
+		if htmlContent, err := s.ServiceGetIamCredentialsPageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential, authContextDirectoryGroupID, data); err != nil {
+			intlib.SendJsonErrorResponse(err, w)
+		} else {
+			intlib.WebsiteSendHTMLResponse(htmlContent, w)
+		}
+	})
+
+	return router
+}
+
+func initWebsiteService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteIamCredentialsWebsiteService {
+	if value, err := NewService(webService); err != nil {
+		errmsg := fmt.Errorf("initialize website service failed, error: %v", err)
+		if value.logger != nil {
+			value.logger.Log(ctx, slog.LevelError, errmsg.Error())
+		} else {
+			log.Println(errmsg)
+		}
+
+		return nil
+	} else {
+		return value
+	}
 }
 
 func initApiCoreService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteIamCredentialsApiCoreService {

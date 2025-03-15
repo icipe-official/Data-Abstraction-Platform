@@ -431,6 +431,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 	dataRows := make([]any, 0)
 	for rows.Next() {
 		if r, err := rows.Values(); err != nil {
+			transaction.Rollback(ctx)
 			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsCreateSystemGroup, err)
 		} else {
 			dataRows = append(dataRows, r)
@@ -463,6 +464,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 
 	groupAuthorizationRulesMModel, err := intlib.MetadataModelGet(intdoment.GroupAuthorizationRulesRepository().RepositoryName)
 	if err != nil {
+		transaction.Rollback(ctx)
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroup, err)
 	}
 	columns = []string{intdoment.GroupAuthorizationRulesRepository().ID, intdoment.GroupAuthorizationRulesRepository().RuleGroup}

@@ -1,25 +1,27 @@
-import { IAppContextConsumer } from '@dominterfaces/context/app'
-import { IFieldAnyMetadataModelGet } from '@dominterfaces/field_any_metadata_model/field_any_metadata_model'
-import { AppContextConsumer } from '@interfaces/context/app'
-import { FieldAnyMetadataModel } from '@interfaces/field_any_metadata_model/field_any_metadata_model'
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
-import { customElement, state } from 'lit/decorators.js'
+import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '@assets/index.css?inline'
-import pageCss from './page.css?inline'
+import componentCss from './component.css?inline'
+import { IAppContextConsumer } from '@dominterfaces/context/app'
 import { IMetadataModelSearchController } from '@dominterfaces/controllers/metadata_model'
+import { AppContextConsumer } from '@interfaces/context/app'
 import { MetadataModelSearchController } from '@interfaces/controllers/metadata_model'
-import Url from '@lib/url'
+import { FieldAnyMetadataModel } from '@interfaces/field_any_metadata_model/field_any_metadata_model'
+import Lib from '@lib/lib'
+import { IFieldAnyMetadataModelGet } from '@lib/metadata_model/_export'
 import Theme from '@lib/theme'
-import '@lib/components/calendar-time/component'
+import Url from '@lib/url'
 import { Task } from '@lit/task'
 import MetadataModel from '@lib/metadata_model'
-import Lib from '@lib/lib'
 import Entities from '@domentities'
 import MetadataModelUtils from '@lib/metadata_model_utils'
+import Log from '@lib/log'
 
-@customElement('directory-groups-page')
-class Page extends LitElement {
-	static styles = [unsafeCSS(indexCss), unsafeCSS(pageCss)]
+@customElement('iam-credentials')
+class Component extends LitElement {
+	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
+
+	@property({ type: String }) directorygroupsid: string | undefined
 
 	private _metadataModelsSearch: IMetadataModelSearchController
 	private _appContext: IAppContextConsumer
@@ -48,17 +50,35 @@ class Page extends LitElement {
 		super()
 		this._appContext = new AppContextConsumer(this)
 		this._fieldAnyMetadataModels = new FieldAnyMetadataModel()
-		this._metadataModelsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Directory.Groups}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Directory.Groups}${Url.MetadataModelSearchPath}`)
+		this._metadataModelsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Iam.Credentials}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Iam.Credentials}${Url.MetadataModelSearchPath}`)
 	}
 
 	private _getMetatadaModelsMmTask = new Task(this, {
 		task: async () => {
+			if (!this._showQueryPanel && !this._fullTextSearchQuery && !this._dateOfCreationFrom && !this._dateOfCreationTo && !this._dateOfLastUpdatedOnFrom && !this._dateOfLastUpdatedOnTo) {
+				return
+			}
+			Log.Log(Log.Level.DEBUG, this.localName, '_getMetatadaModelsMmTask')
+
 			if (Object.keys(this._metadataModelsSearch.searchmetadatamodel).length === 0 || !this._metadataModelsSearch.searchmetadatamodel) {
-				await this._metadataModelsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, this._appContext.appcontext?.targetjoindepth || 1, undefined)
-				await import('@lib/components/metadata-model/view/query-panel/component')
+				await this._metadataModelsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, 0, undefined)
 			}
 		},
 		args: () => [this._showQueryPanel, this._fullTextSearchQuery, this._dateOfCreationFrom, this._dateOfCreationTo, this._dateOfLastUpdatedOnFrom, this._dateOfLastUpdatedOnTo]
+	})
+
+	private _mmQueryPanelImported = false
+	private _importMMQueryPanel = new Task(this, {
+		task: async ([showQueryPanel]) => {
+			if (this._mmQueryPanelImported || !showQueryPanel) {
+				return
+			}
+			Log.Log(Log.Level.DEBUG, this.localName, '_importMMQueryPanel')
+
+			await import('@lib/components/metadata-model/view/query-panel/component')
+			this._mmQueryPanelImported = true
+		},
+		args: () => [this._showQueryPanel]
 	})
 
 	private async _handleDatabaseSearch() {
@@ -141,7 +161,7 @@ class Page extends LitElement {
 		try {
 			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 			await this._metadataModelsSearch.Search(
-				Object.keys(newQc).length > 0 ? MetadataModelUtils.InsertNewQueryConditionToQueryConditions(newQc, this.queryConditions)  : this.queryConditions,
+				Object.keys(newQc).length > 0 ? MetadataModelUtils.InsertNewQueryConditionToQueryConditions(newQc, this.queryConditions) : this.queryConditions,
 				this._appContext.appcontext?.iamdirectorygroupid,
 				this._appContext.GetCurrentdirectorygroupid(),
 				this._appContext.appcontext?.targetjoindepth || 1,
@@ -166,11 +186,18 @@ class Page extends LitElement {
 		}
 	}
 
+	private _mmTableImported = false
 	private _importMMTableTask = new Task(this, {
-		task: async () => {
+		task: async ([mmsearchResultsData]) => {
+			if (this._mmTableImported || !mmsearchResultsData || mmsearchResultsData.length === 0) {
+				return
+			}
+			Log.Log(Log.Level.DEBUG, this.localName, '_importMMTableTask')
+
 			await import('@lib/components/metadata-model/view/table/component')
+			this._mmQueryPanelImported = true
 		},
-		args: () => []
+		args: () => [this._metadataModelsSearch.searchresults.data]
 	})
 
 	@state() private _fullTextSearchQuery: string = ''
@@ -185,23 +212,23 @@ class Page extends LitElement {
 		return html`
 			<div class="flex-1 flex flex-col rounded-md bg-white shadow-md shadow-gray-800 overflow-hidden p-2 gap-y-1">
 				<header class="flex-[0.5] flex flex-col space-y-1 z-[2]">
-					<section class="join w-[50%] min-w-[600px] rounded-md self-center border-[1px] border-primary p-1">
+					<section class="join w-[50%] rounded-md self-center border-[1px] border-primary p-1">
 						<input
 							class="join-item input input-ghost flex-[9]"
 							type="search"
-							placeholder="Search directory-groups..."
+							placeholder="Search iam credentials..."
 							.value=${this._fullTextSearchQuery}
 							@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 								this._fullTextSearchQuery = e.currentTarget.value
 							}}
 						/>
-						<button class="join-item btn btn-ghost" @click=${() => (this._showFilterMenu = !this._showFilterMenu)}>
+						<button class="join-item btn btn-ghost flex flex-col gap-y-1" @click=${() => (this._showFilterMenu = !this._showFilterMenu)}>
 							<!--mdi:filter-menu source: https://icon-sets.iconify.design-->
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
 								<path fill="${Theme.Color.PRIMARY}" d="m11 11l5.76-7.38a1 1 0 0 0-.17-1.4A1 1 0 0 0 16 2H2a1 1 0 0 0-.62.22a1 1 0 0 0-.17 1.4L7 11v5.87a1 1 0 0 0 .29.83l2 2a1 1 0 0 0 1.41 0a1 1 0 0 0 .3-.83zm2 5l5 5l5-5Z" />
 							</svg>
 						</button>
-						<button class="join-item btn btn-ghost" @click=${this._handleDatabaseSearch}>
+						<button class="join-item btn btn-ghost flex flex-col gap-y-1" @click=${this._handleDatabaseSearch}>
 							<!--mdi:search source: https://icon-sets.iconify.design-->
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
 								<path fill="${Theme.Color.PRIMARY}" d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5l-1.5 1.5l-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16A6.5 6.5 0 0 1 3 9.5A6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14S14 12 14 9.5S12 5 9.5 5" />
@@ -306,16 +333,37 @@ class Page extends LitElement {
 								return html`
 									<section class="flex-[2] flex flex-col overflow-hidden gap-y-2">
 										<div class="flex-[9] flex overflow-hidden shadow-inner shadow-gray-800 rounded-md">
-											<metadata-model-view-query-panel
-												.metadatamodel=${this._metadataModelsSearch.searchmetadatamodel}
-												.queryconditions=${this.queryConditions}
-												@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
-													this._metadataModelsSearch.UpdateMetadatamodel(e.detail.value)
-												}}
-												@metadata-model-view-query-panel:updatequeryconditions=${(e: CustomEvent) => {
-													this.queryConditions = structuredClone(e.detail.value)
-												}}
-											></metadata-model-view-query-panel>
+											${this._importMMQueryPanel.render({
+												pending: () => html`
+													<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
+														<div class="flex">
+															<span class="loading loading-ball loading-sm text-accent"></span>
+															<span class="loading loading-ball loading-md text-secondary"></span>
+															<span class="loading loading-ball loading-lg text-primary"></span>
+														</div>
+													</div>
+												`,
+												complete: () => html`
+													<metadata-model-view-query-panel
+														.metadatamodel=${this._metadataModelsSearch.searchmetadatamodel}
+														.queryconditions=${this.queryConditions}
+														@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
+															this._metadataModelsSearch.UpdateMetadatamodel(e.detail.value)
+														}}
+														@metadata-model-view-query-panel:updatequeryconditions=${(e: CustomEvent) => {
+															this.queryConditions = structuredClone(e.detail.value)
+														}}
+													></metadata-model-view-query-panel>
+												`,
+												error: (e) => {
+													console.error(e)
+													return html`
+														<div class="flex-[2] flex flex-col justify-center items-center shadow-inner shadow-gray-800 rounded-md p-1">
+															<span class="w-fit text-error font-bold">Error: Could not get metadata-model query panel component.</span>
+														</div>
+													`
+												}
+											})}
 										</div>
 										<div class="join">
 											${(() => {
@@ -434,15 +482,6 @@ class Page extends LitElement {
 														.data=${this._metadataModelsSearch.searchresults.data!}
 														.getmetadatamodel=${this._fieldAnyMetadataModels}
 														.filterexcludeindexes=${this.filterExcludeIndexes}
-														.addselectcolumn=${true}
-														.selecteddataindexesactions=${[
-															{
-																actionName: 'Deactivate selected group rule authorizations',
-																action: (selectedDataIndexes: number[]) => {
-																	console.log(selectedDataIndexes)
-																}
-															}
-														]}
 													></metadata-model-view-table>
 												</div>
 											`,
@@ -458,44 +497,24 @@ class Page extends LitElement {
 									}
 								})()}
 								<section class="shrink-[9] overflow-auto flex justify-center bg-gray-300 rounded-md w-full h-full min-h-[100px]">
-									<div class="self-center flex flex-col max-w-[80%] gap-y-10">
+									<div class="self-center flex-1 flex flex-col max-md:max-w-[80%] min-w-fit min-h-fit gap-y-10">
 										${(() => {
 											if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0) {
 												return nothing
 											}
-											return html` <div class="text-xl font-bold break-words text-center">Create and manage groups. Groups put together related resources thereby making it easier to manage them as well as who has access to what.</div> `
+											return html` <div class="text-xl font-bold break-words text-center">${Url.iamCredentialsNavigation.description}</div> `
 										})()}
 										<div class="flex justify-evenly flex-wrap gap-8">
-											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center">
-												<div class="flex gap-x-1 self-center">
-													<!--mdi:account-group source: https://icon-sets.iconify.design-->
-													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
-														<path
-															fill="${Theme.Color.SECONDARY_CONTENT}"
-															d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9A3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42c-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3a3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13zM0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9c-.59.68-.95 1.62-.95 2.65V20zm24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65c2.56.34 4.45 1.51 4.45 2.9z"
-														/>
-													</svg>
-													<!--mdi:plus-thick source: https://icon-sets.iconify.design-->
-													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M20 14h-6v6h-4v-6H4v-4h6V4h4v6h6z" /></svg>
-												</div>
-												${(() => {
-													if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
-														return nothing
-													}
-													return html`<div>Create New Group</div>`
-												})()}
-											</button>
 											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showQueryPanel = true)}>
 												<div class="flex gap-x-1 self-center">
-													<!--mdi:account-group source: https://icon-sets.iconify.design-->
-													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
+													<!--mdi:account-secure source: https://icon-sets.iconify.design-->
+													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
 														<path
-															fill="${Theme.Color.SECONDARY_CONTENT}"
-															d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9A3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42c-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3a3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13zM0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9c-.59.68-.95 1.62-.95 2.65V20zm24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65c2.56.34 4.45 1.51 4.45 2.9z"
+															d="M6 8c0-2.21 1.79-4 4-4s4 1.79 4 4s-1.79 4-4 4s-4-1.79-4-4m6 10.2c0-.96.5-1.86 1.2-2.46v-.24c0-.39.07-.76.18-1.12c-1.03-.24-2.17-.38-3.38-.38c-4.42 0-8 1.79-8 4v2h10zm10 .1v3.5c0 .6-.6 1.2-1.3 1.2h-5.5c-.6 0-1.2-.6-1.2-1.3v-3.5c0-.6.6-1.2 1.2-1.2v-1.5c0-1.4 1.4-2.5 2.8-2.5s2.8 1.1 2.8 2.5V17c.6 0 1.2.6 1.2 1.3m-2.5-2.8c0-.8-.7-1.3-1.5-1.3s-1.5.5-1.5 1.3V17h3z"
 														/>
 													</svg>
 													<!--mdi:search source: https://icon-sets.iconify.design-->
-													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+													<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
 														<path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5l-1.5 1.5l-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16A6.5 6.5 0 0 1 3 9.5A6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14S14 12 14 9.5S12 5 9.5 5" />
 													</svg>
 												</div>
@@ -503,44 +522,43 @@ class Page extends LitElement {
 													if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
 														return nothing
 													}
-													return html`<div>Search Groups</div>`
+													return html`<div>Search Iam Credentials</div>`
 												})()}
 											</button>
 											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showQueryPanel = true)}>
 												<div class="flex gap-x-1 self-center">
-													<!--mdi:account-group source: https://icon-sets.iconify.design-->
-													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
+													<!--mdi:account-secure source: https://icon-sets.iconify.design-->
+													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
 														<path
-															fill="${Theme.Color.SECONDARY_CONTENT}"
-															d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9A3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42c-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3a3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13zM0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9c-.59.68-.95 1.62-.95 2.65V20zm24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65c2.56.34 4.45 1.51 4.45 2.9z"
+															d="M6 8c0-2.21 1.79-4 4-4s4 1.79 4 4s-1.79 4-4 4s-4-1.79-4-4m6 10.2c0-.96.5-1.86 1.2-2.46v-.24c0-.39.07-.76.18-1.12c-1.03-.24-2.17-.38-3.38-.38c-4.42 0-8 1.79-8 4v2h10zm10 .1v3.5c0 .6-.6 1.2-1.3 1.2h-5.5c-.6 0-1.2-.6-1.2-1.3v-3.5c0-.6.6-1.2 1.2-1.2v-1.5c0-1.4 1.4-2.5 2.8-2.5s2.8 1.1 2.8 2.5V17c.6 0 1.2.6 1.2 1.3m-2.5-2.8c0-.8-.7-1.3-1.5-1.3s-1.5.5-1.5 1.3V17h3z"
 														/>
 													</svg>
 													<!--mdi:edit source: https://icon-sets.iconify.design-->
-													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" /></svg>
+													<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" /></svg>
 												</div>
 												${(() => {
 													if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
 														return nothing
 													}
-													return html`<div>Update Groups</div>`
+													return html`<div>Update Iam Credentials</div>`
 												})()}
 											</button>
 											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showQueryPanel = true)}>
 												<div class="flex gap-x-1 self-center">
-													<!--mdi:account-group source: https://icon-sets.iconify.design-->
-													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
+													<!--mdi:account-secure source: https://icon-sets.iconify.design-->
+													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
 														<path
-															d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9A3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42c-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3a3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13zM0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9c-.59.68-.95 1.62-.95 2.65V20zm24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65c2.56.34 4.45 1.51 4.45 2.9z"
+															d="M6 8c0-2.21 1.79-4 4-4s4 1.79 4 4s-1.79 4-4 4s-4-1.79-4-4m6 10.2c0-.96.5-1.86 1.2-2.46v-.24c0-.39.07-.76.18-1.12c-1.03-.24-2.17-.38-3.38-.38c-4.42 0-8 1.79-8 4v2h10zm10 .1v3.5c0 .6-.6 1.2-1.3 1.2h-5.5c-.6 0-1.2-.6-1.2-1.3v-3.5c0-.6.6-1.2 1.2-1.2v-1.5c0-1.4 1.4-2.5 2.8-2.5s2.8 1.1 2.8 2.5V17c.6 0 1.2.6 1.2 1.3m-2.5-2.8c0-.8-.7-1.3-1.5-1.3s-1.5.5-1.5 1.3V17h3z"
 														/>
 													</svg>
 													<!--mdi:delete source: https://icon-sets.iconify.design-->
-													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
+													<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 												</div>
 												${(() => {
 													if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
 														return nothing
 													}
-													return html`<div>Delete Groups</div>`
+													return html`<div>Delete Iam Credentials</div>`
 												})()}
 											</button>
 										</div>
@@ -557,6 +575,6 @@ class Page extends LitElement {
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'directory-groups-page': Page
+		'iam-credentials': Component
 	}
 }

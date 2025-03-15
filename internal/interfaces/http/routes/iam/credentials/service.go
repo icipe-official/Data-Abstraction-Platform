@@ -1,8 +1,9 @@
-package directorygroups
+package credentials
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 	inthttp "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
+	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 )
 
 type service struct {
@@ -93,4 +95,102 @@ func (n *service) ServiceDirectoryGroupsFindOneByIamCredentialID(ctx context.Con
 	}
 
 	return directoryGroup, nil
+}
+
+func (n *service) ServiceIamGroupAuthorizationsGetAuthorized(
+	ctx context.Context,
+	iamAuthInfo *intdoment.IamCredentials,
+	authContextDirectoryGroupID uuid.UUID,
+	groupAuthorizationRules []*intdoment.IamGroupAuthorizationRule,
+	currentIamAuthorizationRules *intdoment.IamAuthorizationRules,
+) ([]*intdoment.IamAuthorizationRule, error) {
+	return n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		iamAuthInfo,
+		authContextDirectoryGroupID,
+		groupAuthorizationRules,
+		currentIamAuthorizationRules,
+	)
+}
+
+func (n *service) ServiceGetIamCredentialsPageHtml(
+	ctx context.Context,
+	websiteTemplate intdomint.WebsiteTemplates,
+	openid intdomint.OpenID,
+	partialRequest bool,
+	partialName string,
+	iamCredential *intdoment.IamCredentials,
+	authContextDirectoryGroupID uuid.UUID,
+	data any,
+) (*string, error) {
+	websiteTemplate.WebsiteTemplateResetBaseTemplate()
+
+	if partialRequest {
+		switch partialName {
+		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES:
+			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+			} else {
+				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+				}
+			}
+
+			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_CREDENTIALS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+			}
+		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID:
+			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_CREDENTIALS_PAGE); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+			} else {
+				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+				}
+			}
+		default:
+			return nil, intlib.NewError(http.StatusBadRequest, "Invalid inline section")
+		}
+	} else {
+		if baseTemplate, routesData, err := intlib.WebsiteGetRoutesLayout(ctx, openid, websiteTemplate, iamCredential, authContextDirectoryGroupID); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+		} else {
+			if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+			}
+			data, err = intlibjson.SetValueInObject(data, fmt.Sprintf("%s.%s", intdoment.WEBSITE_PATH_ROUTES, intdoment.WEBSITE_PATH_KEY_DATA), routesData)
+			if err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+				return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			}
+		}
+
+		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+		}
+
+		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_CREDENTIALS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+		}
+	}
+
+	if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_LIB_PAGES_ERROR, intdoment.WEBSITE_HTMLTMPL_PRTL_ERROR); err != nil {
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+	}
+
+	if htmlContent, err := websiteTemplate.WebstieTemplateGetHtmlContext(ctx, data); err != nil {
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetIamCredentialsPageHtml, err).Error())
+		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
+	} else {
+		return &htmlContent, nil
+	}
 }

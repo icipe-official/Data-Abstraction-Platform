@@ -22,6 +22,34 @@ type RouteIamCredentialsRepository interface {
 		skipIfDataExtraction bool,
 		whereAfterJoin bool,
 	) (*intdoment.MetadataModelSearchResults, error)
+	RepoIamGroupAuthorizationsGetAuthorized(
+		ctx context.Context,
+		iamAuthInfo *intdoment.IamCredentials,
+		authContextDirectoryGroupID uuid.UUID,
+		groupAuthorizationRules []*intdoment.IamGroupAuthorizationRule,
+		currentIamAuthorizationRules *intdoment.IamAuthorizationRules,
+	) ([]*intdoment.IamAuthorizationRule, error)
+}
+
+type RouteIamCredentialsWebsiteService interface {
+	ServiceIamGroupAuthorizationsGetAuthorized(
+		ctx context.Context,
+		iamAuthInfo *intdoment.IamCredentials,
+		authContextDirectoryGroupID uuid.UUID,
+		groupAuthorizationRules []*intdoment.IamGroupAuthorizationRule,
+		currentIamAuthorizationRules *intdoment.IamAuthorizationRules,
+	) ([]*intdoment.IamAuthorizationRule, error)
+	ServiceGetIamCredentialsPageHtml(
+		ctx context.Context,
+		websiteTemplate WebsiteTemplates,
+		openid OpenID,
+		partialRequest bool,
+		partialName string,
+		iamCredential *intdoment.IamCredentials,
+		authContextDirectoryGroupID uuid.UUID,
+		data any,
+	) (*string, error)
+	ServiceDirectoryGroupsFindOneByIamCredentialID(ctx context.Context, iamCredentialID uuid.UUID) (*intdoment.DirectoryGroups, error)
 }
 
 type RouteIamCredentialsApiCoreService interface {

@@ -289,3 +289,79 @@ func (n *PostgresSelectQuery) DirectoryGetSelectQuery(ctx context.Context, metad
 
 	return &selectQuery, nil
 }
+
+func (n *PostrgresRepository) RepoDirectoryInsertOneAndUpdateIamCredentials(ctx context.Context, iamCredential *intdoment.IamCredentials) error {
+	query := fmt.Sprintf(
+		"SELECT %[2]s FROM %[1]s WHERE %[2]s = $1 AND %[3]s IS NULL;",
+		intdoment.IamCredentialsRepository().RepositoryName, //1
+		intdoment.IamCredentialsRepository().ID,             //2
+		intdoment.IamCredentialsRepository().DirectoryID,    //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryInsertOneAndUpdateIamCredentials))
+
+	var id uuid.UUID
+	if err := n.db.QueryRow(ctx, query, iamCredential.ID[0]).Scan(&id); err != nil {
+		return nil
+	}
+
+	systemGroup, err := n.RepoDirectoryGroupsFindSystemGroup(ctx, []string{intdoment.DirectoryGroupsRepository().ID})
+	if err != nil {
+		return err
+	}
+
+	iamAuthorizationRule := new(intdoment.IamAuthorizationRule)
+	if iar, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		iamCredential,
+		systemGroup.ID[0],
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_CREATE,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY,
+			},
+		},
+		nil,
+	); err != nil {
+		return err
+	} else if iar == nil {
+		return intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	} else {
+		iamAuthorizationRule = iar[0]
+	}
+
+	query = fmt.Sprintf(
+		"INSERT INTO %[1]s (%[2]s, %[3]s) VALUES ($1, $2) RETURNING %[4]s;",
+		intdoment.DirectoryRepository().RepositoryName,    //1
+		intdoment.DirectoryRepository().DirectoryGroupsID, //2
+		intdoment.DirectoryRepository().Data,              //3
+		intdoment.DirectoryRepository().ID,                //4
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryInsertOneAndUpdateIamCredentials))
+	if err := n.db.QueryRow(ctx, query, systemGroup.ID[0], map[string]any{}).Scan(&id); err != nil {
+		return intlib.FunctionNameAndError(n.RepoDirectoryInsertOneAndUpdateIamCredentials, fmt.Errorf("insert %s failed, err: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	query = fmt.Sprintf(
+		"INSERT INTO %[1]s (%[2]s, %[3]s) VALUES ($1, $2);",
+		intdoment.DirectoryAuthorizationIDsRepository().RepositoryName,                   //1
+		intdoment.DirectoryAuthorizationIDsRepository().ID,                               //2
+		intdoment.DirectoryAuthorizationIDsRepository().CreationIamGroupAuthorizationsID, //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryInsertOneAndUpdateIamCredentials))
+	if _, err := n.db.Exec(ctx, query, id, iamAuthorizationRule.ID); err != nil {
+		return intlib.FunctionNameAndError(n.RepoDirectoryInsertOneAndUpdateIamCredentials, fmt.Errorf("insert %s failed, err: %v", intdoment.DirectoryAuthorizationIDsRepository().RepositoryName, err))
+	}
+
+	query = fmt.Sprintf(
+		"UPDATE %[1]s SET %[2]s = $1 WHERE %[3]s = $2;",
+		intdoment.IamCredentialsRepository().RepositoryName, //1
+		intdoment.IamCredentialsRepository().DirectoryID,    //2
+		intdoment.IamCredentialsRepository().ID,             //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryInsertOneAndUpdateIamCredentials))
+	if _, err := n.db.Exec(ctx, query, id, iamCredential.ID[0]); err != nil {
+		return intlib.FunctionNameAndError(n.RepoDirectoryInsertOneAndUpdateIamCredentials, fmt.Errorf("update %s failed, err: %v", intdoment.IamCredentialsRepository().RepositoryName, err))
+	}
+
+	return nil
+}

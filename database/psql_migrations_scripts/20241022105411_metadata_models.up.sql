@@ -3,6 +3,7 @@ CREATE TABLE public.metadata_models
 (
     id uuid NOT NULL DEFAULT uuid_generate_v7(),
     directory_groups_id uuid NOT NULL,
+    directory_id uuid,
     name text NOT NULL,
     description text NOT NULL,
     edit_authorized boolean NOT NULL DEFAULT TRUE,
@@ -18,6 +19,11 @@ CREATE TABLE public.metadata_models
     PRIMARY KEY (id),
     CONSTRAINT group_id FOREIGN KEY (directory_groups_id)
         REFERENCES public.directory_groups (id) MATCH SIMPLE
+        ON UPDATE RESTRICT
+        ON DELETE RESTRICT
+        NOT VALID,
+    CONSTRAINT directory_id FOREIGN KEY (directory_id)
+        REFERENCES public.directory (id) MATCH SIMPLE
         ON UPDATE RESTRICT
         ON DELETE RESTRICT
         NOT VALID

@@ -198,6 +198,7 @@ func (n *PostrgresRepository) RepoIamGroupAuthorizationsInsertOne(ctx context.Co
 	dataRows := make([]any, 0)
 	for rows.Next() {
 		if r, err := rows.Values(); err != nil {
+			transaction.Rollback(ctx)
 			return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsInsertOne, err)
 		} else {
 			dataRows = append(dataRows, r)
@@ -206,27 +207,33 @@ func (n *PostrgresRepository) RepoIamGroupAuthorizationsInsertOne(ctx context.Co
 
 	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(iamGroupAuthorizationsMModel, nil, false, false, columns)
 	if err != nil {
+		transaction.Rollback(ctx)
 		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsInsertOne, err)
 	}
 	if err := array2DToObject.Convert(dataRows); err != nil {
+		transaction.Rollback(ctx)
 		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsInsertOne, err)
 	}
 
 	if len(array2DToObject.Objects()) == 0 {
+		transaction.Rollback(ctx)
 		return nil, nil
 	}
 
 	if len(array2DToObject.Objects()) > 1 {
+		transaction.Rollback(ctx)
 		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoIamGroupAuthorizationsInsertOne))
 		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsInsertOne, fmt.Errorf("more than one %s found", intdoment.IamGroupAuthorizationsRepository().RepositoryName))
 	}
 
 	iamGroupAuthorization := new(intdoment.IamGroupAuthorizations)
 	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
+		transaction.Rollback(ctx)
 		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsInsertOne, err)
 	} else {
 		n.logger.Log(ctx, slog.LevelDebug, "json parsing iamGroupAuthorization", "iamGroupAuthorization", string(jsonData), "function", intlib.FunctionName(n.RepoIamGroupAuthorizationsInsertOne))
 		if err := json.Unmarshal(jsonData, iamGroupAuthorization); err != nil {
+			transaction.Rollback(ctx)
 			return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsInsertOne, err)
 		}
 	}

@@ -5,12 +5,8 @@ namespace Url {
 	export const MetadataModelSearchPath = '/search'
 
 	export const WebsitePaths: IWebsitePaths = {
-		Home: {
-			Url: '/'
-		},
-		MetadataModels: {
-			Url: '/metadata-models'
-		}
+		Home: '/',
+		MetadataModels: '/metadata-models'
 	}
 
 	export const ApiUrlPaths: IApiUrlPaths = {
@@ -32,12 +28,8 @@ namespace Url {
 	}
 
 	export interface IWebsitePaths {
-		Home: {
-			Url: string
-		}
-		MetadataModels: {
-			Url: string
-		}
+		Home: string
+		MetadataModels: string
 	}
 
 	export interface IApiUrlPaths {
@@ -277,7 +269,7 @@ namespace Url {
 				/>
 			</svg>
 		`,
-		description: 'Create and manage information about people.',
+		description: 'View and manage credentials that grant users access to different resources within the system.',
 		navinfo: [
 			{
 				path: '/iam/credentials',

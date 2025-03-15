@@ -141,9 +141,9 @@ class Component extends LitElement {
 				}
 			}
 
-			if (this._dateOfLastUpdatedOnFrom.length > 0) {
-				newQc['$.last_updated_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.LastUpdatedOn,
+			if (this._deactivatedOnFrom.length > 0) {
+				newQc['$.deactivated_on'] = {
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupRuleAuthorizations.FieldColumn.DeactivatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -151,15 +151,15 @@ class Component extends LitElement {
 								[MetadataModel.FConditionProperties.NEGATE]: false,
 								[MetadataModel.FConditionProperties.CONDITION]: MetadataModel.FilterCondition.TIMESTAMP_GREATER_THAN,
 								[MetadataModel.FConditionProperties.DATE_TIME_FORMAT]: MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM,
-								[MetadataModel.FConditionProperties.VALUE]: this._dateOfLastUpdatedOnFrom
+								[MetadataModel.FConditionProperties.VALUE]: this._deactivatedOnFrom
 							}
 						]
 					]
 				}
 			}
-			if (this._dateOfLastUpdatedOnTo.length > 0) {
-				newQc['$.last_updated_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.LastUpdatedOn,
+			if (this._deactivatedOnTo.length > 0) {
+				newQc['$.deactivated_on'] = {
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupRuleAuthorizations.FieldColumn.DeactivatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -167,7 +167,25 @@ class Component extends LitElement {
 								[MetadataModel.FConditionProperties.NEGATE]: false,
 								[MetadataModel.FConditionProperties.CONDITION]: MetadataModel.FilterCondition.TIMESTAMP_LESS_THAN,
 								[MetadataModel.FConditionProperties.DATE_TIME_FORMAT]: MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM,
-								[MetadataModel.FConditionProperties.VALUE]: this._dateOfLastUpdatedOnTo
+								[MetadataModel.FConditionProperties.VALUE]: this._deactivatedOnTo
+							}
+						]
+					]
+				}
+			}
+			if (this.data?.directorygroupsid) {
+				newQc['$.directory_groups_id'] = {
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupRuleAuthorizations.FieldColumn.DirectoryGroupsID,
+					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
+					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
+						[
+							{
+								[MetadataModel.FConditionProperties.NEGATE]: false,
+								[MetadataModel.FConditionProperties.CONDITION]: MetadataModel.FilterCondition.EQUAL_TO,
+								[MetadataModel.FConditionProperties.VALUE]: {
+									[MetadataModel.FSelectProperties.TYPE]: MetadataModel.FSelectType.TEXT,
+									[MetadataModel.FSelectProperties.VALUE]: this.data?.directorygroupsid
+								}
 							}
 						]
 					]
@@ -175,7 +193,7 @@ class Component extends LitElement {
 			}
 		}
 		try {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 			await this._metadataModelsSearch.Search(
 				Object.keys(newQc).length > 0 ? MetadataModelUtils.InsertNewQueryConditionToQueryConditions(newQc, this.queryConditions) : this.queryConditions,
 				this._appContext.appcontext?.iamdirectorygroupid,
@@ -193,12 +211,12 @@ class Component extends LitElement {
 			console.error(e)
 			if (Array.isArray(e)) {
 				if (e[1] && typeof e[1] == 'object' && e[1].message) {
-					window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+					this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 				}
 			}
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 		} finally {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 		}
 	}
 
@@ -206,7 +224,7 @@ class Component extends LitElement {
 		const data = selectedDataIndexes.map((dIndex) => this._metadataModelsSearch.searchresults.data![dIndex])
 
 		try {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting/deactivating ${Entities.GroupRuleAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting/deactivating ${Entities.GroupRuleAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
@@ -225,22 +243,22 @@ class Component extends LitElement {
 				body: JSON.stringify(data)
 			})
 
-			const fetchData = await fetchResponse.json()
+			const fetchData: Entities.MetadataModel.IVerboseResponse = await fetchResponse.json()
 			if (fetchResponse.ok) {
-				window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) }, bubbles: true, composed: true }))
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: !fetchData.failed ? Lib.ToastType.SUCCESS : fetchData.successful && fetchData.successful > 0 ? Lib.ToastType.INFO : Lib.ToastType.ERROR, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) }, bubbles: true, composed: true }))
 			} else {
-				window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
 			}
 		} catch (e) {
 			console.error(e)
 			if (Array.isArray(e)) {
 				if (e[1] && typeof e[1] == 'object' && e[1].message) {
-					window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+					this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 				}
 			}
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 		} finally {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 		}
 	}
 
@@ -277,8 +295,8 @@ class Component extends LitElement {
 	@state() private _groupAuthorizationRulesFtsTableCollectionUid: string | undefined
 	@state() private _dateOfCreationFrom: string = ''
 	@state() private _dateOfCreationTo: string = ''
-	@state() private _dateOfLastUpdatedOnFrom: string = ''
-	@state() private _dateOfLastUpdatedOnTo: string = ''
+	@state() private _deactivatedOnFrom: string = ''
+	@state() private _deactivatedOnTo: string = ''
 	@state() private _showFilterMenu: boolean = false
 	@state() private _showQueryPanel: boolean = false
 
@@ -384,7 +402,7 @@ class Component extends LitElement {
 		}
 
 		try {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Creating new ${Entities.GroupRuleAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Creating new ${Entities.GroupRuleAuthorizations.RepositoryName}...` }, bubbles: true, composed: true }))
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
@@ -403,22 +421,22 @@ class Component extends LitElement {
 				body: JSON.stringify(newGroupRuleAuthorizations)
 			})
 
-			const fetchData = await fetchResponse.json()
+			const fetchData: Entities.MetadataModel.IVerboseResponse = await fetchResponse.json()
 			if (fetchResponse.ok) {
-				window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) }, bubbles: true, composed: true }))
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: !fetchData.failed ? Lib.ToastType.SUCCESS : fetchData.successful && fetchData.successful > 0 ? Lib.ToastType.INFO : Lib.ToastType.ERROR, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) }, bubbles: true, composed: true }))
 			} else {
-				window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
 			}
 		} catch (e) {
 			console.error(e)
 			if (Array.isArray(e)) {
 				if (e[1] && typeof e[1] == 'object' && e[1].message) {
-					window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+					this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 				}
 			}
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 		} finally {
-			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 		}
 	}
 
@@ -587,7 +605,7 @@ class Component extends LitElement {
 																		@click=${(e: Event) => {
 																			e.preventDefault()
 																			this._directoryGroupsFilterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._directoryGroupsSearch!.searchresults.data!))
-																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._directoryGroupsFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
+																			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._directoryGroupsFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
 																		}}
 																	>
 																		<div class="flex gap-x-1 self-center">
@@ -622,7 +640,7 @@ class Component extends LitElement {
 															class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 															@click=${async () => {
 																try {
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 																	await this._directoryGroupsSearch!.Search(
 																		this._directoryGroupsQueryConditions,
 																		this._appContext.appcontext?.iamdirectorygroupid,
@@ -644,12 +662,12 @@ class Component extends LitElement {
 																	console.error(e)
 																	if (Array.isArray(e)) {
 																		if (e[1] && typeof e[1] == 'object' && e[1].message) {
-																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+																			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 																		}
 																	}
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 																} finally {
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 																}
 															}}
 														>
@@ -839,7 +857,7 @@ class Component extends LitElement {
 																		@click=${(e: Event) => {
 																			e.preventDefault()
 																			this._groupAuthorizationRulesFilterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._groupAuthorizationRulesSearch!.searchresults.data!))
-																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._groupAuthorizationRulesFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
+																			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._groupAuthorizationRulesFilterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
 																		}}
 																	>
 																		<div class="flex gap-x-1 self-center">
@@ -874,7 +892,7 @@ class Component extends LitElement {
 															class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 															@click=${async () => {
 																try {
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 																	await this._groupAuthorizationRulesSearch!.Search(
 																		this._groupAuthorizationRulesQueryConditions,
 																		this._appContext.appcontext?.iamdirectorygroupid,
@@ -896,12 +914,12 @@ class Component extends LitElement {
 																	console.error(e)
 																	if (Array.isArray(e)) {
 																		if (e[1] && typeof e[1] == 'object' && e[1].message) {
-																			window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+																			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
 																		}
 																	}
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 																} finally {
-																	window.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+																	this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
 																}
 															}}
 														>
@@ -1080,28 +1098,28 @@ class Component extends LitElement {
 												<div class="join-item h-[5px] bg-primary"></div>
 											</div>
 											<div class="join join-vertical">
-												<div class="join-item bg-primary text-primary-content p-1 font-bold">Last updated on (from/to)</div>
+												<div class="join-item bg-primary text-primary-content p-1 font-bold">Deactivated on (from/to)</div>
 												<calendar-time
 													class="join-item flex-1"
 													.roundedborder=${false}
-													.value=${this._dateOfLastUpdatedOnFrom}
+													.value=${this._deactivatedOnFrom}
 													@calendar-time:datetimeupdate=${(e: CustomEvent) => {
 														if (e.detail.value) {
-															this._dateOfLastUpdatedOnFrom = e.detail.value
+															this._deactivatedOnFrom = e.detail.value
 														} else {
-															this._dateOfLastUpdatedOnFrom = ''
+															this._deactivatedOnFrom = ''
 														}
 													}}
 												></calendar-time>
 												<calendar-time
 													class="join-item flex-1"
 													.roundedborder=${false}
-													.value=${this._dateOfLastUpdatedOnTo}
+													.value=${this._deactivatedOnTo}
 													@calendar-time:datetimeupdate=${(e: CustomEvent) => {
 														if (e.detail.value) {
-															this._dateOfLastUpdatedOnTo = e.detail.value
+															this._deactivatedOnTo = e.detail.value
 														} else {
-															this._dateOfLastUpdatedOnTo = ''
+															this._deactivatedOnTo = ''
 														}
 													}}
 												></calendar-time>
@@ -1181,7 +1199,7 @@ class Component extends LitElement {
 																	class="flex-1 join-item btn btn-secondary min-h-fit h-fit min-w-fit w-fit flex flex-col gap-y-1"
 																	@click=${() => {
 																		this._filterExcludeIndexes = structuredClone(MetadataModel.FilterData(this.queryConditions, this._metadataModelsSearch.searchresults.data!))
-																		window.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._filterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
+																		this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.INFO, toastMessage: `${this._filterExcludeIndexes.length} filtered out` }, bubbles: true, composed: true }))
 																	}}
 																>
 																	<div class="flex gap-x-1 self-center">

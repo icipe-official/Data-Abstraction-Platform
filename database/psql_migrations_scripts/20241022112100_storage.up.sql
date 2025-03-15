@@ -81,6 +81,7 @@ CREATE TABLE public.storage_drives_groups
 (
     storage_drives_id uuid NOT NULL,
     directory_groups_id uuid NOT NULL,
+    directory_id uuid,
     description text,
     created_on timestamp without time zone NOT NULL DEFAULT NOW(),
     last_updated_on timestamp without time zone NOT NULL DEFAULT NOW(),
@@ -95,6 +96,11 @@ CREATE TABLE public.storage_drives_groups
         REFERENCES public.storage_drives (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT directory_id FOREIGN KEY (directory_id)
+        REFERENCES public.directory (id) MATCH SIMPLE
+        ON UPDATE RESTRICT
+        ON DELETE RESTRICT
         NOT VALID
 );
 

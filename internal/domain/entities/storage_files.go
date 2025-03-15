@@ -10,6 +10,7 @@ type StorageFiles struct {
 	ID                  []uuid.UUID `sql:"primary_key" json:"id,omitempty"`
 	StorageDrivesID     []uuid.UUID `json:"storage_drives_id,omitempty"`
 	DirectoryGroupsID   []uuid.UUID `json:"directory_groups_id,omitempty"`
+	DirectoryID         []uuid.UUID `json:"directory_id,omitempty"`
 	StorageFileMimeType []string    `json:"storage_file_mime_type,omitempty"`
 	OriginalName        []string    `json:"original_name,omitempty"`
 	Tags                []string    `json:"tags,omitempty"`
@@ -28,6 +29,7 @@ type storageFilesRepository struct {
 	ID                  string
 	StorageDrivesID     string
 	DirectoryGroupsID   string
+	DirectoryID         string
 	StorageFileMimeType string
 	OriginalName        string
 	Tags                string
@@ -48,6 +50,7 @@ func StorageFilesRepository() storageFilesRepository {
 		ID:                  "id",
 		StorageDrivesID:     "storage_drives_id",
 		DirectoryGroupsID:   "directory_groups_id",
+		DirectoryID:         "directory_id",
 		StorageFileMimeType: "storage_file_mime_type",
 		OriginalName:        "original_name",
 		Tags:                "tags",

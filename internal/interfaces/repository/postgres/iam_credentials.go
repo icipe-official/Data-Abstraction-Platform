@@ -191,6 +191,9 @@ func (n *PostgresSelectQuery) IamCredentialsGetSelectQuery(ctx context.Context, 
 			selectQuery.Where[intdoment.IamCredentialsRepository().DeactivatedOn] = value
 		}
 	}
+	if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, selectQuery.TableName, "", "", "", intdoment.IamCredentialsRepository().FullTextSearch); len(value) > 0 {
+		selectQuery.Where[intdoment.IamCredentialsRepository().RepositoryName] = value
+	}
 
 	directoryIDJoinDirectory := intlib.MetadataModelGenJoinKey(intdoment.IamCredentialsRepository().DirectoryID, intdoment.DirectoryRepository().RepositoryName)
 	if value, err := n.extractChildMetadataModel(metadataModel, directoryIDJoinDirectory); err != nil {

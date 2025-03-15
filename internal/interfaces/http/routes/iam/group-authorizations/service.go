@@ -196,6 +196,8 @@ func (n *service) ServiceIamGroupAuthorizationsDeleteMany(
 	}
 
 	verbres.Message = fmt.Sprintf("Delete/Deactivate %[1]s: %[2]d/%[4]d successful and %[3]d/%[4]d failed", intdoment.GroupRuleAuthorizationsRepository().RepositoryName, successful, failed, len(data))
+	verbres.Successful = successful
+	verbres.Failed = failed
 
 	return http.StatusOK, verbres, nil
 }
@@ -360,6 +362,8 @@ func (n *service) ServiceIamGroupAuthorizationsInsertMany(
 	}
 
 	verbres.Message = fmt.Sprintf("Create %[1]s: %[2]d/%[4]d successful and %[3]d/%[4]d failed", intdoment.IamGroupAuthorizationsRepository().RepositoryName, successful, failed, len(data))
+	verbres.Successful = successful
+	verbres.Failed = failed
 
 	return http.StatusOK, verbres, nil
 }

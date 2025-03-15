@@ -1,0 +1,1 @@
+import '@lib/components/iam/credentials/component'

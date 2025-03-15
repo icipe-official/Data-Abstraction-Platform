@@ -79,7 +79,7 @@ class Component extends LitElement {
 		this._toastType = e.detail.toastType
 		this._toastMessage = e.detail.toastMessage
 		this._toastTitle = e.detail.toastTitle
-		this._toastMetadataModelSearchResults = e.detail.toastMetadataModelSearchResults
+		this._toastMetadataModelSearchResults = structuredClone(e.detail.toastMetadataModelSearchResults)
 	}
 
 	@state() _showFilterPanel: boolean = false
@@ -253,7 +253,7 @@ class Component extends LitElement {
 														class="flex-[0.5] btn btn-primary"
 														@click=${(e: Event) => {
 															e.preventDefault()
-															this._filterexcludeindexes = MetadataModel.FilterData(this._queryConditions, this._toastMetadataModelSearchResults!.data!)
+															this._filterexcludeindexes = structuredClone(MetadataModel.FilterData(this._queryConditions, this._toastMetadataModelSearchResults!.data!))
 														}}
 													>
 														Filter
