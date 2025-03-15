@@ -1,4 +1,4 @@
-package groups
+package directory
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 )
 
 type service struct {
-	repo   intdomint.RouteDirectoryGroupsRepository
+	repo   intdomint.RouteGroupAuthorizationRulesRepository
 	logger intdomint.Logger
 }
 
@@ -53,7 +53,7 @@ func (n *service) ServiceIamGroupAuthorizationsGetAuthorized(
 	)
 }
 
-func (n *service) ServiceGetDirectoryGroupsPageHtml(
+func (n *service) ServiceGetGroupAuthorizationRulesPageHtml(
 	ctx context.Context,
 	websiteTemplate intdomint.WebsiteTemplates,
 	openid intdomint.OpenID,
@@ -69,26 +69,26 @@ func (n *service) ServiceGetDirectoryGroupsPageHtml(
 		switch partialName {
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES:
 			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
 				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 				}
 			}
 
-			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_GROUPS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID:
-			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_GROUPS_PAGE); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
 				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 				}
 			}
@@ -97,45 +97,45 @@ func (n *service) ServiceGetDirectoryGroupsPageHtml(
 		}
 	} else {
 		if baseTemplate, routesData, err := intlib.WebsiteGetRoutesLayout(ctx, openid, websiteTemplate, iamCredential, authContextDirectoryGroupID); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		} else {
 			if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 			data, err = intlibjson.SetValueInObject(data, fmt.Sprintf("%s.%s", intdoment.WEBSITE_PATH_ROUTES, intdoment.WEBSITE_PATH_KEY_DATA), routesData)
 			if err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 			}
 		}
 
 		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 
-		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_GROUPS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 	}
 
 	if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_LIB_PAGES_ERROR, intdoment.WEBSITE_HTMLTMPL_PRTL_ERROR); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 	}
 
 	if htmlContent, err := websiteTemplate.WebstieTemplateGetHtmlContext(ctx, data); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetDirectoryGroupsPageHtml, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 	} else {
 		return &htmlContent, nil
 	}
 }
 
-func (n *service) ServiceDirectoryGroupsSearch(
+func (n *service) ServiceGroupAuthorizationRulesSearch(
 	ctx context.Context,
 	mmsearch *intdoment.MetadataModelSearch,
 	repo intdomint.IamRepository,
@@ -147,7 +147,7 @@ func (n *service) ServiceDirectoryGroupsSearch(
 	skipIfDataExtraction bool,
 	whereAfterJoin bool,
 ) (*intdoment.MetadataModelSearchResults, error) {
-	if value, err := n.repo.RepoDirectoryGroupsSearch(
+	if value, err := n.repo.RepoGroupAuthorizationRulesSearch(
 		ctx,
 		mmsearch,
 		repo,
@@ -159,16 +159,16 @@ func (n *service) ServiceDirectoryGroupsSearch(
 		skipIfDataExtraction,
 		whereAfterJoin,
 	); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsSearch, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupAuthorizationRulesSearch, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	} else {
 		return value, nil
 	}
 }
 
-func (n *service) ServiceDirectoryGroupsGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error) {
-	if value, err := metadataModelRetrieve.DirectoryGroupsGetMetadataModel(ctx, 0, targetJoinDepth, nil); err != nil {
-		n.logger.Log(ctx, slog.LevelWarn+1, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsGetMetadataModel, err).Error())
+func (n *service) ServiceGroupAuthorizationRulesGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error) {
+	if value, err := metadataModelRetrieve.GroupAuthorizationRulesGetMetadataModel(ctx, 0, targetJoinDepth, nil); err != nil {
+		n.logger.Log(ctx, slog.LevelWarn+1, intlib.FunctionNameAndError(n.ServiceGroupAuthorizationRulesGetMetadataModel, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	} else {
 		return value, nil

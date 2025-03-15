@@ -16,6 +16,9 @@ const (
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_ID_PAGE string = "routes/[group_id]/metadata-models/[id]/page"
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_PAGE    string = "routes/[group_id]/metadata-models/page"
 
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_PAGE        string = "routes/[group_id]/metadata-models/directory/page"
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_GROUPS_PAGE string = "routes/[group_id]/metadata-models/directory/groupspage"
+
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_STORAGE_FILES_ID_PAGE string = "routes/[group_id]/storage/files/[id]/page"
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_STORAGE_FILES_PAGE    string = "routes/[group_id]/storage/files/page"
 

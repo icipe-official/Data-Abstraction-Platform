@@ -7,36 +7,20 @@ import (
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 )
 
-type RouteMetadataModelsRepository interface {
-	RepoMetadataModelsDeleteOne(
+type RouteMetadataModelsDirectoryGroupsRepository interface {
+	RepoMetadataModelsDirectoryGroupsDeleteOne(
 		ctx context.Context,
-		iamAuthRule *intdoment.IamAuthorizationRule,
-		datum *intdoment.MetadataModels,
+		datum *intdoment.MetadataModelsDirectoryGroups,
 	) error
-	RepoMetadataModelsFindOneForDeletionByID(
+	RepoMetadataModelsDirectoryGroupsUpdateOne(
 		ctx context.Context,
-		iamCredential *intdoment.IamCredentials,
-		iamAuthorizationRules *intdoment.IamAuthorizationRules,
-		authContextDirectoryGroupID uuid.UUID,
-		datum *intdoment.MetadataModels,
-		columns []string,
-	) (*intdoment.MetadataModels, *intdoment.IamAuthorizationRule, error)
-	RepoMetadataModelsUpdateOne(
-		ctx context.Context,
-		iamCredential *intdoment.IamCredentials,
-		iamAuthorizationRules *intdoment.IamAuthorizationRules,
-		authContextDirectoryGroupID uuid.UUID,
-		datum *intdoment.MetadataModels,
-		columns []string,
+		datum *intdoment.MetadataModelsDirectoryGroups,
 	) error
-	RepoMetadataModelsInsertOne(
+	RepoMetadataModelsDirectoryGroupsInsertOne(
 		ctx context.Context,
-		iamAuthRule *intdoment.IamAuthorizationRule,
-		directoryID uuid.UUID,
-		directoryGroupID uuid.UUID,
-		datum *intdoment.MetadataModels,
+		datum *intdoment.MetadataModelsDirectoryGroups,
 		columns []string,
-	) (*intdoment.MetadataModels, error)
+	) (*intdoment.MetadataModelsDirectoryGroups, error)
 	RepoIamGroupAuthorizationsGetAuthorized(
 		ctx context.Context,
 		iamAuthInfo *intdoment.IamCredentials,
@@ -45,8 +29,9 @@ type RouteMetadataModelsRepository interface {
 		currentIamAuthorizationRules *intdoment.IamAuthorizationRules,
 	) ([]*intdoment.IamAuthorizationRule, error)
 	RepoDirectoryGroupsFindSystemGroup(ctx context.Context, columns []string) (*intdoment.DirectoryGroups, error)
+	RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx context.Context, parentGroupID uuid.UUID, subGroupID uuid.UUID) (*intdoment.DirectoryGroupsSubGroups, error)
 	RepoDirectoryGroupsFindOneByIamCredentialID(ctx context.Context, iamCredentialID uuid.UUID, columns []string) (*intdoment.DirectoryGroups, error)
-	RepoMetadataModelsSearch(
+	RepoMetadataModelsDirectoryGroupsSearch(
 		ctx context.Context,
 		mmsearch *intdoment.MetadataModelSearch,
 		repo IamRepository,
@@ -60,32 +45,32 @@ type RouteMetadataModelsRepository interface {
 	) (*intdoment.MetadataModelSearchResults, error)
 }
 
-type RouteMetadataModelsApiService interface {
-	ServiceMetadataModelsDeleteMany(
+type RouteMetadataModelsDirectoryGroupsApiService interface {
+	ServiceMetadataModelsDirectoryGroupsDeleteMany(
 		ctx context.Context,
 		iamCredential *intdoment.IamCredentials,
 		iamAuthorizationRules *intdoment.IamAuthorizationRules,
 		authContextDirectoryGroupID uuid.UUID,
 		verboseResponse bool,
-		data []*intdoment.MetadataModels,
+		data []*intdoment.MetadataModelsDirectoryGroups,
 	) (int, *intdoment.MetadataModelVerbRes, error)
-	ServiceMetadataModelsUpdateMany(
+	ServiceMetadataModelsDirectoryGroupsUpdateMany(
 		ctx context.Context,
 		iamCredential *intdoment.IamCredentials,
 		iamAuthorizationRules *intdoment.IamAuthorizationRules,
 		authContextDirectoryGroupID uuid.UUID,
 		verboseResponse bool,
-		data []*intdoment.MetadataModels,
+		data []*intdoment.MetadataModelsDirectoryGroups,
 	) (int, *intdoment.MetadataModelVerbRes, error)
-	ServiceMetadataModelsInsertMany(
+	ServiceMetadataModelsDirectoryGroupsInsertMany(
 		ctx context.Context,
 		iamCredential *intdoment.IamCredentials,
 		iamAuthorizationRules *intdoment.IamAuthorizationRules,
 		authContextDirectoryGroupID uuid.UUID,
 		verboseResponse bool,
-		data []*intdoment.MetadataModels,
+		data []*intdoment.MetadataModelsDirectoryGroups,
 	) (int, *intdoment.MetadataModelVerbRes, error)
-	ServiceMetadataModelsSearch(
+	ServiceMetadataModelsDirectoryGroupsSearch(
 		ctx context.Context,
 		mmsearch *intdoment.MetadataModelSearch,
 		repo IamRepository,
@@ -97,12 +82,26 @@ type RouteMetadataModelsApiService interface {
 		skipIfDataExtraction bool,
 		whereAfterJoin bool,
 	) (*intdoment.MetadataModelSearchResults, error)
-	ServiceMetadataModelsGetMetadataModel(ctx context.Context, metadataModelRetrieve MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error)
+	ServiceMetadataModelsDirectoryGroupsGetMetadataModel(ctx context.Context, metadataModelRetrieve MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error)
 	ServiceDirectoryGroupsFindOneByIamCredentialID(ctx context.Context, iamCredentialID uuid.UUID) (*intdoment.DirectoryGroups, error)
+	ServiceIamGroupAuthorizationsGetAuthorized(
+		ctx context.Context,
+		iamAuthInfo *intdoment.IamCredentials,
+		authContextDirectoryGroupID uuid.UUID,
+		groupAuthorizationRules []*intdoment.IamGroupAuthorizationRule,
+		currentIamAuthorizationRules *intdoment.IamAuthorizationRules,
+	) ([]*intdoment.IamAuthorizationRule, error)
 }
 
-type RouteMetadataModelsWebsiteService interface {
-	ServiceMetadataModelsSearch(
+type RouteMetadataModelsDirectoryGroupsWebsiteService interface {
+	ServiceIamGroupAuthorizationsGetAuthorized(
+		ctx context.Context,
+		iamAuthInfo *intdoment.IamCredentials,
+		authContextDirectoryGroupID uuid.UUID,
+		groupAuthorizationRules []*intdoment.IamGroupAuthorizationRule,
+		currentIamAuthorizationRules *intdoment.IamAuthorizationRules,
+	) ([]*intdoment.IamAuthorizationRule, error)
+	ServiceMetadataModelsDirectoryGroupsSearch(
 		ctx context.Context,
 		mmsearch *intdoment.MetadataModelSearch,
 		repo IamRepository,
@@ -114,18 +113,8 @@ type RouteMetadataModelsWebsiteService interface {
 		skipIfDataExtraction bool,
 		whereAfterJoin bool,
 	) (*intdoment.MetadataModelSearchResults, error)
-	ServiceMetadataModelsGetMetadataModel(ctx context.Context, metadataModelRetrieve MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error)
-	ServiceGetMetadataModelsPageHtml(
-		ctx context.Context,
-		websiteTemplate WebsiteTemplates,
-		openid OpenID,
-		partialRequest bool,
-		partialName string,
-		iamCredential *intdoment.IamCredentials,
-		authContextDirectoryGroupID uuid.UUID,
-		data any,
-	) (*string, error)
-	ServiceGetMedataModelPageHtml(
+	ServiceMetadataModelsDirectoryGroupsGetMetadataModel(ctx context.Context, metadataModelRetrieve MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error)
+	ServiceGetMetadataModelsDirectoryGroupsPageHtml(
 		ctx context.Context,
 		websiteTemplate WebsiteTemplates,
 		openid OpenID,

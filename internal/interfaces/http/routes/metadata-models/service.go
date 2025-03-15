@@ -307,7 +307,7 @@ func (n *service) ServiceDirectoryGroupsFindOneByIamCredentialID(ctx context.Con
 	return directoryGroup, nil
 }
 
-func (n *service) ServiceGetMedataModelsPageHtml(
+func (n *service) ServiceGetMetadataModelsPageHtml(
 	ctx context.Context,
 	websiteTemplate intdomint.WebsiteTemplates,
 	openid intdomint.OpenID,
@@ -323,26 +323,26 @@ func (n *service) ServiceGetMedataModelsPageHtml(
 		switch partialName {
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES:
 			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
 				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 				}
 			}
 
 			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID:
 			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_PAGE); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
 				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 				}
 			}
@@ -351,38 +351,38 @@ func (n *service) ServiceGetMedataModelsPageHtml(
 		}
 	} else {
 		if baseTemplate, routesData, err := intlib.WebsiteGetRoutesLayout(ctx, openid, websiteTemplate, iamCredential, authContextDirectoryGroupID); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		} else {
 			if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 			data, err = intlibjson.SetValueInObject(data, fmt.Sprintf("%s.%s", intdoment.WEBSITE_PATH_ROUTES, intdoment.WEBSITE_PATH_KEY_DATA), routesData)
 			if err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 			}
 		}
 
 		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 
 		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 	}
 
 	if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_LIB_PAGES_ERROR, intdoment.WEBSITE_HTMLTMPL_PRTL_ERROR); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 	}
 
 	if htmlContent, err := websiteTemplate.WebstieTemplateGetHtmlContext(ctx, data); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMedataModelsPageHtml, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsPageHtml, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 	} else {
 		return &htmlContent, nil

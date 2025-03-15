@@ -155,10 +155,6 @@ func (n *PostgresSelectQuery) GroupAuthorizationRulesGetSelectQuery(ctx context.
 		selectQuery.Where[intdoment.GroupAuthorizationRulesRepository().RepositoryName] = value
 	}
 
-	if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, selectQuery.TableName, "", "", "", intdoment.GroupAuthorizationRulesRepository().FullTextSearch); len(value) > 0 {
-		selectQuery.Where[intdoment.GroupAuthorizationRulesRepository().RepositoryName] = value
-	}
-
 	selectQuery.appendSort()
 	selectQuery.appendLimitOffset(metadataModel)
 

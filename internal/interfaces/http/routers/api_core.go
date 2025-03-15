@@ -13,6 +13,8 @@ import (
 	groupauthorizations "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/iam/group-authorizations"
 	metadatamodel "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-model"
 	metadatamodels "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-models"
+	metadatamodelsdirectory "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-models/directory"
+	metadatamodelsdirectorygroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-models/directory/groups"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 )
 
@@ -28,11 +30,17 @@ func InitApiCoreRouter(router *chi.Mux, webService *inthttp.WebService) {
 			authedRouter.Use(intlib.IamAuthenticationMiddleware(webService.Logger, webService.Env, webService.OpenID, webService.IamCookie, webService.PostgresRepository))
 
 			authedRouter.Route("/directory", func(directoryRouter chi.Router) {
-				directoryRouter.Mount("/", directory.ApiCoreRouter(webService))
 				directoryRouter.Mount("/groups", directorygroups.ApiCoreRouter(webService))
+				directoryRouter.Mount("/", directory.ApiCoreRouter(webService))
 			})
 			authedRouter.Mount("/metadata-model", metadatamodel.ApiCoreRouter(webService))
-			authedRouter.Mount("/metadata-models", metadatamodels.ApiCoreRouter(webService))
+			authedRouter.Route("/metadata-models", func(metadataModelsRouter chi.Router) {
+				metadataModelsRouter.Route("/directory", func(directoryRouter chi.Router) {
+					directoryRouter.Mount("/groups", metadatamodelsdirectorygroups.ApiCoreRouter(webService))
+					directoryRouter.Mount("/", metadatamodelsdirectory.ApiCoreRouter(webService))
+				})
+				metadataModelsRouter.Mount("/", metadatamodels.ApiCoreRouter(webService))
+			})
 			authedRouter.Route("/group", func(groupRouter chi.Router) {
 				groupRouter.Mount("/rule-authorizations", ruleauthorizations.ApiCoreRouter(webService))
 				groupRouter.Mount("/authorization-rules", authorizationrules.ApiCoreRouter(webService))
