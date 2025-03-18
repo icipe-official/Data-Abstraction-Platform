@@ -61,7 +61,6 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 				if value, err := s.ServiceGroupAuthorizationRulesGetMetadataModel(
 					ctx,
 					intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
-					1,
 				); err != nil {
 					intlib.SendJsonErrorResponse(err, w)
 					return
@@ -146,17 +145,9 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 				authContextDirectoryGroupID = value
 			}
 
-			targetJoinDepth := 1
-			if value, err := intlib.UrlSearchParamGetInt(r, intlib.URL_SEARCH_PARAM_TARGET_JOIN_DEPTH); err == nil {
-				targetJoinDepth = value
-			} else {
-				targetJoinDepth = 1
-			}
-
 			if value, err := s.ServiceGroupAuthorizationRulesGetMetadataModel(
 				ctx,
 				intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
-				targetJoinDepth,
 			); err != nil {
 				intlib.SendJsonErrorResponse(err, w)
 				return

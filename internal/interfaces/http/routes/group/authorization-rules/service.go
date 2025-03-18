@@ -166,8 +166,8 @@ func (n *service) ServiceGroupAuthorizationRulesSearch(
 	}
 }
 
-func (n *service) ServiceGroupAuthorizationRulesGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error) {
-	if value, err := metadataModelRetrieve.GroupAuthorizationRulesGetMetadataModel(ctx, 0, targetJoinDepth, nil); err != nil {
+func (n *service) ServiceGroupAuthorizationRulesGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve) (map[string]any, error) {
+	if value, err := metadataModelRetrieve.GroupAuthorizationRulesGetMetadataModel(ctx); err != nil {
 		n.logger.Log(ctx, slog.LevelWarn+1, intlib.FunctionNameAndError(n.ServiceGroupAuthorizationRulesGetMetadataModel, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	} else {

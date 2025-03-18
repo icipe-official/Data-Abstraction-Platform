@@ -18,6 +18,49 @@ import (
 	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
 )
 
+func (n *PostrgresRepository) RepoIamCredentialsUpdateOne(ctx context.Context, datum *intdoment.IamCredentials) error {
+	valuesToUpdate := make([]any, 0)
+	columnsToUpdate := make([]string, 0)
+	if v, c, err := n.RepoIamCredentialsValidateAndGetColumnsAndData(datum); err != nil {
+		return err
+	} else if len(c) == 0 || len(v) == 0 {
+		return intlib.NewError(http.StatusBadRequest, "no values to update")
+	} else {
+		valuesToUpdate = append(valuesToUpdate, v...)
+		columnsToUpdate = append(columnsToUpdate, c...)
+	}
+
+	nextPlaceholder := 1
+	query := fmt.Sprintf(
+		"UPDATE %[1]s SET %[2]s WHERE %[3]s = %[4]s AND %[5]s IS NULL AND %[6]s IS NULL;",
+		intdoment.IamCredentialsRepository().RepositoryName,    //1
+		GetUpdateSetColumns(columnsToUpdate, &nextPlaceholder), //2
+		intdoment.IamCredentialsRepository().ID,                //3
+		GetandUpdateNextPlaceholder(&nextPlaceholder),          //4
+		intdoment.IamCredentialsRepository().DeactivatedOn,     //5
+		intdoment.IamCredentialsRepository().DirectoryID,       //6
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsDirectoryGroupsUpdateOne))
+	valuesToUpdate = append(valuesToUpdate, datum.ID[0])
+	if _, err := n.db.Exec(ctx, query, valuesToUpdate...); err != nil {
+		return intlib.FunctionNameAndError(n.RepoMetadataModelsDirectoryGroupsUpdateOne, fmt.Errorf("update %s failed, err: %v", intdoment.IamCredentialsRepository().RepositoryName, err))
+	}
+
+	return nil
+}
+
+func (n *PostrgresRepository) RepoIamCredentialsValidateAndGetColumnsAndData(datum *intdoment.IamCredentials) ([]any, []string, error) {
+	values := make([]any, 0)
+	columns := make([]string, 0)
+
+	if len(datum.DirectoryID) > 0 {
+		values = append(values, datum.DirectoryID[0])
+		columns = append(columns, intdoment.IamCredentialsRepository().DirectoryID)
+	}
+
+	return values, columns, nil
+}
+
 func (n *PostrgresRepository) RepoIamCredentialsSearch(
 	ctx context.Context,
 	mmsearch *intdoment.MetadataModelSearch,

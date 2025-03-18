@@ -65,6 +65,6 @@ type RouteGroupAuthorizationRulesApiCoreService interface {
 		skipIfDataExtraction bool,
 		whereAfterJoin bool,
 	) (*intdoment.MetadataModelSearchResults, error)
-	ServiceGroupAuthorizationRulesGetMetadataModel(ctx context.Context, metadataModelRetrieve MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error)
+	ServiceGroupAuthorizationRulesGetMetadataModel(ctx context.Context, metadataModelRetrieve MetadataModelRetrieve) (map[string]any, error)
 	ServiceDirectoryGroupsFindOneByIamCredentialID(ctx context.Context, iamCredentialID uuid.UUID) (*intdoment.DirectoryGroups, error)
 }

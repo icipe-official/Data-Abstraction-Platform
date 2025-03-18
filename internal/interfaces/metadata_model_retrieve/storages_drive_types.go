@@ -8,15 +8,15 @@ import (
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 )
 
-func (n *MetadataModelRetrieve) GroupAuthorizationRulesGetMetadataModel(ctx context.Context) (map[string]any, error) {
+func (n *MetadataModelRetrieve) StorageDrivesTypesGetMetadataModel(ctx context.Context) (map[string]any, error) {
 	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
 		ctx,
 		n.iamCredential,
 		n.authContextDirectoryGroupID,
 		[]*intdoment.IamGroupAuthorizationRule{
 			{
-				ID:        "",
-				RuleGroup: intdoment.AUTH_RULE_GROUP_GROUP_RULE_AUTHORIZATIONS,
+				ID:        intdoment.AUTH_RULE_RETRIEVE,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_STORAGE_DRIVES,
 			},
 		},
 		n.iamAuthorizationRules,
@@ -24,14 +24,14 @@ func (n *MetadataModelRetrieve) GroupAuthorizationRulesGetMetadataModel(ctx cont
 		return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 
-	parentMetadataModel, err := n.GetMetadataModel(intdoment.GroupAuthorizationRulesRepository().RepositoryName)
+	parentMetadataModel, err := n.GetMetadataModel(intdoment.StorageDrivesTypesRepository().RepositoryName)
 	if err != nil {
-		return nil, intlib.FunctionNameAndError(n.GroupAuthorizationRulesGetMetadataModel, err)
+		return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)
 	}
 
 	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
 	if err != nil {
-		return nil, intlib.FunctionNameAndError(n.GroupAuthorizationRulesGetMetadataModel, err)
+		return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)
 	}
 
 	return parentMetadataModel, nil

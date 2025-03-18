@@ -8,6 +8,7 @@ import (
 )
 
 type RouteIamCredentialsRepository interface {
+	RepoIamCredentialsUpdateOne(ctx context.Context, datum *intdoment.IamCredentials) error
 	RepoDirectoryGroupsFindSystemGroup(ctx context.Context, columns []string) (*intdoment.DirectoryGroups, error)
 	RepoDirectoryGroupsFindOneByIamCredentialID(ctx context.Context, iamCredentialID uuid.UUID, columns []string) (*intdoment.DirectoryGroups, error)
 	RepoIamCredentialsSearch(
@@ -53,6 +54,14 @@ type RouteIamCredentialsWebsiteService interface {
 }
 
 type RouteIamCredentialsApiCoreService interface {
+	ServiceIamCredentialsUpdateMany(
+		ctx context.Context,
+		iamCredential *intdoment.IamCredentials,
+		iamAuthorizationRules *intdoment.IamAuthorizationRules,
+		authContextDirectoryGroupID uuid.UUID,
+		verboseResponse bool,
+		data []*intdoment.IamCredentials,
+	) (int, *intdoment.MetadataModelVerbRes, error)
 	ServiceIamCredentialsSearch(
 		ctx context.Context,
 		mmsearch *intdoment.MetadataModelSearch,

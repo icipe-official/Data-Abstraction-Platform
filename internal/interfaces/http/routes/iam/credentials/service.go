@@ -15,26 +15,94 @@ import (
 	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 )
 
-type service struct {
-	repo   intdomint.RouteIamCredentialsRepository
-	logger intdomint.Logger
-}
+func (n *service) ServiceIamCredentialsUpdateMany(
+	ctx context.Context,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	authContextDirectoryGroupID uuid.UUID,
+	verboseResponse bool,
+	data []*intdoment.IamCredentials,
+) (int, *intdoment.MetadataModelVerbRes, error) {
+	verbres := new(intdoment.MetadataModelVerbRes)
+	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
+	if verboseResponse {
+		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamCredentialsUpdateMany, err).Error())
+			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
+		} else {
+			verbres.MetadataModelVerboseResponse.MetadataModel = d
+		}
+	}
+	verbres.MetadataModelVerboseResponse.Data = make([]*intdoment.MetadataModelVerboseResponseData, 0)
 
-func NewService(webService *inthttp.WebService) (*service, error) {
-	n := new(service)
+	successful := 0
+	failed := 0
+	for _, datum := range data {
+		verbRes := new(intdoment.MetadataModelVerboseResponseData)
 
-	n.repo = webService.PostgresRepository
-	n.logger = webService.Logger
+		if len(datum.ID) > 0 && len(datum.DirectoryID) > 0 {
+			if iar, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+				ctx,
+				iamCredential,
+				authContextDirectoryGroupID,
+				[]*intdoment.IamGroupAuthorizationRule{
+					{
+						ID:        intdoment.AUTH_RULE_UPDATE,
+						RuleGroup: intdoment.AUTH_RULE_GROUP_IAM_CREDENTIALS,
+					},
+				},
+				iamAuthorizationRules,
+			); err != nil {
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), "get iam auth rule failed", err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			} else {
+				if iar == nil {
+					verbRes.Data = []any{datum}
+					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+					verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
+					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
+					failed += 1
+					goto appendNewVerboseResponse
+				}
+			}
 
-	if n.logger == nil {
-		return n, errors.New("webService.Logger is empty")
+			if err := n.repo.RepoIamCredentialsUpdateOne(ctx, datum); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceIamCredentialsUpdateMany, err).Error())
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), "update failed", err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			} else {
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusOK}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusOK), "update successful"}
+				successful += 1
+				goto appendNewVerboseResponse
+			}
+		} else {
+			verbRes.Data = []any{datum}
+			verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+			verbRes.Status[0].StatusCode = []int{http.StatusBadRequest}
+			verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusBadRequest), "data is not valid"}
+			failed += 1
+		}
+
+	appendNewVerboseResponse:
+		verbres.MetadataModelVerboseResponse.Data = append(verbres.MetadataModelVerboseResponse.Data, verbRes)
 	}
 
-	if n.repo == nil {
-		return n, errors.New("webService.PostgresRepository is empty")
-	}
+	verbres.Message = fmt.Sprintf("Update %[1]s: %[2]d/%[4]d successful and %[3]d/%[4]d failed", intdoment.IamCredentialsRepository().RepositoryName, successful, failed, len(data))
+	verbres.Successful = successful
+	verbres.Failed = failed
 
-	return n, nil
+	return http.StatusOK, verbres, nil
 }
 
 func (n *service) ServiceIamCredentialsSearch(
@@ -193,4 +261,26 @@ func (n *service) ServiceGetIamCredentialsPageHtml(
 	} else {
 		return &htmlContent, nil
 	}
+}
+
+type service struct {
+	repo   intdomint.RouteIamCredentialsRepository
+	logger intdomint.Logger
+}
+
+func NewService(webService *inthttp.WebService) (*service, error) {
+	n := new(service)
+
+	n.repo = webService.PostgresRepository
+	n.logger = webService.Logger
+
+	if n.logger == nil {
+		return n, errors.New("webService.Logger is empty")
+	}
+
+	if n.repo == nil {
+		return n, errors.New("webService.PostgresRepository is empty")
+	}
+
+	return n, nil
 }

@@ -3,6 +3,8 @@ package interfaces
 import "context"
 
 type MetadataModelRetrieve interface {
+	StorageDrivesTypesGetMetadataModel(ctx context.Context) (map[string]any, error)
+	StorageDrivesGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
 	GetMetadataModel(tableCollectionName string) (map[string]any, error)
 	DefaultAuthorizationIDsGetMetadataModel(
 		ctx context.Context,
@@ -15,7 +17,7 @@ type MetadataModelRetrieve interface {
 	) (map[string]any, error)
 	DirectoryGroupsGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
 	DirectoryGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
-	GroupAuthorizationRulesGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
+	GroupAuthorizationRulesGetMetadataModel(ctx context.Context) (map[string]any, error)
 	GroupRuleAuthorizationsGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
 	IamCredentialsGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
 	IamGroupAuthorizationsGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)

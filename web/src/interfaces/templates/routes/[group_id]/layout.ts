@@ -324,7 +324,7 @@ class Layout extends LitElement {
 										</button>
 										<div id="drop-down-content" slot="content" class="flex flex-col justify-center gap-y-2 w-fit bg-white p-1 rounded-md shadow-md shadow-gray-800 text-black min-w-[200px] max-h-[90vh] overflow-auto">
 											<div class="flex justify-between w-full">
-												<div class="h-fit self-center font-bold break-words">use current group as authentication context?</div>
+												<div class="h-fit self-center font-bold break-words">DO NOT use current group as authentication context?</div>
 												<input
 													class="self-center checkbox checkbox-primary"
 													type="checkbox"
@@ -333,7 +333,7 @@ class Layout extends LitElement {
 														if (e.currentTarget.checked) {
 															this._appContextProvider.Updatedonotusecurrentdirectorygroupasauthcontext(true)
 														} else {
-															this._appContextProvider.Updatedonotusecurrentdirectorygroupasauthcontext(true)
+															this._appContextProvider.Updatedonotusecurrentdirectorygroupasauthcontext(false)
 														}
 													}}
 												/>

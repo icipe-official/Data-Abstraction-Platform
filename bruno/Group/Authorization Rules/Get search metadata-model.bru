@@ -5,13 +5,12 @@ meta {
 }
 
 get {
-  url: {{web_service_api_core_url}}/group/authorization-rules/search/metadata-model?target_join_depth=-1
+  url: {{web_service_api_core_url}}/group/authorization-rules/search/metadata-model
   body: none
   auth: none
 }
 
 params:query {
-  target_join_depth: -1
   ~auth_context_directory_group_id: {{auth_context_directory_group_id}}
 }
 

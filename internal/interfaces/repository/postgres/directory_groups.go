@@ -587,20 +587,22 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindOneByIamCredentialID(ctx co
 		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(directoryGroupsMModel, intdoment.DirectoryGroupsRepository().RepositoryName, false, false); err != nil {
 			return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindOneByIamCredentialID, err)
 		} else {
-			columns = make([]string, len(dbColumnFields.ColumnFieldsReadOrder))
-			for cIndex, cValue := range dbColumnFields.ColumnFieldsReadOrder {
-				columns[cIndex] = fmt.Sprintf("%s.%s", intdoment.DirectoryGroupsRepository().RepositoryName, cValue)
-			}
+			columns = dbColumnFields.ColumnFieldsReadOrder
 		}
 	}
 
 	if !slices.Contains(columns, fmt.Sprintf("%s.%s", intdoment.DirectoryGroupsRepository().RepositoryName, intdoment.DirectoryGroupsRepository().ID)) {
-		columns = append(columns, fmt.Sprintf("%s.%s", intdoment.DirectoryGroupsRepository().RepositoryName, intdoment.DirectoryGroupsRepository().ID))
+		columns = append(columns, intdoment.DirectoryGroupsRepository().ID)
+	}
+
+	selectColumns := make([]string, len(columns))
+	for cIndex, cValue := range columns {
+		selectColumns[cIndex] = intdoment.DirectoryGroupsRepository().RepositoryName + "." + cValue
 	}
 
 	query := fmt.Sprintf(
 		"SELECT %[1]s FROM %[2]s INNER JOIN %[3]s INNER JOIN %[4]s ON %[4]s.%[5]s = $1 AND %[4]s.%[6]s = %[3]s.%[7]s ON %[3]s.%[8]s = %[2]s.%[9]s;",
-		strings.Join(columns, ","),                           //1
+		strings.Join(selectColumns, ","),                     //1
 		intdoment.DirectoryGroupsRepository().RepositoryName, //2
 		intdoment.DirectoryRepository().RepositoryName,       //3
 		intdoment.IamCredentialsRepository().RepositoryName,  //4

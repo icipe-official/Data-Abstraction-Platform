@@ -420,7 +420,7 @@ func (n *SelecteQueryWhere) Merge(selectQuery *SelectQuery) string {
 				if noOfFour > 1 {
 					fourResult += "("
 				}
-				fourResult += strings.Join(threeValue, " AND ")
+				fourResult += strings.Join(threeValue, " OR ")
 				if noOfFour > 1 {
 					fourResult += ")"
 				}
@@ -435,7 +435,7 @@ func (n *SelecteQueryWhere) Merge(selectQuery *SelectQuery) string {
 			if len(threeResult) > 1 {
 				threeResultString += "("
 			}
-			threeResultString += strings.Join(threeResult, " OR ")
+			threeResultString += strings.Join(threeResult, " AND ")
 			if len(threeResult) > 1 {
 				threeResultString += ")"
 			}
@@ -686,6 +686,7 @@ func GetWhereConditionForJsonbValue(columName string, queryPath string, columnFg
 	initWhereOr := func() {
 		if !whereOrInitialized {
 			whereOr = make([][]string, 0)
+			whereOrInitialized = true
 		}
 	}
 
@@ -693,6 +694,7 @@ func GetWhereConditionForJsonbValue(columName string, queryPath string, columnFg
 	initWhereAnd := func(orIndex int, whereAnd *[]string) {
 		if !whereAndInitialized[orIndex] {
 			*whereAnd = make([]string, 0)
+			whereAndInitialized[orIndex] = true
 		}
 	}
 
@@ -841,6 +843,7 @@ func GetWhereConditionForArrayValue(columName string, filterCondition [][]intdom
 	initWhereOr := func() {
 		if !whereOrInitialized {
 			whereOr = make([][]string, 0)
+			whereOrInitialized = true
 		}
 	}
 
@@ -848,6 +851,7 @@ func GetWhereConditionForArrayValue(columName string, filterCondition [][]intdom
 	initWhereAnd := func(orIndex int, whereAnd *[]string) {
 		if !whereAndInitialized[orIndex] {
 			*whereAnd = make([]string, 0)
+			whereAndInitialized[orIndex] = true
 		}
 	}
 
@@ -985,6 +989,7 @@ func GetWhereConditionForSingleValue(columName string, filterCondition [][]intdo
 	initWhereOr := func() {
 		if !whereOrInitialized {
 			whereOr = make([][]string, 0)
+			whereOrInitialized = true
 		}
 	}
 
@@ -992,6 +997,7 @@ func GetWhereConditionForSingleValue(columName string, filterCondition [][]intdo
 	initWhereAnd := func(orIndex int, whereAnd *[]string) {
 		if !whereAndInitialized[orIndex] {
 			*whereAnd = make([]string, 0)
+			whereAndInitialized[orIndex] = true
 		}
 	}
 
