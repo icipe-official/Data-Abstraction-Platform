@@ -210,7 +210,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsDeleteOne(ctx context.C
 		intdoment.GroupRuleAuthorizationsIDsRepository().ID,                                   //3
 	)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoGroupRuleAuthorizationsDeleteOne))
-	if _, err := transaction.Exec(ctx, query, datum.ID[0], iamAuthRule.ID[0]); err == nil {
+	if _, err := transaction.Exec(ctx, query, iamAuthRule.ID, datum.ID[0]); err == nil {
 		transaction.Rollback(ctx)
 		return intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsDeleteOne, fmt.Errorf("update %s failed, err: %v", intdoment.GroupRuleAuthorizationsIDsRepository().RepositoryName, err))
 	}

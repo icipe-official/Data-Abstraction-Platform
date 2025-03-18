@@ -62,9 +62,7 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 						var err error
 						loopSuccessful := intlibjson.ForEachValueInObject(dValue, fgKey, func(_ []any, valueFound any) bool {
 							switch andCondition.Condition {
-							case FILTER_CONDTION_NO_OF_ENTRIES_GREATER_THAN:
-							case FILTER_CONDTION_NO_OF_ENTRIES_LESS_THAN:
-							case FILTER_CONDTION_NO_OF_ENTRIES_EQUAL_TO:
+							case FILTER_CONDTION_NO_OF_ENTRIES_GREATER_THAN, FILTER_CONDTION_NO_OF_ENTRIES_LESS_THAN, FILTER_CONDTION_NO_OF_ENTRIES_EQUAL_TO:
 								var valueInt int
 								if vInt, ok := andCondition.Value.(int); ok {
 									valueInt = vInt
@@ -93,8 +91,7 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 										return true
 									}
 								}
-							case FILTER_CONDTION_NUMBER_GREATER_THAN:
-							case FILTER_CONDTION_NUMBER_LESS_THAN:
+							case FILTER_CONDTION_NUMBER_GREATER_THAN, FILTER_CONDTION_NUMBER_LESS_THAN:
 								var valueFloat float64
 								if vFloat, ok := andCondition.Value.(float64); ok {
 									valueFloat = vFloat
@@ -149,8 +146,7 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 										return true
 									}
 								}
-							case FILTER_CONDTION_TIMESTAMP_GREATER_THAN:
-							case FILTER_CONDTION_TIMESTAMP_LESS_THAN:
+							case FILTER_CONDTION_TIMESTAMP_GREATER_THAN, FILTER_CONDTION_TIMESTAMP_LESS_THAN:
 								if len(andCondition.DateTimeFormat) == 0 {
 									err = argumentsError(FilterData, "andCondition.DateTimeFormat", "string", andCondition.DateTimeFormat)
 									return true
@@ -192,9 +188,7 @@ func FilterData(queryConditions []QueryConditions, data []any) ([]int, error) {
 									err = argumentsError(FilterData, "filterValue", "float64", andCondition.Value)
 									return true
 								}
-							case FILTER_CONDTION_TEXT_BEGINS_WITH:
-							case FILTER_CONDTION_TEXT_CONTAINS:
-							case FILTER_CONDTION_TEXT_ENDS_WITH:
+							case FILTER_CONDTION_TEXT_BEGINS_WITH, FILTER_CONDTION_TEXT_CONTAINS, FILTER_CONDTION_TEXT_ENDS_WITH:
 								if valueString, ok := andCondition.Value.(string); ok {
 									if valueFoundSlice, ok := valueFound.([]any); ok {
 										conditionTrue := false
@@ -334,10 +328,7 @@ func getEqualToValue(filterValue any) *EqualToFilterValue {
 
 func isEqualToConditionTrue(filterValueType string, dateTimeFormat string, valueFound any, filterValue any) bool {
 	switch filterValueType {
-	case FIELD_SELECT_TYPE_BOOLEAN:
-	case FIELD_SELECT_TYPE_TEXT:
-	case FIELD_SELECT_TYPE_NUMBER:
-	case FIELD_SELECT_TYPE_SELECT:
+	case FIELD_SELECT_TYPE_BOOLEAN, FIELD_SELECT_TYPE_TEXT, FIELD_SELECT_TYPE_NUMBER, FIELD_SELECT_TYPE_SELECT:
 		return valueFound == filterValue
 	case FIELD_SELECT_TYPE_TIMESTAMP:
 		if filterValueString, ok := filterValue.(string); ok {

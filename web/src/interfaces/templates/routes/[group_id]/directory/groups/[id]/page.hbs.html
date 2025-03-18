@@ -1,0 +1,6 @@
+{{#if Context.Error.Message }} {{> error Context.Error }} {{else}}
+<head>
+	<script type="module" src="./page.ts"></script>
+</head>
+<directory-group-page data="{{ Context.Context.Data }}"></directory-group-page>
+{{/if}}

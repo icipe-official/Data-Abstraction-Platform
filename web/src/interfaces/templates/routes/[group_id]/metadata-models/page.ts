@@ -1,8 +1,8 @@
-import { html, LitElement, nothing, unsafeCSS } from 'lit'
+import { html, LitElement, nothing, PropertyValues, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '@assets/index.css?inline'
 import pageCss from './page.css?inline'
-import { IAppContextConsumer, IAppContextProvider } from '@dominterfaces/context/app'
+import { IAppContextConsumer } from '@dominterfaces/context/app'
 import { IMetadataModelSearchController } from '@dominterfaces/controllers/metadata_model'
 import { AppContextConsumer, AppContextProvider } from '@interfaces/context/app'
 import { MetadataModelSearchController } from '@interfaces/controllers/metadata_model'
@@ -18,6 +18,7 @@ import MetadataModelUtils from '@lib/metadata_model_utils'
 import Log from '@lib/log'
 import { ISpaPageNavigation } from '@dominterfaces/spa_page_navigation/spa_page_navigation'
 import { SpaPageNavigation } from '@interfaces/spa_page_navigation/spa_page_navigation'
+import '@lib/components/calendar-time/component'
 
 @customElement('metadata-models-page')
 class Page extends LitElement {
@@ -26,7 +27,6 @@ class Page extends LitElement {
 	@property({ type: String }) directorygroupsid: string | undefined
 
 	private _metadataModelsSearch: IMetadataModelSearchController
-	private _appContextProvider: IAppContextProvider
 	private _appContext: IAppContextConsumer
 	private _fieldAnyMetadataModels: IFieldAnyMetadataModelGet
 
@@ -52,10 +52,9 @@ class Page extends LitElement {
 	constructor() {
 		super()
 		this._appContext = new AppContextConsumer(this)
-		this._appContextProvider = new AppContextProvider(undefined)
 		this._fieldAnyMetadataModels = new FieldAnyMetadataModel()
-		this._pageNavigation = new SpaPageNavigation(this._appContextProvider)
-		this._metadataModelsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.MetadataModels}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.MetadataModels}${Url.MetadataModelSearchPath}`)
+		this._pageNavigation = new SpaPageNavigation(new AppContextProvider(undefined))
+		this._metadataModelsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.MetadataModels.Url}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.MetadataModels.Url}${Url.MetadataModelSearchPath}`)
 	}
 
 	private _getMetatadaModelsMmTask = new Task(this, {
@@ -241,7 +240,7 @@ class Page extends LitElement {
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
-			const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels}/${Url.Action.DELETE}`)
+			const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels.Url}/${Url.Action.DELETE}`)
 			fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
 			fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
 			if (this._appContext.appcontext?.verboseresponse) {
@@ -281,10 +280,29 @@ class Page extends LitElement {
 		}
 	}
 
+	protected firstUpdated(_changedProperties: PropertyValues): void {
+		const url = new URL(window.location.toString())
+		const action = url.searchParams.get(Url.SearchParams.ACTION)
+		if (action) {
+			switch (action) {
+				case Url.Action.CREATE:
+					this._handlePageNavigation(`${Url.ApiUrlPaths.MetadataModels.Url}/new`, 'New Metadata-Model')
+					break
+				case Url.Action.RETRIEVE:
+					this._showFilterMenu = true
+					break
+				case Url.Action.UPDATE:
+				case Url.Action.DELETE:
+					this._showQueryPanel = true
+					break
+			}
+		}
+	}
+
 	protected render(): unknown {
 		return html`
 			<div class="flex-1 flex flex-col rounded-md bg-white shadow-md shadow-gray-800 overflow-hidden p-2 gap-y-1">
-				<header class="flex-[0.5] flex flex-col space-y-1 z-[2]">
+				<header class="flex-[0.5] flex flex-col gap-y-1 z-[2]">
 					<section class="join w-[50%] rounded-md self-center border-[1px] border-primary p-1">
 						<input
 							class="join-item input input-ghost flex-[9]"

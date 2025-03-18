@@ -17,6 +17,7 @@ import Entities from '@domentities'
 import Log from '@lib/log'
 import MetadataModelUtils from '@lib/metadata_model_utils'
 import Json from '@lib/json'
+import '@lib/components/calendar-time/component'
 
 @customElement('group-rule-authorizations')
 class Component extends LitElement {

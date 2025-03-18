@@ -1,5 +1,5 @@
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
-import { customElement, property, state } from 'lit/decorators.js'
+import { customElement, state } from 'lit/decorators.js'
 import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
 import { IAppContextConsumer } from '@dominterfaces/context/app'
@@ -16,12 +16,11 @@ import MetadataModel from '@lib/metadata_model'
 import Entities from '@domentities'
 import MetadataModelUtils from '@lib/metadata_model_utils'
 import Log from '@lib/log'
+import '@lib/components/calendar-time/component'
 
 @customElement('group-authorization-rules')
 class Component extends LitElement {
 	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
-
-	@property({ type: String }) directorygroupsid: string | undefined
 
 	private _metadataModelsSearch: IMetadataModelSearchController
 	private _appContext: IAppContextConsumer
@@ -211,7 +210,7 @@ class Component extends LitElement {
 	protected render(): unknown {
 		return html`
 			<div class="flex-1 flex flex-col rounded-md bg-white shadow-md shadow-gray-800 overflow-hidden p-2 gap-y-1">
-				<header class="flex-[0.5] flex flex-col space-y-1 z-[2]">
+				<header class="flex-[0.5] flex flex-col gap-y-1 z-[2]">
 					<section class="join w-[50%] rounded-md self-center border-[1px] border-primary p-1">
 						<input
 							class="join-item input input-ghost flex-[9]"

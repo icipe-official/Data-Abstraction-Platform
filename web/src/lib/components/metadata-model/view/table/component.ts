@@ -450,7 +450,7 @@ class Component extends LitElement {
 											if (typeof this.getmetadatamodel !== 'undefined') {
 												let arg = undefined
 												if (typeof this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT] == 'string' && this.getmetadatamodeldata) {
-													arg = this.getmetadatamodeldata(this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT], this.arrayindexes)
+													arg = this.getmetadatamodeldata(this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_TYPE_ANY][MetadataModel.FieldAnyProperties.GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT], [...this.arrayindexes, rowIndex])
 												}
 												const metadatamodel =
 													this.metadatamodelgetcontroller?.cachemetadatamodels[
@@ -591,7 +591,7 @@ class Component extends LitElement {
 					return html`<div>${this._formatDateTimeValue(this._dataFields[columnIndex][MetadataModel.FgProperties.FIELD_DATETIME_FORMAT], datum)}</div>`
 				}
 
-				return html`<div class="${typeof datum === 'string' ? (datum.length > 20 ? 'min-w-[500px]' : 'break-words') : 'min-w-fit'}">${datum}</div>`
+				return html`<div class="${typeof datum === 'string' ? (datum.length > 20 ? 'min-w-[250px]' : 'break-words') : 'min-w-fit'}">${datum}</div>`
 		}
 	}
 
@@ -1687,7 +1687,7 @@ class Component extends LitElement {
 																type="checkbox"
 																.checked=${this.selecteddataindexes.length === this.data.length}
 																@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-																	if (e.currentTarget.checked) {
+																	if (e.currentTarget.checked && this.multiselectcolumns) {
 																		this.selecteddataindexes = this.data.map((_, index) => index)
 																	} else {
 																		this.selecteddataindexes = []
@@ -1700,7 +1700,6 @@ class Component extends LitElement {
 																		})
 																	)
 																}}
-																.disabled=${!this.multiselectcolumns}
 															/>
 															${(() => {
 																if (this._showHintID === 'header-menu-select-unselect-all-rows') {
@@ -1941,7 +1940,11 @@ class Component extends LitElement {
 																							.checked=${this.selecteddataindexes.includes(rowIndex)}
 																							@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																								if (e.currentTarget.checked) {
-																									this.selecteddataindexes = [...this.selecteddataindexes, rowIndex]
+																									if (this.multiselectcolumns) {
+																										this.selecteddataindexes = [...this.selecteddataindexes, rowIndex]
+																									} else {
+																										this.selecteddataindexes = [rowIndex]
+																									}
 																								} else {
 																									this.selecteddataindexes = this.selecteddataindexes.filter((rIndex) => rIndex !== rowIndex)
 																								}
@@ -2057,7 +2060,11 @@ class Component extends LitElement {
 																							.checked=${this.selecteddataindexes.includes(rowIndex)}
 																							@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 																								if (e.currentTarget.checked) {
-																									this.selecteddataindexes = [...this.selecteddataindexes, rowIndex]
+																									if (this.multiselectcolumns) {
+																										this.selecteddataindexes = [...this.selecteddataindexes, rowIndex]
+																									} else {
+																										this.selecteddataindexes = [rowIndex]
+																									}
 																								} else {
 																									this.selecteddataindexes = this.selecteddataindexes.filter((rIndex) => rIndex !== rowIndex)
 																								}

@@ -11,7 +11,7 @@ export interface IDatabaseColumnFields {
 }
 
 export const EmptyMetadataModel = () =>
-	({
+	structuredClone({
 		[FgProperties.FIELD_GROUP_KEY]: '$',
 		[FgProperties.FIELD_GROUP_NAME]: 'root',
 		[FgProperties.FIELD_GROUP_DESCRIPTION]: 'group description',
@@ -179,7 +179,6 @@ export enum FieldAnyProperties {
 	PICK_METADATA_MODEL_MESSAGE_PROMPT = '$PICK_METADATA_MODEL_MESSAGE_PROMPT',
 	GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT = '$GET_METADATA_MODEL_PATH_TO_DATA_ARGUMENT'
 }
-
 
 export type QueryConditions = { [key: string]: IQueryCondition }
 

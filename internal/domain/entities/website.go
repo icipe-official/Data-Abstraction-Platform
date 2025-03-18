@@ -17,14 +17,16 @@ const (
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_PAGE    string = "routes/[group_id]/metadata-models/page"
 
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_PAGE        string = "routes/[group_id]/metadata-models/directory/page"
-	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_GROUPS_PAGE string = "routes/[group_id]/metadata-models/directory/groupspage"
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_GROUPS_PAGE string = "routes/[group_id]/metadata-models/directory/groups/page"
 
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_STORAGE_FILES_ID_PAGE string = "routes/[group_id]/storage/files/[id]/page"
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_STORAGE_FILES_PAGE    string = "routes/[group_id]/storage/files/page"
 
-	WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_PAGE string = "routes/[group_id]/directory/page"
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_ID_PAGE string = "routes/[group_id]/directory/[id]/page"
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_PAGE    string = "routes/[group_id]/directory/page"
 
-	WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_GROUPS_PAGE string = "routes/[group_id]/directory/groups/page"
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_GROUPS_ID_PAGE string = "routes/[group_id]/directory/groups/[id]/page"
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_GROUPS_PAGE    string = "routes/[group_id]/directory/groups/page"
 
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_IAM_CREDENTIALS_PAGE string = "routes/[group_id]/iam/credentials/page"
 

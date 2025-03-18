@@ -41,8 +41,8 @@ func (n *MetadataModelRetrieve) MetadataModelsDirectoryGroupsGetMetadataModel(ct
 			skipJoin = make(map[string]bool)
 		}
 
-		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.MetadataModelsDirectoryGroupsRepository().DirectoryGroupsID, intdoment.MetadataModelsRepository().RepositoryName)]; !ok || !skipMMJoin {
-			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.MetadataModelsDirectoryGroupsRepository().DirectoryGroupsID, intdoment.MetadataModelsRepository().RepositoryName)
+		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.MetadataModelsDirectoryGroupsRepository().MetadataModelsID, intdoment.MetadataModelsRepository().RepositoryName)]; !ok || !skipMMJoin {
+			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.MetadataModelsDirectoryGroupsRepository().MetadataModelsID, intdoment.MetadataModelsRepository().RepositoryName)
 			if childMetadataModel, err := n.MetadataModelsGetMetadataModel(
 				ctx,
 				currentJoinDepth+1,

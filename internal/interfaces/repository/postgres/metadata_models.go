@@ -65,7 +65,7 @@ func (n *PostrgresRepository) RepoMetadataModelsDeleteOne(
 		intdoment.MetadataModelsAuthorizationIDsRepository().ID,                                   //3
 	)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsDeleteOne))
-	if _, err := transaction.Exec(ctx, query, datum.ID[0], iamAuthRule.ID[0]); err == nil {
+	if _, err := transaction.Exec(ctx, query, iamAuthRule.ID, datum.ID[0]); err == nil {
 		transaction.Rollback(ctx)
 		return intlib.FunctionNameAndError(n.RepoMetadataModelsDeleteOne, fmt.Errorf("update %s failed, err: %v", intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName, err))
 	}
@@ -357,7 +357,7 @@ func (n *PostrgresRepository) RepoMetadataModelsUpdateOne(
 
 	nextPlaceholder := 1
 	query += fmt.Sprintf(
-		" UPDATE %[1]s SET %[2]s WHERE %[3]s = %[4]s AND %[5]s IS NULL AND %[6]s;",
+		" UPDATE %[1]s SET %[2]s WHERE %[3]s = %[4]s AND %[5]s IS NULL AND (%[6]s);",
 		intdoment.MetadataModelsRepository().RepositoryName,    //1
 		GetUpdateSetColumns(columnsToUpdate, &nextPlaceholder), //2
 		intdoment.MetadataModelsRepository().ID,                //3

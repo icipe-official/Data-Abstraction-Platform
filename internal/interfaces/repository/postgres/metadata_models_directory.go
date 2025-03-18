@@ -62,7 +62,7 @@ func (n *PostrgresRepository) RepoMetadataModelsDirectoryUpdateOne(ctx context.C
 }
 
 func (n *PostrgresRepository) RepoMetadataModelsDirectoryInsertOne(ctx context.Context, datum *intdoment.MetadataModelsDirectory, columns []string) (*intdoment.MetadataModelsDirectory, error) {
-	metadataModelsDgMModel, err := intlib.MetadataModelGet(intdoment.MetadataModelsRepository().RepositoryName)
+	metadataModelsDgMModel, err := intlib.MetadataModelGet(intdoment.MetadataModelsDirectoryRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsDirectoryInsertOne, err)
 	}
@@ -151,19 +151,19 @@ func (n *PostrgresRepository) RepoMetadataModelsDirectoryValidateAndGetColumnsAn
 	if insert {
 		if len(mm.DirectoryGroupsID) > 0 {
 			values = append(values, mm.DirectoryGroupsID[0])
-			columns = append(columns, intdoment.MetadataModelsDirectoryGroupsRepository().DirectoryGroupsID)
+			columns = append(columns, intdoment.MetadataModelsDirectoryRepository().DirectoryGroupsID)
 		} else {
-			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsDirectoryGroupsRepository().DirectoryGroupsID)
+			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsDirectoryRepository().DirectoryGroupsID)
 		}
 	}
 
 	if len(mm.MetadataModelsID) == 0 || len(mm.MetadataModelsID[0]) < 4 {
 		if insert {
-			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsDirectoryGroupsRepository().MetadataModelsID)
+			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsDirectoryRepository().MetadataModelsID)
 		}
 	} else {
 		values = append(values, mm.MetadataModelsID[0])
-		columns = append(columns, intdoment.MetadataModelsDirectoryGroupsRepository().MetadataModelsID)
+		columns = append(columns, intdoment.MetadataModelsDirectoryRepository().MetadataModelsID)
 	}
 
 	return values, columns, nil
@@ -242,7 +242,7 @@ func (n *PostgresSelectQuery) MetadataModelsDirectoryGetSelectQuery(ctx context.
 		[]*intdoment.IamGroupAuthorizationRule{
 			{
 				ID:        "",
-				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS_DIRECTORY,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS_DIRECTORY_GROUPS,
 			},
 		},
 		n.iamAuthorizationRules,

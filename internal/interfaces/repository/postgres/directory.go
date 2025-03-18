@@ -2,10 +2,12 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/brunoga/deep"
@@ -14,7 +16,502 @@ import (
 	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
+	"github.com/jackc/pgx/v5"
 )
+
+func (n *PostrgresRepository) RepoDirectoryUpdateOne(
+	ctx context.Context,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	fieldAnyMetadataModelGet intdomint.FieldAnyMetadataModel,
+	authContextDirectoryGroupID uuid.UUID,
+	datum *intdoment.Directory,
+) error {
+	where := ""
+	datum.DirectoryGroupsID = make([]uuid.UUID, 1)
+	query := fmt.Sprintf(
+		"SELECT %[1]s FROM %[2]s WHERE %[3]s = $1;",
+		intdoment.DirectoryRepository().DirectoryGroupsID, //1
+		intdoment.DirectoryRepository().RepositoryName,    //2
+		intdoment.DirectoryRepository().ID,                //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryUpdateOne))
+	if err := n.db.QueryRow(ctx, query, datum.ID[0]).Scan(&datum.DirectoryGroupsID[0]); err != nil {
+		return intlib.FunctionNameAndError(n.RepoDirectoryUpdateOne, fmt.Errorf("get %s for %s failed, err: %v", intdoment.DirectoryRepository().DirectoryGroupsID, intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	query = ""
+	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		iamCredential,
+		authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_UPDATE_OTHERS,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY,
+			},
+		},
+		iamAuthorizationRules,
+	); err == nil && iamAuthorizationRule != nil {
+		cteName := fmt.Sprintf("%s_%s", intdoment.DirectoryRepository().RepositoryName, RECURSIVE_DIRECTORY_GROUPS_DEFAULT_CTE_NAME)
+		query = RecursiveDirectoryGroupsSubGroupsCte(authContextDirectoryGroupID, cteName)
+		where = fmt.Sprintf("(%s) IN (SELECT %s FROM %s)", intdoment.DirectoryRepository().DirectoryGroupsID, intdoment.DirectoryGroupsSubGroupsRepository().SubGroupID, cteName)
+	}
+	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		iamCredential,
+		authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_UPDATE,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY,
+			},
+		},
+		iamAuthorizationRules,
+	); err == nil && iamAuthorizationRule != nil {
+		whereQuery := fmt.Sprintf("%s = '%s'", intdoment.DirectoryRepository().DirectoryGroupsID, authContextDirectoryGroupID.String())
+		if len(where) > 0 {
+			where += " OR " + whereQuery
+		} else {
+			where = whereQuery
+		}
+	}
+	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+		ctx,
+		iamCredential,
+		authContextDirectoryGroupID,
+		[]*intdoment.IamGroupAuthorizationRule{
+			{
+				ID:        intdoment.AUTH_RULE_UPDATE_SELF,
+				RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY,
+			},
+		},
+		iamAuthorizationRules,
+	); err == nil && iamAuthorizationRule != nil {
+		whereQuery := ""
+		if len(iamCredential.DirectoryID) > 0 {
+			whereQuery = fmt.Sprintf("%s = '%s'", intdoment.DirectoryRepository().ID, iamCredential.DirectoryID[0].String())
+		} else {
+			return intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+		}
+
+		if len(where) > 0 {
+			where += " OR " + whereQuery
+		} else {
+			where = whereQuery
+		}
+	}
+	if len(where) == 0 {
+		return intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	}
+
+	valuesToUpdate := make([]any, 0)
+	valueToUpdateQuery := make([]string, 0)
+	columnsToUpdate := make([]string, 0)
+	nextPlaceholder := 1
+	if v, vQ, c := n.RepoDirectoryValidateAndGetColumnsAndData(ctx, datum.DirectoryGroupsID[0], &nextPlaceholder, fieldAnyMetadataModelGet, datum, false); len(c) == 0 || len(v) == 0 || len(vQ) == 0 {
+		return intlib.NewError(http.StatusBadRequest, "no values to update")
+	} else {
+		valuesToUpdate = append(valuesToUpdate, v...)
+		columnsToUpdate = append(columnsToUpdate, c...)
+		valueToUpdateQuery = append(valueToUpdateQuery, vQ...)
+	}
+
+	query += fmt.Sprintf(
+		" UPDATE %[1]s SET %[2]s WHERE %[3]s = %[4]s AND %[5]s IS NULL AND %[6]s IS NOT NULL AND (%[7]s);",
+		intdoment.DirectoryRepository().RepositoryName,                     //1
+		GetUpdateSetColumnsWithVQuery(columnsToUpdate, valueToUpdateQuery), //2
+		intdoment.DirectoryRepository().ID,                                 //3
+		GetandUpdateNextPlaceholder(&nextPlaceholder),                      //4
+		intdoment.DirectoryRepository().DeactivatedOn,                      //5
+		intdoment.DirectoryRepository().Data,                               //6
+		where,                                                              //7
+	)
+	query = strings.TrimLeft(query, " \n")
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryUpdateOne))
+
+	valuesToUpdate = append(valuesToUpdate, datum.ID[0])
+	if _, err := n.db.Exec(ctx, query, valuesToUpdate...); err != nil {
+		return intlib.FunctionNameAndError(n.RepoDirectoryUpdateOne, fmt.Errorf("update %s failed, err: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	return nil
+}
+
+func (n *PostrgresRepository) RepoDirectoryInsertOne(
+	ctx context.Context,
+	datum *intdoment.Directory,
+	authContextDirectoryGroupID uuid.UUID,
+	iamAuthorizationRule *intdoment.IamAuthorizationRule,
+	fieldAnyMetadataModelGet intdomint.FieldAnyMetadataModel,
+	columns []string,
+) (*intdoment.Directory, error) {
+	directoryMetadataModel, err := intlib.MetadataModelGet(intdoment.DirectoryRepository().RepositoryName)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, err)
+	}
+
+	if len(columns) == 0 {
+		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(directoryMetadataModel, intdoment.DirectoryRepository().RepositoryName, false, false); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, err)
+		} else {
+			columns = dbColumnFields.ColumnFieldsReadOrder
+		}
+	}
+
+	if !slices.Contains(columns, intdoment.DirectoryRepository().ID) {
+		columns = append(columns, intdoment.DirectoryRepository().ID)
+	}
+
+	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, fmt.Errorf("start transaction to create %s failed, error: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	valuesToInsert := make([]any, 0)
+	valueToInsertQuery := make([]string, 0)
+	columnsToInsert := make([]string, 0)
+	nextPlaceholder := 1
+	if v, vQ, c := n.RepoDirectoryValidateAndGetColumnsAndData(ctx, authContextDirectoryGroupID, &nextPlaceholder, fieldAnyMetadataModelGet, datum, true); len(c) == 0 || len(v) == 0 || len(vQ) == 0 {
+		return nil, intlib.NewError(http.StatusBadRequest, "no values to insert")
+	} else {
+		valuesToInsert = append(valuesToInsert, v...)
+		columnsToInsert = append(columnsToInsert, c...)
+		valueToInsertQuery = append(valueToInsertQuery, vQ...)
+	}
+
+	query := fmt.Sprintf(
+		"INSERT INTO %[1]s (%[2]s) VALUES(%[3]s) RETURNING %[4]s;",
+		intdoment.DirectoryRepository().RepositoryName, //1
+		strings.Join(columnsToInsert, " , "),           //2
+		strings.Join(valueToInsertQuery, " , "),        //3
+		strings.Join(columns, " , "),                   //4
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryInsertOne))
+	rows, err := transaction.Query(ctx, query, valuesToInsert...)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, fmt.Errorf("insert %s failed, err: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	defer rows.Close()
+	dataRows := make([]any, 0)
+	for rows.Next() {
+		if r, err := rows.Values(); err != nil {
+			transaction.Rollback(ctx)
+			return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, err)
+		} else {
+			dataRows = append(dataRows, r)
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(directoryMetadataModel, nil, false, false, columns)
+	if err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, err)
+	}
+
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, err)
+	}
+
+	if len(array2DToObject.Objects()) == 0 {
+		transaction.Rollback(ctx)
+		return nil, nil
+	}
+
+	if len(array2DToObject.Objects()) > 1 {
+		transaction.Rollback(ctx)
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoDirectoryInsertOne))
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, fmt.Errorf("more than one %s found", intdoment.DirectoryRepository().RepositoryName))
+	}
+
+	directory := new(intdoment.Directory)
+	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, err)
+	} else {
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing directory", "directory", string(jsonData), "function", intlib.FunctionName(n.RepoDirectoryInsertOne))
+		if err := json.Unmarshal(jsonData, directory); err != nil {
+			transaction.Rollback(ctx)
+			return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, err)
+		}
+	}
+
+	query = fmt.Sprintf(
+		"INSERT INTO %[1]s (%[2]s, %[3]s) VALUES ($1, $2);",
+		intdoment.DirectoryAuthorizationIDsRepository().RepositoryName,                   //1
+		intdoment.DirectoryAuthorizationIDsRepository().ID,                               //2
+		intdoment.DirectoryAuthorizationIDsRepository().CreationIamGroupAuthorizationsID, //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryInsertOne))
+
+	if _, err := transaction.Exec(ctx, query, directory.ID[0], iamAuthorizationRule.ID); err != nil {
+		transaction.Rollback(ctx)
+		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsInsertOne, fmt.Errorf("insert %s failed, err: %v", intdoment.DirectoryAuthorizationIDsRepository().RepositoryName, err))
+	}
+
+	if err := transaction.Commit(ctx); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsInsertOne, fmt.Errorf("commit transaction to create %s failed, error: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	return directory, nil
+}
+
+func (n *PostrgresRepository) RepoDirectoryValidateAndGetColumnsAndData(ctx context.Context, directoryGroupID uuid.UUID, nextPlaceholder *int, fieldAnyMetadataModelGet intdomint.FieldAnyMetadataModel, datum *intdoment.Directory, insert bool) ([]any, []string, []string) {
+	values := make([]any, 0)
+	valuesQuery := make([]string, 0)
+	columns := make([]string, 0)
+
+	if insert {
+		columns = append(columns, intdoment.DirectoryRepository().DirectoryGroupsID)
+		values = append(values, directoryGroupID)
+		valuesQuery = append(valuesQuery, GetandUpdateNextPlaceholder(nextPlaceholder))
+	}
+
+	if len(datum.Data) > 0 {
+		if dMap, ok := datum.Data[0].(map[string]any); ok {
+			columns = append(columns, intdoment.DirectoryRepository().Data)
+			values = append(values, dMap)
+			valuesQuery = append(valuesQuery, GetandUpdateNextPlaceholder(nextPlaceholder))
+		} else {
+			if insert {
+				datum.Data[0] = map[string]any{}
+				columns = append(columns, intdoment.DirectoryRepository().Data)
+				values = append(values, datum.Data[0])
+				valuesQuery = append(valuesQuery, GetandUpdateNextPlaceholder(nextPlaceholder))
+			}
+		}
+	} else {
+		if insert {
+			datum.Data = []any{map[string]any{}}
+			columns = append(columns, intdoment.DirectoryRepository().Data)
+			values = append(values, datum.Data[0])
+			valuesQuery = append(valuesQuery, GetandUpdateNextPlaceholder(nextPlaceholder))
+		}
+	}
+
+	if slices.Contains(columns, intdoment.DirectoryRepository().Data) {
+		if mm, err := fieldAnyMetadataModelGet.GetMetadataModel(ctx, intdoment.MetadataModelsDirectoryRepository().RepositoryName, "$", intdoment.MetadataModelsDirectoryRepository().RepositoryName, []any{directoryGroupID}); err == nil {
+			if value := MetadataModelExtractFullTextSearchValue(mm, datum.Data[0]); len(value) > 0 {
+				columns = append(columns, intdoment.DirectoryRepository().FullTextSearch)
+				values = append(values, strings.Join(value, " "))
+				valuesQuery = append(valuesQuery, fmt.Sprintf("to_tsvector(%s)", GetandUpdateNextPlaceholder(nextPlaceholder)))
+			}
+		}
+	}
+
+	return values, valuesQuery, columns
+}
+
+func (n *PostrgresRepository) RepoDirectoryDeleteOne(
+	ctx context.Context,
+	iamAuthRule *intdoment.IamAuthorizationRule,
+	datum *intdoment.Directory,
+) error {
+	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return intlib.FunctionNameAndError(n.RepoDirectoryDeleteOne, fmt.Errorf("start transaction to delete %s failed, error: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	query := fmt.Sprintf(
+		"DELETE FROM %[1]s WHERE %[2]s = $1;",
+		intdoment.DirectoryAuthorizationIDsRepository().RepositoryName, //1
+		intdoment.DirectoryAuthorizationIDsRepository().ID,             //2
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryDeleteOne))
+
+	if _, err := transaction.Exec(ctx, query, datum.ID[0]); err == nil {
+		query := fmt.Sprintf(
+			"DELETE FROM %[1]s WHERE %[2]s = $1;",
+			intdoment.DirectoryRepository().RepositoryName, //1
+			intdoment.DirectoryRepository().ID,             //2
+		)
+		n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryDeleteOne))
+		if _, err := transaction.Exec(ctx, query, datum.ID[0]); err == nil {
+			if err := transaction.Commit(ctx); err != nil {
+				return intlib.FunctionNameAndError(n.RepoDirectoryDeleteOne, fmt.Errorf("commit transaction to delete %s failed, error: %v", intdoment.DirectoryRepository().RepositoryName, err))
+			}
+			return nil
+		} else {
+			transaction.Rollback(ctx)
+		}
+	}
+
+	transaction, err = n.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return intlib.FunctionNameAndError(n.RepoDirectoryDeleteOne, fmt.Errorf("start transaction to deactivate %s failed, error: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	query = fmt.Sprintf(
+		"UPDATE %[1]s SET %[2]s = $1 WHERE %[3]s = $2;",
+		intdoment.DirectoryAuthorizationIDsRepository().RepositoryName,                       //1
+		intdoment.DirectoryAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID, //2
+		intdoment.DirectoryAuthorizationIDsRepository().ID,                                   //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryDeleteOne))
+	if _, err := transaction.Exec(ctx, query, iamAuthRule.ID, datum.ID[0]); err == nil {
+		transaction.Rollback(ctx)
+		return intlib.FunctionNameAndError(n.RepoDirectoryDeleteOne, fmt.Errorf("update %s failed, err: %v", intdoment.DirectoryAuthorizationIDsRepository().RepositoryName, err))
+	}
+
+	query = fmt.Sprintf(
+		"UPDATE %[1]s SET %[2]s = NOW() WHERE %[3]s = $1;",
+		intdoment.DirectoryRepository().RepositoryName, //1
+		intdoment.DirectoryRepository().DeactivatedOn,  //2
+		intdoment.DirectoryRepository().ID,             //3
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryDeleteOne))
+	if _, err := transaction.Exec(ctx, query, datum.ID[0]); err == nil {
+		transaction.Rollback(ctx)
+		return intlib.FunctionNameAndError(n.RepoDirectoryDeleteOne, fmt.Errorf("update %s failed, err: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	if err := transaction.Commit(ctx); err != nil {
+		return intlib.FunctionNameAndError(n.RepoDirectoryDeleteOne, fmt.Errorf("commit transaction to update deactivation of %s failed, error: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
+	return nil
+}
+
+func (n *PostrgresRepository) RepoDirectoryFindOneForDeletionByID(
+	ctx context.Context,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	authContextDirectoryGroupID uuid.UUID,
+	datum *intdoment.Directory,
+	columns []string,
+) (*intdoment.Directory, *intdoment.IamAuthorizationRule, error) {
+	directoryMModel, err := intlib.MetadataModelGet(intdoment.DirectoryRepository().RepositoryName)
+	if err != nil {
+		return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, err)
+	}
+
+	if len(columns) == 0 {
+		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(directoryMModel, intdoment.DirectoryRepository().RepositoryName, false, false); err != nil {
+			return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, err)
+		} else {
+			columns = dbColumnFields.ColumnFieldsReadOrder
+		}
+	}
+
+	if !slices.Contains(columns, intdoment.DirectoryRepository().ID) {
+		columns = append(columns, intdoment.DirectoryRepository().ID)
+	}
+
+	dataRows := make([]any, 0)
+	iamAuthRule := new(intdoment.IamAuthorizationRule)
+	if len(dataRows) == 0 {
+		if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+			ctx,
+			iamCredential,
+			authContextDirectoryGroupID,
+			[]*intdoment.IamGroupAuthorizationRule{
+				{
+					ID:        intdoment.AUTH_RULE_DELETE,
+					RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY,
+				},
+			},
+			iamAuthorizationRules,
+		); err == nil && iamAuthorizationRule != nil {
+			query := fmt.Sprintf(
+				"SELECT %[1]s FROM %[2]s WHERE %[3]s = $1 AND %[4]s = $2;",
+				strings.Join(columns, " , "),                      //1
+				intdoment.DirectoryRepository().RepositoryName,    //2
+				intdoment.DirectoryRepository().ID,                //3
+				intdoment.DirectoryRepository().DirectoryGroupsID, //4
+			)
+			n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryFindOneForDeletionByID))
+
+			rows, err := n.db.Query(ctx, query, datum.ID[0], authContextDirectoryGroupID)
+			if err != nil {
+				return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, fmt.Errorf("retrieve %s failed, err: %v", intdoment.DirectoryRepository().RepositoryName, err))
+			}
+			defer rows.Close()
+			for rows.Next() {
+				if r, err := rows.Values(); err != nil {
+					return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, err)
+				} else {
+					dataRows = append(dataRows, r)
+				}
+			}
+			if len(dataRows) > 0 {
+				iamAuthRule = iamAuthorizationRule[0]
+			}
+		}
+	}
+
+	if len(dataRows) == 0 {
+		if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
+			ctx,
+			iamCredential,
+			authContextDirectoryGroupID,
+			[]*intdoment.IamGroupAuthorizationRule{
+				{
+					ID:        intdoment.AUTH_RULE_DELETE_OTHERS,
+					RuleGroup: intdoment.AUTH_RULE_GROUP_DIRECTORY,
+				},
+			},
+			iamAuthorizationRules,
+		); err == nil && iamAuthorizationRule != nil {
+			cteName := fmt.Sprintf("%s_%s", intdoment.DirectoryRepository().RepositoryName, RECURSIVE_DIRECTORY_GROUPS_DEFAULT_CTE_NAME)
+			query := fmt.Sprintf(
+				"%[1]s SELECT %[2]s FROM %[3]s WHERE %[4]s = $1 AND %[5]s;",
+				RecursiveDirectoryGroupsSubGroupsCte(authContextDirectoryGroupID, cteName), //1
+				strings.Join(columns, " , "),                                               //2
+				intdoment.DirectoryRepository().RepositoryName,                             //3
+				intdoment.DirectoryRepository().ID,                                         //4
+				fmt.Sprintf("(%s) IN (SELECT %s FROM %s)", intdoment.DirectoryRepository().DirectoryGroupsID, intdoment.DirectoryGroupsSubGroupsRepository().SubGroupID, cteName), //5
+			)
+			n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryFindOneForDeletionByID))
+
+			rows, err := n.db.Query(ctx, query, datum.ID[0])
+			if err != nil {
+				return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, fmt.Errorf("retrieve %s failed, err: %v", intdoment.DirectoryRepository().RepositoryName, err))
+			}
+			defer rows.Close()
+			for rows.Next() {
+				if r, err := rows.Values(); err != nil {
+					return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, err)
+				} else {
+					dataRows = append(dataRows, r)
+				}
+			}
+			if len(dataRows) > 0 {
+				iamAuthRule = iamAuthorizationRule[0]
+			}
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(directoryMModel, nil, false, false, columns)
+	if err != nil {
+		return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, err)
+	}
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, err)
+	}
+
+	if len(array2DToObject.Objects()) == 0 {
+		return nil, nil, nil
+	}
+
+	if len(array2DToObject.Objects()) > 1 {
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoDirectoryFindOneForDeletionByID))
+		return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, fmt.Errorf("more than one %s found", intdoment.DirectoryRepository().RepositoryName))
+	}
+
+	directory := new(intdoment.Directory)
+	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
+		return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, err)
+	} else {
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing directory", "directory", string(jsonData), "function", intlib.FunctionName(n.RepoDirectoryFindOneForDeletionByID))
+		if err := json.Unmarshal(jsonData, directory); err != nil {
+			return nil, nil, intlib.FunctionNameAndError(n.RepoDirectoryFindOneForDeletionByID, err)
+		}
+	}
+
+	return directory, iamAuthRule, nil
+}
 
 func (n *PostrgresRepository) RepoDirectorySearch(
 	ctx context.Context,

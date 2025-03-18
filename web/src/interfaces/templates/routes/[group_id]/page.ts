@@ -74,7 +74,7 @@ class Page extends LitElement {
 					}
 
 					return html`
-						<div class="flex-[9] flex overflow-hidden">
+						<div class="flex-[9] flex flex-col overflow-hidden">
 							${this._importMMViewDatumTask.render({
 								pending: () => html`
 									<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
@@ -86,7 +86,8 @@ class Page extends LitElement {
 									</div>
 								`,
 								complete: () => html`
-									<div class="border-[1px] border-gray-400 flex-1 h-fit max-h-full max-w-full flex overflow-hidden rounded-md">
+									<div class="divider"></div>
+									<div class="flex-1 h-fit max-h-full max-w-full flex overflow-hidden">
 										<metadata-model-view-datum class="flex-1" .metadatamodel=${this.data!.metadata_model} .data=${this.data!.datum} .getmetadatamodel=${this._fieldAnyMetadataModels}></metadata-model-view-datum>
 									</div>
 								`,

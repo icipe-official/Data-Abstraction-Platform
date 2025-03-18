@@ -30,7 +30,7 @@ func (n *PostrgresRepository) RepoMetadataModelFindOneByDirectoryGroupID(
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelFindOneByDirectoryGroupID))
 
 	value := make(map[string]any)
-	if err := n.db.QueryRow(ctx, query, directoryGroupID).Scan(value); err != nil {
+	if err := n.db.QueryRow(ctx, query, directoryGroupID).Scan(&value); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, nil
 		}

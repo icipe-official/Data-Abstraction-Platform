@@ -126,7 +126,7 @@ class Component extends LitElement {
 										complete: () => html`
 											<div class="flex flex-col">
 												<header class="sticky top-0 z-[2] italic text-sm">Choose a directory group to launch...</header>
-												<div class="border-[1px] border-gray-400 h-fit max-h-full max-w-full flex overflow-hidden">
+												<div class="border-[1px] border-gray-400 h-fit max-h-full max-w-full flex overflow-hidden rounded-md">
 													<metadata-model-view-table
 														.metadatamodel=${this._directoryGroupsSearchController?.searchmetadatamodel}
 														.data=${this._directoryGroupsSearchController?.searchresults.data!}

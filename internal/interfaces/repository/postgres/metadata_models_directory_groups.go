@@ -62,7 +62,7 @@ func (n *PostrgresRepository) RepoMetadataModelsDirectoryGroupsUpdateOne(ctx con
 }
 
 func (n *PostrgresRepository) RepoMetadataModelsDirectoryGroupsInsertOne(ctx context.Context, datum *intdoment.MetadataModelsDirectoryGroups, columns []string) (*intdoment.MetadataModelsDirectoryGroups, error) {
-	metadataModelsDgMModel, err := intlib.MetadataModelGet(intdoment.MetadataModelsRepository().RepositoryName)
+	metadataModelsDgMModel, err := intlib.MetadataModelGet(intdoment.MetadataModelsDirectoryGroupsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoMetadataModelsDirectoryGroupsInsertOne, err)
 	}

@@ -5,13 +5,13 @@ meta {
 }
 
 post {
-  url: {{web_service_api_core_url}}/iam/group-authorizations/create?auth_context_directory_group_id=01958404-15b7-7c65-95e5-6222d202fb75&verbose_response=true
+  url: {{web_service_api_core_url}}/iam/group-authorizations/create?auth_context_directory_group_id={{auth_context_directory_group_id}}&verbose_response=true
   body: json
   auth: none
 }
 
 params:query {
-  auth_context_directory_group_id: 01958404-15b7-7c65-95e5-6222d202fb75
+  auth_context_directory_group_id: {{auth_context_directory_group_id}}
   verbose_response: true
 }
 

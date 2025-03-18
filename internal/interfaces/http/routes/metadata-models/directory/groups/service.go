@@ -108,7 +108,7 @@ func (n *service) ServiceMetadataModelsDirectoryGroupsUpdateMany(
 	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
 	if verboseResponse {
 		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryGroupsInsertMany, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryGroupsUpdateMany, err).Error())
 			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
 		} else {
 			verbres.MetadataModelVerboseResponse.MetadataModel = d
@@ -124,7 +124,7 @@ func (n *service) ServiceMetadataModelsDirectoryGroupsUpdateMany(
 		if len(datum.DirectoryGroupsID) > 0 && len(datum.MetadataModelsID) > 0 {
 			if authContextDirectoryGroupID.String() != datum.DirectoryGroupsID[0].String() {
 				if value, err := n.repo.RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx, authContextDirectoryGroupID, datum.DirectoryGroupsID[0]); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryGroupsInsertMany, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryGroupsUpdateMany, err).Error())
 					verbRes.Data = []any{datum}
 					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -144,7 +144,7 @@ func (n *service) ServiceMetadataModelsDirectoryGroupsUpdateMany(
 			}
 
 			if err := n.repo.RepoMetadataModelsDirectoryGroupsUpdateOne(ctx, datum); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryGroupsInsertMany, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryGroupsUpdateMany, err).Error())
 				verbRes.Data = []any{datum}
 				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -299,12 +299,12 @@ func (n *service) ServiceGetMetadataModelsDirectoryGroupsPageHtml(
 				}
 			}
 
-			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_GROUPS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_GROUPS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
 				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryGroupsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID:
-			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_GROUPS_PAGE); err != nil {
+			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_GROUPS_PAGE); err != nil {
 				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryGroupsPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
@@ -337,7 +337,7 @@ func (n *service) ServiceGetMetadataModelsDirectoryGroupsPageHtml(
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 
-		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_DIRECTORY_GROUPS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_GROUPS_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
 			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryGroupsPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}

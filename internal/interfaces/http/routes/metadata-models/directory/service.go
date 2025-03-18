@@ -15,26 +15,247 @@ import (
 	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 )
 
-type service struct {
-	repo   intdomint.RouteGroupAuthorizationRulesRepository
-	logger intdomint.Logger
+func (n *service) ServiceMetadataModelsDirectoryDeleteMany(
+	ctx context.Context,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	authContextDirectoryGroupID uuid.UUID,
+	verboseResponse bool,
+	data []*intdoment.MetadataModelsDirectory,
+) (int, *intdoment.MetadataModelVerbRes, error) {
+	verbres := new(intdoment.MetadataModelVerbRes)
+	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
+	if verboseResponse {
+		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryInsertMany, err).Error())
+			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
+		} else {
+			verbres.MetadataModelVerboseResponse.MetadataModel = d
+		}
+	}
+	verbres.MetadataModelVerboseResponse.Data = make([]*intdoment.MetadataModelVerboseResponseData, 0)
+
+	successful := 0
+	failed := 0
+	for _, datum := range data {
+		verbRes := new(intdoment.MetadataModelVerboseResponseData)
+
+		if len(datum.DirectoryGroupsID) > 0 && len(datum.MetadataModelsID) > 0 {
+			if authContextDirectoryGroupID.String() != datum.DirectoryGroupsID[0].String() {
+				if value, err := n.repo.RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx, authContextDirectoryGroupID, datum.DirectoryGroupsID[0]); err != nil {
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryInsertMany, err).Error())
+					verbRes.Data = []any{datum}
+					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("validate %s failed", intdoment.DirectoryGroupsSubGroupsRepository().RepositoryName), err.Error()}
+					failed += 1
+					goto appendNewVerboseResponse
+				} else {
+					if value == nil {
+						verbRes.Data = []any{datum}
+						verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+						verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
+						verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
+						failed += 1
+						goto appendNewVerboseResponse
+					}
+				}
+			}
+
+			if err := n.repo.RepoMetadataModelsDirectoryDeleteOne(ctx, datum); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryInsertMany, err).Error())
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), "delete failed", err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			} else {
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusOK}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusOK), "deletion successful"}
+				successful += 1
+				goto appendNewVerboseResponse
+			}
+		} else {
+			verbRes.Data = []any{datum}
+			verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+			verbRes.Status[0].StatusCode = []int{http.StatusBadRequest}
+			verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusBadRequest), "data is not valid"}
+			failed += 1
+		}
+	appendNewVerboseResponse:
+		verbres.MetadataModelVerboseResponse.Data = append(verbres.MetadataModelVerboseResponse.Data, verbRes)
+	}
+
+	verbres.Message = fmt.Sprintf("Delete %[1]s: %[2]d/%[4]d successful and %[3]d/%[4]d failed", intdoment.MetadataModelsDirectoryRepository().RepositoryName, successful, failed, len(data))
+	verbres.Successful = successful
+	verbres.Failed = failed
+
+	return http.StatusOK, verbres, nil
 }
 
-func NewService(webService *inthttp.WebService) (*service, error) {
-	n := new(service)
+func (n *service) ServiceMetadataModelsDirectoryUpdateMany(
+	ctx context.Context,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	authContextDirectoryGroupID uuid.UUID,
+	verboseResponse bool,
+	data []*intdoment.MetadataModelsDirectory,
+) (int, *intdoment.MetadataModelVerbRes, error) {
+	verbres := new(intdoment.MetadataModelVerbRes)
+	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
+	if verboseResponse {
+		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryUpdateMany, err).Error())
+			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
+		} else {
+			verbres.MetadataModelVerboseResponse.MetadataModel = d
+		}
+	}
+	verbres.MetadataModelVerboseResponse.Data = make([]*intdoment.MetadataModelVerboseResponseData, 0)
 
-	n.repo = webService.PostgresRepository
-	n.logger = webService.Logger
+	successful := 0
+	failed := 0
+	for _, datum := range data {
+		verbRes := new(intdoment.MetadataModelVerboseResponseData)
 
-	if n.logger == nil {
-		return n, errors.New("webService.Logger is empty")
+		if len(datum.DirectoryGroupsID) > 0 && len(datum.MetadataModelsID) > 0 {
+			if authContextDirectoryGroupID.String() != datum.DirectoryGroupsID[0].String() {
+				if value, err := n.repo.RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx, authContextDirectoryGroupID, datum.DirectoryGroupsID[0]); err != nil {
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryUpdateMany, err).Error())
+					verbRes.Data = []any{datum}
+					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("validate %s failed", intdoment.DirectoryGroupsSubGroupsRepository().RepositoryName), err.Error()}
+					failed += 1
+					goto appendNewVerboseResponse
+				} else {
+					if value == nil {
+						verbRes.Data = []any{datum}
+						verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+						verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
+						verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
+						failed += 1
+						goto appendNewVerboseResponse
+					}
+				}
+			}
+
+			if err := n.repo.RepoMetadataModelsDirectoryUpdateOne(ctx, datum); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryUpdateMany, err).Error())
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), "update failed", err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			} else {
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusOK}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusOK), "update successful"}
+				successful += 1
+				goto appendNewVerboseResponse
+			}
+		} else {
+			verbRes.Data = []any{datum}
+			verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+			verbRes.Status[0].StatusCode = []int{http.StatusBadRequest}
+			verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusBadRequest), "data is not valid"}
+			failed += 1
+		}
+	appendNewVerboseResponse:
+		verbres.MetadataModelVerboseResponse.Data = append(verbres.MetadataModelVerboseResponse.Data, verbRes)
 	}
 
-	if n.repo == nil {
-		return n, errors.New("webService.PostgresRepository is empty")
+	verbres.Message = fmt.Sprintf("Update %[1]s: %[2]d/%[4]d successful and %[3]d/%[4]d failed", intdoment.MetadataModelsDirectoryRepository().RepositoryName, successful, failed, len(data))
+	verbres.Successful = successful
+	verbres.Failed = failed
+
+	return http.StatusOK, verbres, nil
+}
+
+func (n *service) ServiceMetadataModelsDirectoryInsertMany(
+	ctx context.Context,
+	iamCredential *intdoment.IamCredentials,
+	iamAuthorizationRules *intdoment.IamAuthorizationRules,
+	authContextDirectoryGroupID uuid.UUID,
+	verboseResponse bool,
+	data []*intdoment.MetadataModelsDirectory,
+) (int, *intdoment.MetadataModelVerbRes, error) {
+	verbres := new(intdoment.MetadataModelVerbRes)
+	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
+	if verboseResponse {
+		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryInsertMany, err).Error())
+			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
+		} else {
+			verbres.MetadataModelVerboseResponse.MetadataModel = d
+		}
+	}
+	verbres.MetadataModelVerboseResponse.Data = make([]*intdoment.MetadataModelVerboseResponseData, 0)
+
+	successful := 0
+	failed := 0
+	for _, datum := range data {
+		verbRes := new(intdoment.MetadataModelVerboseResponseData)
+
+		if len(datum.DirectoryGroupsID) > 0 && len(datum.MetadataModelsID) > 0 {
+			if authContextDirectoryGroupID.String() != datum.DirectoryGroupsID[0].String() {
+				if value, err := n.repo.RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx, authContextDirectoryGroupID, datum.DirectoryGroupsID[0]); err != nil {
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryInsertMany, err).Error())
+					verbRes.Data = []any{datum}
+					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+					verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), fmt.Sprintf("validate %s failed", intdoment.DirectoryGroupsSubGroupsRepository().RepositoryName), err.Error()}
+					failed += 1
+					goto appendNewVerboseResponse
+				} else {
+					if value == nil {
+						verbRes.Data = []any{datum}
+						verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+						verbRes.Status[0].StatusCode = []int{http.StatusForbidden}
+						verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusForbidden)}
+						failed += 1
+						goto appendNewVerboseResponse
+					}
+				}
+			}
+
+			if value, err := n.repo.RepoMetadataModelsDirectoryInsertOne(ctx, datum, nil); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryInsertMany, err).Error())
+				verbRes.Data = []any{datum}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusInternalServerError), "insert failed", err.Error()}
+				failed += 1
+				goto appendNewVerboseResponse
+			} else {
+				verbRes.Data = []any{value}
+				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+				verbRes.Status[0].StatusCode = []int{http.StatusOK}
+				verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusOK), "creation successful"}
+				successful += 1
+				goto appendNewVerboseResponse
+			}
+		} else {
+			verbRes.Data = []any{datum}
+			verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
+			verbRes.Status[0].StatusCode = []int{http.StatusBadRequest}
+			verbRes.Status[0].StatusMessage = []string{http.StatusText(http.StatusBadRequest), "data is not valid"}
+			failed += 1
+		}
+	appendNewVerboseResponse:
+		verbres.MetadataModelVerboseResponse.Data = append(verbres.MetadataModelVerboseResponse.Data, verbRes)
 	}
 
-	return n, nil
+	verbres.Message = fmt.Sprintf("Create %[1]s: %[2]d/%[4]d successful and %[3]d/%[4]d failed", intdoment.MetadataModelsDirectoryRepository().RepositoryName, successful, failed, len(data))
+	verbres.Successful = successful
+	verbres.Failed = failed
+
+	return http.StatusOK, verbres, nil
 }
 
 func (n *service) ServiceIamGroupAuthorizationsGetAuthorized(
@@ -53,7 +274,7 @@ func (n *service) ServiceIamGroupAuthorizationsGetAuthorized(
 	)
 }
 
-func (n *service) ServiceGetGroupAuthorizationRulesPageHtml(
+func (n *service) ServiceGetMetadataModelsDirectoryPageHtml(
 	ctx context.Context,
 	websiteTemplate intdomint.WebsiteTemplates,
 	openid intdomint.OpenID,
@@ -69,26 +290,26 @@ func (n *service) ServiceGetGroupAuthorizationRulesPageHtml(
 		switch partialName {
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES:
 			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
 				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 				}
 			}
 
-			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+			if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 		case intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID:
-			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+			if baseTemplate, err := websiteTemplate.WebsiteTemplateParseFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_PAGE); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			} else {
 				if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 					return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 				}
 			}
@@ -97,45 +318,45 @@ func (n *service) ServiceGetGroupAuthorizationRulesPageHtml(
 		}
 	} else {
 		if baseTemplate, routesData, err := intlib.WebsiteGetRoutesLayout(ctx, openid, websiteTemplate, iamCredential, authContextDirectoryGroupID); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		} else {
 			if err := websiteTemplate.WebsiteTemplateSetBaseTemplate(baseTemplate); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 			}
 			data, err = intlibjson.SetValueInObject(data, fmt.Sprintf("%s.%s", intdoment.WEBSITE_PATH_ROUTES, intdoment.WEBSITE_PATH_KEY_DATA), routesData)
 			if err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 				return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 			}
 		}
 
 		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_LAYOUT, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 
-		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_GROUP_AUTHORIZATION_RULES_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+		if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_DIRECTORY_PAGE, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID); err != nil {
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 			return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 		}
 	}
 
 	if err := websiteTemplate.WebsiteTemplateRegisterPartialFile(ctx, intdoment.WEBSITE_HTMLTMPL_LIB_PAGES_ERROR, intdoment.WEBSITE_HTMLTMPL_PRTL_ERROR); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 	}
 
 	if htmlContent, err := websiteTemplate.WebstieTemplateGetHtmlContext(ctx, data); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetGroupAuthorizationRulesPageHtml, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGetMetadataModelsDirectoryPageHtml, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, "Parse template failed")
 	} else {
 		return &htmlContent, nil
 	}
 }
 
-func (n *service) ServiceGroupAuthorizationRulesSearch(
+func (n *service) ServiceMetadataModelsDirectorySearch(
 	ctx context.Context,
 	mmsearch *intdoment.MetadataModelSearch,
 	repo intdomint.IamRepository,
@@ -147,7 +368,7 @@ func (n *service) ServiceGroupAuthorizationRulesSearch(
 	skipIfDataExtraction bool,
 	whereAfterJoin bool,
 ) (*intdoment.MetadataModelSearchResults, error) {
-	if value, err := n.repo.RepoGroupAuthorizationRulesSearch(
+	if value, err := n.repo.RepoMetadataModelsDirectorySearch(
 		ctx,
 		mmsearch,
 		repo,
@@ -159,16 +380,16 @@ func (n *service) ServiceGroupAuthorizationRulesSearch(
 		skipIfDataExtraction,
 		whereAfterJoin,
 	); err != nil {
-		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceGroupAuthorizationRulesSearch, err).Error())
+		n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectorySearch, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	} else {
 		return value, nil
 	}
 }
 
-func (n *service) ServiceGroupAuthorizationRulesGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error) {
-	if value, err := metadataModelRetrieve.GroupAuthorizationRulesGetMetadataModel(ctx, 0, targetJoinDepth, nil); err != nil {
-		n.logger.Log(ctx, slog.LevelWarn+1, intlib.FunctionNameAndError(n.ServiceGroupAuthorizationRulesGetMetadataModel, err).Error())
+func (n *service) ServiceMetadataModelsDirectoryGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve, targetJoinDepth int) (map[string]any, error) {
+	if value, err := metadataModelRetrieve.MetadataModelsDirectoryGetMetadataModel(ctx, 0, targetJoinDepth, nil); err != nil {
+		n.logger.Log(ctx, slog.LevelWarn+1, intlib.FunctionNameAndError(n.ServiceMetadataModelsDirectoryGetMetadataModel, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	} else {
 		return value, nil
@@ -193,4 +414,26 @@ func (n *service) ServiceDirectoryGroupsFindOneByIamCredentialID(ctx context.Con
 	}
 
 	return directoryGroup, nil
+}
+
+type service struct {
+	repo   intdomint.RouteMetadataModelsDirectoryRepository
+	logger intdomint.Logger
+}
+
+func NewService(webService *inthttp.WebService) (*service, error) {
+	n := new(service)
+
+	n.repo = webService.PostgresRepository
+	n.logger = webService.Logger
+
+	if n.logger == nil {
+		return n, errors.New("webService.Logger is empty")
+	}
+
+	if n.repo == nil {
+		return n, errors.New("webService.PostgresRepository is empty")
+	}
+
+	return n, nil
 }

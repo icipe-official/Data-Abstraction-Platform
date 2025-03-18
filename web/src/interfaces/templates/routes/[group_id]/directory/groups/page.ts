@@ -1,8 +1,8 @@
 import { IAppContextConsumer } from '@dominterfaces/context/app'
 import { IFieldAnyMetadataModelGet } from '@dominterfaces/field_any_metadata_model/field_any_metadata_model'
-import { AppContextConsumer } from '@interfaces/context/app'
+import { AppContextConsumer, AppContextProvider } from '@interfaces/context/app'
 import { FieldAnyMetadataModel } from '@interfaces/field_any_metadata_model/field_any_metadata_model'
-import { html, LitElement, nothing, unsafeCSS } from 'lit'
+import { html, LitElement, nothing, PropertyValues, unsafeCSS } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import indexCss from '@assets/index.css?inline'
 import pageCss from './page.css?inline'
@@ -16,6 +16,9 @@ import MetadataModel from '@lib/metadata_model'
 import Lib from '@lib/lib'
 import Entities from '@domentities'
 import MetadataModelUtils from '@lib/metadata_model_utils'
+import { ISpaPageNavigation } from '@dominterfaces/spa_page_navigation/spa_page_navigation'
+import { SpaPageNavigation } from '@interfaces/spa_page_navigation/spa_page_navigation'
+import Log from '@lib/log'
 
 @customElement('directory-groups-page')
 class Page extends LitElement {
@@ -48,6 +51,7 @@ class Page extends LitElement {
 		super()
 		this._appContext = new AppContextConsumer(this)
 		this._fieldAnyMetadataModels = new FieldAnyMetadataModel()
+		this._pageNavigation = new SpaPageNavigation(new AppContextProvider(undefined))
 		this._metadataModelsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Directory.Groups}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Directory.Groups}${Url.MetadataModelSearchPath}`)
 	}
 
@@ -141,7 +145,7 @@ class Page extends LitElement {
 		try {
 			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: 'Searching...' }, bubbles: true, composed: true }))
 			await this._metadataModelsSearch.Search(
-				Object.keys(newQc).length > 0 ? MetadataModelUtils.InsertNewQueryConditionToQueryConditions(newQc, this.queryConditions)  : this.queryConditions,
+				Object.keys(newQc).length > 0 ? MetadataModelUtils.InsertNewQueryConditionToQueryConditions(newQc, this.queryConditions) : this.queryConditions,
 				this._appContext.appcontext?.iamdirectorygroupid,
 				this._appContext.GetCurrentdirectorygroupid(),
 				this._appContext.appcontext?.targetjoindepth || 1,
@@ -153,6 +157,54 @@ class Page extends LitElement {
 			window.dispatchEvent(
 				new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.SUCCESS, toastMessage: `${Array.isArray(this._metadataModelsSearch.searchresults.data) ? this._metadataModelsSearch.searchresults.data.length : 0} results found` }, bubbles: true, composed: true })
 			)
+		} catch (e) {
+			console.error(e)
+			if (Array.isArray(e)) {
+				if (e[1] && typeof e[1] == 'object' && e[1].message) {
+					this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+				}
+			}
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+		} finally {
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+		}
+	}
+
+	private async _handleDeleteDirectoryGroups(selectedDataIndexes: number[]) {
+		const data = selectedDataIndexes.map((dIndex) => this._metadataModelsSearch.searchresults.data![dIndex])
+
+		try {
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting/deactivating ${Entities.DirectoryGroups.RepositoryName}...` }, bubbles: true, composed: true }))
+			if (!this._appContext.GetCurrentdirectorygroupid()) {
+				return
+			}
+			const fetchUrl = new URL(`${Url.ApiUrlPaths.Directory.Groups}/${Url.Action.DELETE}`)
+			fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
+			fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
+			if (this._appContext.appcontext?.verboseresponse) {
+				fetchUrl.searchParams.append(Url.SearchParams.VERBOSE_RESPONSE, `${true}`)
+			}
+
+			Log.Log(Log.Level.DEBUG, this.localName, fetchUrl, data)
+
+			const fetchResponse = await fetch(fetchUrl, {
+				method: 'POST',
+				credentials: 'include',
+				body: JSON.stringify(data)
+			})
+
+			const fetchData: Entities.MetadataModel.IVerboseResponse = await fetchResponse.json()
+			if (fetchResponse.ok) {
+				this.dispatchEvent(
+					new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, {
+						detail: { toastType: !fetchData.failed ? Lib.ToastType.SUCCESS : fetchData.successful && fetchData.successful > 0 ? Lib.ToastType.INFO : Lib.ToastType.ERROR, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) },
+						bubbles: true,
+						composed: true
+					})
+				)
+			} else {
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
+			}
 		} catch (e) {
 			console.error(e)
 			if (Array.isArray(e)) {
@@ -181,10 +233,49 @@ class Page extends LitElement {
 	@state() private _showFilterMenu: boolean = false
 	@state() private _showQueryPanel: boolean = false
 
+	private _pageNavigation: ISpaPageNavigation
+
+	private async _handlePageNavigation(path: string, title: string | undefined = undefined) {
+		try {
+			const targetElement = document.querySelector(`#${import.meta.env.VITE_LAYOUT_ROUTES_GROUPID}`)
+			if (targetElement !== null) {
+				const dgid = this._appContext.GetCurrentdirectorygroupid()
+				if (dgid) {
+					let url = new URL(path, window.location.origin)
+					url.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, dgid)
+					Url.AddBaseUrl(url)
+					await this._pageNavigation.Navigate(targetElement, url, title)
+				}
+			}
+		} catch (e) {
+			console.error('page navigation failed', e)
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: 'page navigation failed' }, bubbles: true, composed: true }))
+		}
+	}
+
+	protected firstUpdated(_changedProperties: PropertyValues): void {
+		const url = new URL(window.location.toString())
+		const action = url.searchParams.get(Url.SearchParams.ACTION)
+		if (action) {
+			switch (action) {
+				case Url.Action.CREATE:
+					this._handlePageNavigation(`${Url.ApiUrlPaths.Directory.Groups}/new`, 'New Directory Group')
+					break
+				case Url.Action.RETRIEVE:
+					this._showFilterMenu = true
+					break
+				case Url.Action.UPDATE:
+				case Url.Action.DELETE:
+					this._showQueryPanel = true
+					break
+			}
+		}
+	}
+
 	protected render(): unknown {
 		return html`
 			<div class="flex-1 flex flex-col rounded-md bg-white shadow-md shadow-gray-800 overflow-hidden p-2 gap-y-1">
-				<header class="flex-[0.5] flex flex-col space-y-1 z-[2]">
+				<header class="flex-[0.5] flex flex-col gap-y-1 z-[2]">
 					<section class="join w-[50%] min-w-[600px] rounded-md self-center border-[1px] border-primary p-1">
 						<input
 							class="join-item input input-ghost flex-[9]"
@@ -434,12 +525,18 @@ class Page extends LitElement {
 														.data=${this._metadataModelsSearch.searchresults.data!}
 														.getmetadatamodel=${this._fieldAnyMetadataModels}
 														.filterexcludeindexes=${this.filterExcludeIndexes}
+														@metadata-model-view-table:rowclick=${async (e: CustomEvent) => {
+															const datum = e.detail.value as Entities.DirectoryGroups.Interface
+															if (Array.isArray(datum.id) && datum.id.length == 1) {
+																this._handlePageNavigation(`${Url.WebsitePaths.Directory.Groups}/${datum.id[0]}`, `Directory-Group: ${datum.id[0]}`)
+															}
+														}}
 														.addselectcolumn=${true}
 														.selecteddataindexesactions=${[
 															{
-																actionName: 'Deactivate selected group rule authorizations',
+																actionName: 'Deactivate selected directory groups',
 																action: (selectedDataIndexes: number[]) => {
-																	console.log(selectedDataIndexes)
+																	this._handleDeleteDirectoryGroups(selectedDataIndexes)
 																}
 															}
 														]}
@@ -463,15 +560,14 @@ class Page extends LitElement {
 											if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0) {
 												return nothing
 											}
-											return html` <div class="text-xl font-bold break-words text-center">Create and manage groups. Groups put together related resources thereby making it easier to manage them as well as who has access to what.</div> `
+											return html` <div class="text-xl font-bold break-words text-center">${Url.directoryGroupsNavigation.description}</div> `
 										})()}
 										<div class="flex justify-evenly flex-wrap gap-8">
-											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center">
+											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => this._handlePageNavigation(`${Url.WebsitePaths.Directory.Groups}/new`, 'New Directory Group')}>
 												<div class="flex gap-x-1 self-center">
 													<!--mdi:account-group source: https://icon-sets.iconify.design-->
 													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
 														<path
-															fill="${Theme.Color.SECONDARY_CONTENT}"
 															d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9A3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42c-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3a3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13zM0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9c-.59.68-.95 1.62-.95 2.65V20zm24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65c2.56.34 4.45 1.51 4.45 2.9z"
 														/>
 													</svg>
@@ -490,7 +586,6 @@ class Page extends LitElement {
 													<!--mdi:account-group source: https://icon-sets.iconify.design-->
 													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
 														<path
-															fill="${Theme.Color.SECONDARY_CONTENT}"
 															d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9A3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42c-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3a3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13zM0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9c-.59.68-.95 1.62-.95 2.65V20zm24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65c2.56.34 4.45 1.51 4.45 2.9z"
 														/>
 													</svg>
@@ -511,7 +606,6 @@ class Page extends LitElement {
 													<!--mdi:account-group source: https://icon-sets.iconify.design-->
 													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
 														<path
-															fill="${Theme.Color.SECONDARY_CONTENT}"
 															d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9A3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42c-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3a3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13zM0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9c-.59.68-.95 1.62-.95 2.65V20zm24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65c2.56.34 4.45 1.51 4.45 2.9z"
 														/>
 													</svg>

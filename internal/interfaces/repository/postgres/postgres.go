@@ -15,12 +15,38 @@ import (
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
+	intlibjson "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/json"
 	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
 	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+func MetadataModelExtractFullTextSearchValue(metadatamodel any, data any) []string {
+	pathToValues := make([]string, 0)
+	intlibmmodel.ForEachFieldGroup(metadatamodel, func(property map[string]any) bool {
+		if value, ok := property[intlibmmodel.FIELD_GROUP_PROP_DATABASE_FIELD_ADD_DATA_TO_FULL_TEXT_SEARCH_INDEX].(bool); ok && value {
+			if fgKey, ok := property[intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+				pathToValues = append(pathToValues, fmt.Sprintf("%s%s", intlibmmodel.GetPathToValue(fgKey, true, intlibmmodel.ARRAY_PATH_PLACEHOLDER), intlibmmodel.ARRAY_PATH_PLACEHOLDER))
+			}
+		}
+
+		return false
+	})
+
+	fullTextSearch := make([]string, 0)
+	for _, value := range pathToValues {
+		intlibjson.ForEachValueInObject(data, value, func(currentValuePathKeyArrayIndexes []any, valueFound any) bool {
+			if valueFound != nil {
+				fullTextSearch = append(fullTextSearch, fmt.Sprintf("%+v", valueFound))
+			}
+			return false
+		})
+	}
+
+	return fullTextSearch
+}
 
 type AuthIDsSelectQueryPKey struct {
 	Name      string
@@ -759,9 +785,7 @@ func GetWhereConditionForJsonbValue(columName string, queryPath string, columnFg
 					}
 					andCondition = fmt.Sprintf("EXISTS(SELECT 1 FROM %s, %s WHERE %s)", selectJsonbElementsQuery, selectJsonbElementsQueryTrim, c)
 				}
-			case intlibmmodel.FILTER_CONDTION_TEXT_BEGINS_WITH:
-			case intlibmmodel.FILTER_CONDTION_TEXT_CONTAINS:
-			case intlibmmodel.FILTER_CONDTION_TEXT_ENDS_WITH:
+			case intlibmmodel.FILTER_CONDTION_TEXT_BEGINS_WITH, intlibmmodel.FILTER_CONDTION_TEXT_CONTAINS, intlibmmodel.FILTER_CONDTION_TEXT_ENDS_WITH:
 				if fValueString, ok := andFilterCondition.Value.(string); ok && len(fValueString) > 0 {
 					c := ColumTextCondition(jsonbElementTextColumnName, andFilterCondition.Condition, fValueString)
 					if len(c) == 0 {
@@ -916,9 +940,7 @@ func GetWhereConditionForArrayValue(columName string, filterCondition [][]intdom
 					}
 					andCondition = fmt.Sprintf("EXISTS(SELECT 1 FROM %s as %s WHERE %s)", selectArrayElementsQuery, arrayElementColumnName, c)
 				}
-			case intlibmmodel.FILTER_CONDTION_TEXT_BEGINS_WITH:
-			case intlibmmodel.FILTER_CONDTION_TEXT_CONTAINS:
-			case intlibmmodel.FILTER_CONDTION_TEXT_ENDS_WITH:
+			case intlibmmodel.FILTER_CONDTION_TEXT_BEGINS_WITH, intlibmmodel.FILTER_CONDTION_TEXT_CONTAINS, intlibmmodel.FILTER_CONDTION_TEXT_ENDS_WITH:
 				if fValueString, ok := andFilterCondition.Value.(string); ok && len(fValueString) > 0 {
 					c := ColumTextCondition(arrayElementColumnName, andFilterCondition.Condition, fValueString)
 					if len(c) == 0 {
@@ -1080,9 +1102,7 @@ func GetWhereConditionForSingleValue(columName string, filterCondition [][]intdo
 					}
 					andCondition = c
 				}
-			case intlibmmodel.FILTER_CONDTION_TEXT_BEGINS_WITH:
-			case intlibmmodel.FILTER_CONDTION_TEXT_CONTAINS:
-			case intlibmmodel.FILTER_CONDTION_TEXT_ENDS_WITH:
+			case intlibmmodel.FILTER_CONDTION_TEXT_BEGINS_WITH, intlibmmodel.FILTER_CONDTION_TEXT_CONTAINS, intlibmmodel.FILTER_CONDTION_TEXT_ENDS_WITH:
 				if fValueString, ok := andFilterCondition.Value.(string); ok && len(fValueString) > 0 {
 					c := ColumTextCondition(columName, andFilterCondition.Condition, fValueString)
 					if len(c) == 0 {
@@ -1328,6 +1348,14 @@ func GetandUpdateNextPlaceholder(nextPlaceholder *int) string {
 		*nextPlaceholder += 1
 	}()
 	return fmt.Sprintf("$%d", *nextPlaceholder)
+}
+
+func GetUpdateSetColumnsWithVQuery(colums []string, vQuery []string) string {
+	setColumns := make([]string, 0)
+	for index, value := range colums {
+		setColumns = append(setColumns, fmt.Sprintf("%s = %s", value, vQuery[index]))
+	}
+	return strings.Join(setColumns, ", ")
 }
 
 func GetUpdateSetColumns(colums []string, nextPlaceholder *int) string {

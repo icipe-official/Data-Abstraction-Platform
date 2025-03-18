@@ -17,6 +17,7 @@ import Entities from '@domentities'
 import Log from '@lib/log'
 import MetadataModelUtils from '@lib/metadata_model_utils'
 import Json from '@lib/json'
+import '@lib/components/calendar-time/component'
 
 @customElement('iam-group-authorizations')
 class Component extends LitElement {
@@ -446,7 +447,7 @@ class Component extends LitElement {
 										this._createGroupRuleAuthorizationsStep = 1
 									}}
 								>
-									<div class="break-words pl-4 pr-4">Pick Group Authorization Rule(s)</div>
+									<div class="break-words pl-4 pr-4">Pick Group Rule Authorization(s)</div>
 								</button>
 								<button
 									class="step ${this._createGroupRuleAuthorizationsStep >= 2 ? 'step-secondary' : ''}"

@@ -61,7 +61,7 @@ func (n *PostrgresRepository) RepoIamGroupAuthorizationsDeleteOne(ctx context.Co
 		intdoment.IamGroupAuthorizationsIDsRepository().ID,                                   //3
 	)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoIamGroupAuthorizationsDeleteOne))
-	if _, err := transaction.Exec(ctx, query, datum.ID[0], iamAuthRule.ID[0]); err == nil {
+	if _, err := transaction.Exec(ctx, query, iamAuthRule.ID, datum.ID[0]); err == nil {
 		transaction.Rollback(ctx)
 		return intlib.FunctionNameAndError(n.RepoIamGroupAuthorizationsDeleteOne, fmt.Errorf("update %s failed, err: %v", intdoment.IamGroupAuthorizationsIDsRepository().RepositoryName, err))
 	}

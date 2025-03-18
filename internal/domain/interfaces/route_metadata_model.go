@@ -19,6 +19,3 @@ type RouteMetadataModelRepository interface {
 type RouteMetadataModelApiService interface {
 	ServiceMetadataModelGet(ctx context.Context, metadataModelRepositoryName string, directoryGroupID uuid.UUID) (map[string]any, error)
 }
-
-type RouteMetadataModelWebsiteService interface {
-}

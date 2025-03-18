@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	inthttp "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http"
+	"github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/directory"
 	directorygroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/directory/groups"
 	authorizationrules "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/group/authorization-rules"
 	ruleauthorizations "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/group/rule-authorizations"
@@ -39,6 +40,7 @@ func InitWebServiceWebsiteRouter(router *chi.Mux, webService *inthttp.WebService
 		})
 		baseRouter.Route("/directory", func(directoryRouter chi.Router) {
 			directoryRouter.Mount("/groups", directorygroups.WebsiteRouter(webService))
+			directoryRouter.Mount("/", directory.WebsiteRouter(webService))
 		})
 		baseRouter.Route("/group", func(groupRouter chi.Router) {
 			groupRouter.Mount("/rule-authorizations", ruleauthorizations.WebsiteRouter(webService))

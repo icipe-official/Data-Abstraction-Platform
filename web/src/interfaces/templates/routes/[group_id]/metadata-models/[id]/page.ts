@@ -127,8 +127,8 @@ class Page extends LitElement {
 
 	private _importedMMViewDatum = false
 	private _importMMViewDatumTask = new Task(this, {
-		task: async ([_currentTab, data, _showEditMetadataModelInfo]) => {
-			if (this._importedMMViewDatum || (_currentTab !== Tab.INFORMATION && this._showCreateEditMetadataModelInfo && (!(data as Entities.MetadataModel.IDatum) || !(data as Entities.MetadataModel.IDatum).metadata_model || !(data as Entities.MetadataModel.IDatum).datum))) {
+		task: async ([_currentTab, data, _showCreateEdit]) => {
+			if (this._importedMMViewDatum || (_currentTab !== Tab.INFORMATION && _showCreateEdit && (!(data as Entities.MetadataModel.IDatum) || !(data as Entities.MetadataModel.IDatum).metadata_model || !(data as Entities.MetadataModel.IDatum).datum))) {
 				return
 			}
 			Log.Log(Log.Level.DEBUG, this.localName, '_importMMViewDatumTask')
@@ -469,6 +469,7 @@ class Page extends LitElement {
 			value = MetadataModel.DatabaseGetColumnFieldValue(this.data.metadata_model, Entities.MetadataModels.FieldColumn.Data, this.data.metadata_model[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID], this.data.datum)
 			if (Array.isArray(value)) {
 				this._data = structuredClone(value[0])
+				this._datuminputsamplemetadatamodel = structuredClone(value[0])
 			}
 
 			value = MetadataModel.DatabaseGetColumnFieldValue(this.data.metadata_model, Entities.MetadataModels.FieldColumn.EditAuthorized, this.data.metadata_model[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID], this.data.datum)
@@ -549,6 +550,7 @@ class Page extends LitElement {
 		this._description = ''
 		this._descriptionError = null
 		this._data = MetadataModel.EmptyMetadataModel()
+		this._datuminputsamplemetadatamodel = MetadataModel.EmptyMetadataModel()
 		this._tags = []
 		this._editAuthorized = true
 		this._editUnauthorized = false
@@ -606,7 +608,7 @@ class Page extends LitElement {
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
-			const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels}/${Url.Action.UPDATE}`)
+			const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels.Url}/${Url.Action.UPDATE}`)
 			fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
 			fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
 			if (this._appContext.appcontext?.verboseresponse) {
@@ -705,7 +707,7 @@ class Page extends LitElement {
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
-			const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels}/${Url.Action.CREATE}`)
+			const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels.Url}/${Url.Action.CREATE}`)
 			fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
 			fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
 			if (this._appContext.appcontext?.verboseresponse) {
@@ -750,7 +752,7 @@ class Page extends LitElement {
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
 				return
 			}
-			const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels}/${Url.Action.DELETE}`)
+			const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels.Url}/${Url.Action.DELETE}`)
 			fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
 			fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
 			if (this._appContext.appcontext?.verboseresponse) {
@@ -874,7 +876,7 @@ class Page extends LitElement {
 															<input class="checkbox checkbox-primary" type="checkbox" .checked=${this._viewUnauthorized} @input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => (this._viewUnauthorized = e.currentTarget.checked)} />
 														</section>
 														<div class="divider">tags</div>
-														<section class="flex flex-col space-y-1">
+														<section class="flex flex-col gap-y-1">
 															${this._tags.length > 0
 																? html`
 																		${this._tags.map((cmtt, index) => {
@@ -1128,9 +1130,8 @@ class Page extends LitElement {
 							${this._viewHtmlTemplate()}
 						</section>
 					`
-				} else {
-					return nothing
 				}
+				return nothing
 			})()}
 		`
 	}

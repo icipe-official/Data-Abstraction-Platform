@@ -324,7 +324,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 					ctx,
 					slog.LevelInfo+1,
 					fmt.Sprintln(
-						intdoment.GroupAuthorizationRulesRepository().RepositoryName,
+						intdoment.MetadataModelsDirectoryGroupsRepository().RepositoryName,
 						"searched successfully",
 					),
 					ctx.Value(intlib.LOG_ATTR_CTX_KEY),
@@ -385,7 +385,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 					ctx,
 					slog.LevelInfo+1,
 					fmt.Sprintln(
-						intdoment.GroupAuthorizationRulesRepository().RepositoryName,
+						intdoment.MetadataModelsDirectoryGroupsRepository().RepositoryName,
 						"metadata-model successfully retrieved",
 					),
 					ctx.Value(intlib.LOG_ATTR_CTX_KEY),

@@ -16,6 +16,7 @@ import MetadataModel from '@lib/metadata_model'
 import Entities from '@domentities'
 import MetadataModelUtils from '@lib/metadata_model_utils'
 import Log from '@lib/log'
+import '@lib/components/calendar-time/component'
 
 @customElement('iam-credentials')
 class Component extends LitElement {
@@ -61,7 +62,7 @@ class Component extends LitElement {
 			Log.Log(Log.Level.DEBUG, this.localName, '_getMetatadaModelsMmTask')
 
 			if (Object.keys(this._metadataModelsSearch.searchmetadatamodel).length === 0 || !this._metadataModelsSearch.searchmetadatamodel) {
-				await this._metadataModelsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, 0, undefined)
+				await this._metadataModelsSearch.FetchMetadataModel(this._appContext.appcontext?.iamdirectorygroupid, this._appContext.appcontext?.targetjoindepth, undefined)
 			}
 		},
 		args: () => [this._showQueryPanel, this._fullTextSearchQuery, this._dateOfCreationFrom, this._dateOfCreationTo, this._dateOfLastUpdatedOnFrom, this._dateOfLastUpdatedOnTo]
@@ -211,7 +212,7 @@ class Component extends LitElement {
 	protected render(): unknown {
 		return html`
 			<div class="flex-1 flex flex-col rounded-md bg-white shadow-md shadow-gray-800 overflow-hidden p-2 gap-y-1">
-				<header class="flex-[0.5] flex flex-col space-y-1 z-[2]">
+				<header class="flex-[0.5] flex flex-col gap-y-1 z-[2]">
 					<section class="join w-[50%] rounded-md self-center border-[1px] border-primary p-1">
 						<input
 							class="join-item input input-ghost flex-[9]"
