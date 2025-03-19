@@ -4,45 +4,34 @@ namespace Url {
 	export const MetadataModelSearchGetMMPath = '/search/metadata-model'
 	export const MetadataModelSearchPath = '/search'
 
-	export const WebsitePaths: IWebsitePaths = {
-		Home: '/',
-		MetadataModels: '/metadata-models',
-		Directory: {
-			Groups: '/directory/groups',
-			Url: '/directory'
-		}
-	}
-
-	export const ApiUrlPaths: IApiUrlPaths = {
-		Group: {
-			RuleAuthorizations: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/group/rule-authorizations`,
-			AuthorizationRules: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/group/authorization-rules`
-		},
-		Directory: {
-			Url: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/directory`,
-			Groups: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/directory/groups`
-		},
-		Iam: {
-			Credentials: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/iam/credentials`,
-			GroupRuleAuthorizations: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/iam/group-authorizations`,
-			Logout: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/iam/logout`
-		},
-		MetadataModel: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/metadata-model`,
-		MetadataModels: {
-			Directory: {
-				Groups: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/metadata-models/directory/groups`,
-				Url: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/metadata-models/directory`
-			},
-			Url: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/metadata-models`
-		}
-	}
-
 	export interface IWebsitePaths {
 		Home: string
 		MetadataModels: string
 		Directory: {
 			Groups: string
 			Url: string
+		}
+		Storage: {
+			Drives: {
+				Groups: string
+				Url: string
+			}
+			Files: string
+		}
+	}
+	export const WebsitePaths: IWebsitePaths = {
+		Home: '/',
+		MetadataModels: '/metadata-models',
+		Directory: {
+			Groups: '/directory/groups',
+			Url: '/directory'
+		},
+		Storage: {
+			Drives: {
+				Groups: '/storage/drives/groups',
+				Url: '/storage/drives'
+			},
+			Files: '/storage/files'
 		}
 	}
 
@@ -68,7 +57,50 @@ namespace Url {
 			}
 			Url: string
 		}
+		Storage: {
+			Drives: {
+				Types: string
+				Groups: string
+				Url: string
+			}
+			Files: string
+		}
 	}
+	export const ApiUrlPaths: IApiUrlPaths = {
+		Storage: {
+			Drives: {
+				Types: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/storage/drives/types`,
+				Groups: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/storage/drives/groups`,
+				Url: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/storage/drives`
+			},
+			Files: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/storage/files`
+		},
+		Group: {
+			RuleAuthorizations: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/group/rule-authorizations`,
+			AuthorizationRules: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/group/authorization-rules`
+		},
+		Directory: {
+			Url: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/directory`,
+			Groups: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/directory/groups`
+		},
+		Iam: {
+			Credentials: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/iam/credentials`,
+			GroupRuleAuthorizations: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/iam/group-authorizations`,
+			Logout: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/iam/logout`
+		},
+		MetadataModel: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/metadata-model`,
+		MetadataModels: {
+			Directory: {
+				Groups: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/metadata-models/directory/groups`,
+				Url: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/metadata-models/directory`
+			},
+			Url: `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/metadata-models`
+		}
+	}
+
+	
+
+	
 
 	export const enum SearchParams {
 		TARGET_JOIN_DEPTH = 'target_join_depth',
@@ -855,7 +887,7 @@ namespace Url {
 				description: 'Create and manage storage drives used to store files.'
 			},
 			{
-				path: `/storage/drives?${SearchParams.ACTION}=${Action.CREATE}`,
+				path: `/storage/drives/new`,
 				title: 'Create Storage Drives',
 				icon: html`
 					<div class="flex gap-x-1 self-center">

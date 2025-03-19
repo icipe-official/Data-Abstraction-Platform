@@ -111,7 +111,7 @@ class Component extends LitElement {
 
 			if (this._dateOfCreationFrom.length > 0) {
 				newQc['$.created_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.CreatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.IamGroupAuthorizations.FieldColumn.CreatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -127,7 +127,7 @@ class Component extends LitElement {
 			}
 			if (this._dateOfCreationTo.length > 0) {
 				newQc['$.created_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.CreatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.IamGroupAuthorizations.FieldColumn.CreatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -142,9 +142,9 @@ class Component extends LitElement {
 				}
 			}
 
-			if (this._dateOfLastUpdatedOnFrom.length > 0) {
-				newQc['$.last_updated_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.LastUpdatedOn,
+			if (this._dateDeactivatedOnFrom.length > 0) {
+				newQc['$.deactivated_on'] = {
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.IamGroupAuthorizations.FieldColumn.DeactivatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -152,15 +152,15 @@ class Component extends LitElement {
 								[MetadataModel.FConditionProperties.NEGATE]: false,
 								[MetadataModel.FConditionProperties.CONDITION]: MetadataModel.FilterCondition.TIMESTAMP_GREATER_THAN,
 								[MetadataModel.FConditionProperties.DATE_TIME_FORMAT]: MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM,
-								[MetadataModel.FConditionProperties.VALUE]: this._dateOfLastUpdatedOnFrom
+								[MetadataModel.FConditionProperties.VALUE]: this._dateDeactivatedOnFrom
 							}
 						]
 					]
 				}
 			}
-			if (this._dateOfLastUpdatedOnTo.length > 0) {
-				newQc['$.last_updated_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.LastUpdatedOn,
+			if (this._dateDeactivatedOnTo.length > 0) {
+				newQc['$.deactivated_on'] = {
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.IamGroupAuthorizations.FieldColumn.DeactivatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -168,7 +168,7 @@ class Component extends LitElement {
 								[MetadataModel.FConditionProperties.NEGATE]: false,
 								[MetadataModel.FConditionProperties.CONDITION]: MetadataModel.FilterCondition.TIMESTAMP_LESS_THAN,
 								[MetadataModel.FConditionProperties.DATE_TIME_FORMAT]: MetadataModel.FieldDateTimeFormat.YYYYMMDDHHMM,
-								[MetadataModel.FConditionProperties.VALUE]: this._dateOfLastUpdatedOnTo
+								[MetadataModel.FConditionProperties.VALUE]: this._dateDeactivatedOnTo
 							}
 						]
 					]
@@ -278,8 +278,8 @@ class Component extends LitElement {
 	@state() private _groupAuthorizationRulesFtsTableCollectionUid: string | undefined
 	@state() private _dateOfCreationFrom: string = ''
 	@state() private _dateOfCreationTo: string = ''
-	@state() private _dateOfLastUpdatedOnFrom: string = ''
-	@state() private _dateOfLastUpdatedOnTo: string = ''
+	@state() private _dateDeactivatedOnFrom: string = ''
+	@state() private _dateDeactivatedOnTo: string = ''
 	@state() private _showFilterMenu: boolean = false
 	@state() private _showQueryPanel: boolean = false
 
@@ -1073,28 +1073,28 @@ class Component extends LitElement {
 												<div class="join-item h-[5px] bg-primary"></div>
 											</div>
 											<div class="join join-vertical">
-												<div class="join-item bg-primary text-primary-content p-1 font-bold">Last updated on (from/to)</div>
+												<div class="join-item bg-primary text-primary-content p-1 font-bold">Deactivated on (from/to)</div>
 												<calendar-time
 													class="join-item flex-1"
 													.roundedborder=${false}
-													.value=${this._dateOfLastUpdatedOnFrom}
+													.value=${this._dateDeactivatedOnFrom}
 													@calendar-time:datetimeupdate=${(e: CustomEvent) => {
 														if (e.detail.value) {
-															this._dateOfLastUpdatedOnFrom = e.detail.value
+															this._dateDeactivatedOnFrom = e.detail.value
 														} else {
-															this._dateOfLastUpdatedOnFrom = ''
+															this._dateDeactivatedOnFrom = ''
 														}
 													}}
 												></calendar-time>
 												<calendar-time
 													class="join-item flex-1"
 													.roundedborder=${false}
-													.value=${this._dateOfLastUpdatedOnTo}
+													.value=${this._dateDeactivatedOnTo}
 													@calendar-time:datetimeupdate=${(e: CustomEvent) => {
 														if (e.detail.value) {
-															this._dateOfLastUpdatedOnTo = e.detail.value
+															this._dateDeactivatedOnTo = e.detail.value
 														} else {
-															this._dateOfLastUpdatedOnTo = ''
+															this._dateDeactivatedOnTo = ''
 														}
 													}}
 												></calendar-time>

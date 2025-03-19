@@ -1,0 +1,42 @@
+meta {
+  name: Search
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{web_service_api_core_url}}/storage/drives/types/search
+  body: json
+  auth: none
+}
+
+params:query {
+  ~where_after_join: true
+  ~auth_context_directory_group_id: {{auth_context_directory_group_id}}
+  ~start_search_directory_group_id: {{start_search_directory_group_id}}
+  ~skip_if_fg_disabled: true
+  ~skip_if_data_extraction: true
+}
+
+body:json {
+  {
+    "metadata_model": {{search_metadata_model}},
+    "query_conditions": [
+      {
+        "$.directory_groups_join_directory_groups_authorization_ids[*].creation_iam_group_authorizations_id_join_iam_group_authorizations[*].group_rule_authorizations_id_join_group_rule_authorizations[*].group_authorization_rules_id[*].group_rule_authorizations_join_group_authorization_rules[*].tags": {
+          "$FG_FILTER_CONDITION": [
+            [
+              {
+                "$FILTER_NEGATE": false,
+                "$FILTER_CONDITION": "NO_OF_ENTRIES_GREATER_THAN",
+                "$FILTER_VALUE": 0
+              }
+            ]
+          ],
+          "$DATABASE_FIELD_COLUMN_NAME": "tags",
+          "$DATABASE_TABLE_COLLECTION_UID": "_3QaW61"
+        }
+      }
+    ]
+  }
+}

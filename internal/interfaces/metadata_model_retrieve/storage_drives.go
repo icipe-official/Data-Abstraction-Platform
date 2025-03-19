@@ -59,6 +59,26 @@ func (n *MetadataModelRetrieve) StorageDrivesGetMetadataModel(ctx context.Contex
 				}
 			}
 		}
+
+		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().RepositoryName, intdoment.StorageDrivesAuthorizationIDsRepository().RepositoryName)]; !ok || !skipMMJoin {
+			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().RepositoryName, intdoment.StorageDrivesAuthorizationIDsRepository().RepositoryName)
+			if childMetadataModel, err := n.DefaultAuthorizationIDsGetMetadataModel(
+				ctx,
+				intdoment.StorageDrivesAuthorizationIDsRepository().RepositoryName,
+				currentJoinDepth+1,
+				targetJoinDepth,
+				nil,
+				intdoment.StorageDrivesAuthorizationIDsRepository().CreationIamGroupAuthorizationsID,
+				intdoment.StorageDrivesAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID,
+			); err != nil {
+				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.DirectoryGroupsGetMetadataModel))
+			} else {
+				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(parentMetadataModel, childMetadataModel, "", false, newChildMetadataModelfgSuffix, nil)
+				if err != nil {
+					return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetMetadataModel, err)
+				}
+			}
+		}
 	}
 
 	return parentMetadataModel, nil

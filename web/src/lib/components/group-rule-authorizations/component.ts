@@ -111,7 +111,7 @@ class Component extends LitElement {
 
 			if (this._dateOfCreationFrom.length > 0) {
 				newQc['$.created_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.CreatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupRuleAuthorizations.FieldColumn.CreatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -127,7 +127,7 @@ class Component extends LitElement {
 			}
 			if (this._dateOfCreationTo.length > 0) {
 				newQc['$.created_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.CreatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupRuleAuthorizations.FieldColumn.CreatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[

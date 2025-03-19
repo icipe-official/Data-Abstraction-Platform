@@ -98,7 +98,7 @@ class Page extends LitElement {
 
 			if (this._dateOfCreationFrom.length > 0) {
 				newQc['$.created_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.CreatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.MetadataModels.FieldColumn.CreatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -114,7 +114,7 @@ class Page extends LitElement {
 			}
 			if (this._dateOfCreationTo.length > 0) {
 				newQc['$.created_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.CreatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.MetadataModels.FieldColumn.CreatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -131,7 +131,7 @@ class Page extends LitElement {
 
 			if (this._dateOfLastUpdatedOnFrom.length > 0) {
 				newQc['$.last_updated_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.LastUpdatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.MetadataModels.FieldColumn.LastUpdatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -147,7 +147,7 @@ class Page extends LitElement {
 			}
 			if (this._dateOfLastUpdatedOnTo.length > 0) {
 				newQc['$.last_updated_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.LastUpdatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.MetadataModels.FieldColumn.LastUpdatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -232,7 +232,7 @@ class Page extends LitElement {
 		}
 	}
 
-	private async _handleDeleteMetadataModels(selectedDataIndexes: number[]) {
+	private async _handleDeleteMetadataModel(selectedDataIndexes: number[]) {
 		const data = selectedDataIndexes.map((dIndex) => this._metadataModelsSearch.searchresults.data![dIndex])
 
 		try {
@@ -584,7 +584,7 @@ class Page extends LitElement {
 															{
 																actionName: 'Delete/deactivate selected metadata-models',
 																action: (selectedDataIndexes: number[]) => {
-																	this._handleDeleteMetadataModels(selectedDataIndexes)
+																	this._handleDeleteMetadataModel(selectedDataIndexes)
 																}
 															}
 														]}

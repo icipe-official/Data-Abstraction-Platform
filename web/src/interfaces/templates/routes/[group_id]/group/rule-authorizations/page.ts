@@ -1,1 +1,1 @@
-import '@lib/components/group/rule-authorizations/component'
+import '@lib/components/group-rule-authorizations/component'

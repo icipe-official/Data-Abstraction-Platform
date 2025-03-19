@@ -12,7 +12,7 @@ import (
 )
 
 func (n *CmdInitDatabaseService) ServiceStorageTypesCreate(ctx context.Context) (int, error) {
-	storageTypesEntries, err := fs.ReadDir(embedded.StorageTypes, "storage_types")
+	storageTypesEntries, err := fs.ReadDir(embedded.StorageTypesMetadataModels, "storage_types")
 	if err != nil {
 		return 0, fmt.Errorf("read storage_types directory failed, err: %v", err)
 	}
@@ -20,7 +20,7 @@ func (n *CmdInitDatabaseService) ServiceStorageTypesCreate(ctx context.Context) 
 	successfulUpserts := 0
 	for _, storageTypeEntry := range storageTypesEntries {
 		pathToFile := fmt.Sprintf("storage_types/%v", storageTypeEntry.Name())
-		fileContent, err := embedded.StorageTypes.ReadFile(pathToFile)
+		fileContent, err := embedded.StorageTypesMetadataModels.ReadFile(pathToFile)
 		if err != nil {
 			return successfulUpserts, fmt.Errorf("read file %v failed, err: %v", pathToFile, err)
 		}

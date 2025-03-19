@@ -159,6 +159,10 @@ func (n *MetadataModelRetrieve) GetMetadataModel(tableCollectionName string) (ma
 	return intlib.MetadataModelGet(tableCollectionName)
 }
 
+func (n *MetadataModelRetrieve) GetStorageDriveTypeMetadataModel(storageDriveTypeID string) (map[string]any, error) {
+	return intlib.MetadataModelStorageDrivesTypesGet(storageDriveTypeID)
+}
+
 func (n *MetadataModelRetrieve) DefaultAuthorizationIDsGetMetadataModel(
 	ctx context.Context,
 	tableCollectionName string,

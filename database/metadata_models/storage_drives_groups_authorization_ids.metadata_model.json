@@ -26,7 +26,7 @@
                 "$FIELD_UI": "text",
                 "$FIELD_GROUP_IS_PRIMARY_KEY": true,
                 "$FIELD_GROUP_INPUT_DISABLE": true,
-                "$DATABASE_FIELD_COLUMN_NAME": "id",
+                "$DATABASE_FIELD_COLUMN_NAME": "directory_groups_id",
                 "$DATABASE_TABLE_COLLECTION_UID": "storage_drives_groups_authorization_ids"
             },
             "creation_iam_group_authorizations_id": {

@@ -15,7 +15,7 @@ import (
 	intlibmmodel "github.com/icipe-official/Data-Abstraction-Platform/internal/lib/metadata_model"
 )
 
-func (n *PostrgresRepository) RepoStorageDriveTypesSearch(
+func (n *PostrgresRepository) RepoStorageDrivesTypesSearch(
 	ctx context.Context,
 	mmsearch *intdoment.MetadataModelSearch,
 	repo intdomint.IamRepository,
@@ -39,23 +39,23 @@ func (n *PostrgresRepository) RepoStorageDriveTypesSearch(
 		skipIfDataExtraction,
 		whereAfterJoin,
 	)
-	selectQuery, err := pSelectQuery.StorageDriveTypesGetSelectQuery(ctx, mmsearch.MetadataModel, "")
+	selectQuery, err := pSelectQuery.StorageDrivesTypesGetSelectQuery(ctx, mmsearch.MetadataModel, "")
 	if err != nil {
-		return nil, intlib.FunctionNameAndError(n.RepoStorageDriveTypesSearch, err)
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesTypesSearch, err)
 	}
 
 	query, selectQueryExtract := GetSelectQuery(selectQuery, whereAfterJoin)
-	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoStorageDriveTypesSearch))
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoStorageDrivesTypesSearch))
 
 	rows, err := n.db.Query(ctx, query)
 	if err != nil {
-		return nil, intlib.FunctionNameAndError(n.RepoStorageDriveTypesSearch, fmt.Errorf("retrieve %s failed, err: %v", intdoment.StorageDrivesTypesRepository().RepositoryName, err))
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesTypesSearch, fmt.Errorf("retrieve %s failed, err: %v", intdoment.StorageDrivesTypesRepository().RepositoryName, err))
 	}
 	defer rows.Close()
 	dataRows := make([]any, 0)
 	for rows.Next() {
 		if r, err := rows.Values(); err != nil {
-			return nil, intlib.FunctionNameAndError(n.RepoStorageDriveTypesSearch, err)
+			return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesTypesSearch, err)
 		} else {
 			dataRows = append(dataRows, r)
 		}
@@ -63,10 +63,10 @@ func (n *PostrgresRepository) RepoStorageDriveTypesSearch(
 
 	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(mmsearch.MetadataModel, selectQueryExtract.Fields, false, false, nil)
 	if err != nil {
-		return nil, intlib.FunctionNameAndError(n.RepoStorageDriveTypesSearch, err)
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesTypesSearch, err)
 	}
 	if err := array2DToObject.Convert(dataRows); err != nil {
-		return nil, intlib.FunctionNameAndError(n.RepoStorageDriveTypesSearch, err)
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesTypesSearch, err)
 	}
 
 	mmSearchResults := new(intdoment.MetadataModelSearchResults)
@@ -80,7 +80,7 @@ func (n *PostrgresRepository) RepoStorageDriveTypesSearch(
 	return mmSearchResults, nil
 }
 
-func (n *PostgresSelectQuery) StorageDriveTypesGetSelectQuery(ctx context.Context, metadataModel map[string]any, metadataModelParentPath string) (*SelectQuery, error) {
+func (n *PostgresSelectQuery) StorageDrivesTypesGetSelectQuery(ctx context.Context, metadataModel map[string]any, metadataModelParentPath string) (*SelectQuery, error) {
 	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
 		ctx,
 		n.iamCredential,

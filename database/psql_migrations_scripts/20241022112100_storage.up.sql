@@ -38,7 +38,7 @@ COMMENT ON TABLE public.storage_drives
 
 -- storage_drives trigger to update last_updated_on column
 CREATE TRIGGER storage_drives_update_last_updated_on
-    BEFORE UPDATE OF data, storage_drive_types_id
+    BEFORE UPDATE OF data, storage_drive_types_id, description
     ON public.storage_drives
     FOR EACH ROW
     EXECUTE FUNCTION public.update_last_updated_on();
@@ -81,7 +81,6 @@ CREATE TABLE public.storage_drives_groups
 (
     storage_drives_id uuid NOT NULL,
     directory_groups_id uuid NOT NULL,
-    directory_id uuid,
     description text,
     created_on timestamp without time zone NOT NULL DEFAULT NOW(),
     last_updated_on timestamp without time zone NOT NULL DEFAULT NOW(),
@@ -96,11 +95,6 @@ CREATE TABLE public.storage_drives_groups
         REFERENCES public.storage_drives (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
-        NOT VALID,
-    CONSTRAINT directory_id FOREIGN KEY (directory_id)
-        REFERENCES public.directory (id) MATCH SIMPLE
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT
         NOT VALID
 );
 
@@ -109,6 +103,16 @@ ALTER TABLE IF EXISTS public.storage_drives_groups
 
 COMMENT ON TABLE public.storage_drives_groups
     IS 'Storage drives available in specific directory_groups.';
+
+-- storage_drives_groups trigger to update last_updated_on column
+CREATE TRIGGER storage_drives_groups_update_last_updated_on
+    BEFORE UPDATE OF description
+    ON public.storage_drives_groups
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_last_updated_on();
+
+COMMENT ON TRIGGER storage_drives_groups_update_last_updated_on ON public.storage_drives_groups
+    IS 'update timestamp upon update on relevant columns';
 
 -- storage_drives_groups_authorization_ids table
 CREATE TABLE public.storage_drives_groups_authorization_ids

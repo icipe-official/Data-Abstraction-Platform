@@ -14,7 +14,6 @@ import Url from '@lib/url'
 import { Task } from '@lit/task'
 import MetadataModel from '@lib/metadata_model'
 import Entities from '@domentities'
-import MetadataModelUtils from '@lib/metadata_model_utils'
 import Log from '@lib/log'
 
 @customElement('metadata-models-directory')

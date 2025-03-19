@@ -11,14 +11,16 @@ import (
 )
 
 type FieldAnyMetadataModelGet struct {
-	logger intdomint.Logger
-	repo   intdomint.FieldAnyMetadataModelRepository
+	logger     intdomint.Logger
+	repo       intdomint.FieldAnyMetadataModelRepository
+	mmretrieve intdomint.MetadataModelRetrieve
 }
 
-func NewFieldAnyMetadataModelGet(logger intdomint.Logger, repo intdomint.FieldAnyMetadataModelRepository) *FieldAnyMetadataModelGet {
+func NewFieldAnyMetadataModelGet(logger intdomint.Logger, repo intdomint.FieldAnyMetadataModelRepository, metadataModelRetrieve intdomint.MetadataModelRetrieve) *FieldAnyMetadataModelGet {
 	n := new(FieldAnyMetadataModelGet)
 	n.logger = logger
 	n.repo = repo
+	n.mmretrieve = metadataModelRetrieve
 
 	return n
 }
@@ -60,6 +62,17 @@ func (n *FieldAnyMetadataModelGet) GetMetadataModel(ctx context.Context, actionI
 		}
 
 		return nil, fmt.Errorf("actionID %s arguments not valid", actionID)
+	case intdoment.StorageDrivesTypesRepository().RepositoryName:
+		if argArray, ok := argument.([]any); ok && len(argArray) > 0 {
+			storageDriveTypeID := ""
+			if value, ok := argArray[0].(string); ok && len(value) > 0 {
+				storageDriveTypeID = value
+			} else {
+				return nil, fmt.Errorf("in actionID %s, storageDriveTypeID is nil", actionID)
+			}
+
+			return n.mmretrieve.GetStorageDriveTypeMetadataModel(storageDriveTypeID)
+		}
 	}
 
 	return nil, fmt.Errorf("actionID %s not recognized", actionID)

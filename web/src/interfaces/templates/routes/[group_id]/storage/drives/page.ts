@@ -1,10 +1,10 @@
 import { html, LitElement, nothing, unsafeCSS } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import indexCss from '@assets/index.css?inline'
-import componentCss from './component.css?inline'
+import pageCss from './page.css?inline'
 import { IAppContextConsumer } from '@dominterfaces/context/app'
 import { IMetadataModelSearchController } from '@dominterfaces/controllers/metadata_model'
-import { AppContextConsumer } from '@interfaces/context/app'
+import { AppContextConsumer, AppContextProvider } from '@interfaces/context/app'
 import { MetadataModelSearchController } from '@interfaces/controllers/metadata_model'
 import { FieldAnyMetadataModel } from '@interfaces/field_any_metadata_model/field_any_metadata_model'
 import Lib from '@lib/lib'
@@ -17,10 +17,12 @@ import Entities from '@domentities'
 import MetadataModelUtils from '@lib/metadata_model_utils'
 import Log from '@lib/log'
 import '@lib/components/calendar-time/component'
+import { ISpaPageNavigation } from '@dominterfaces/spa_page_navigation/spa_page_navigation'
+import { SpaPageNavigation } from '@interfaces/spa_page_navigation/spa_page_navigation'
 
-@customElement('group-authorization-rules')
-class Component extends LitElement {
-	static styles = [unsafeCSS(indexCss), unsafeCSS(componentCss)]
+@customElement('storage-drives')
+class Page extends LitElement {
+	static styles = [unsafeCSS(indexCss), unsafeCSS(pageCss)]
 
 	private _metadataModelsSearch: IMetadataModelSearchController
 	private _appContext: IAppContextConsumer
@@ -49,7 +51,8 @@ class Component extends LitElement {
 		super()
 		this._appContext = new AppContextConsumer(this)
 		this._fieldAnyMetadataModels = new FieldAnyMetadataModel()
-		this._metadataModelsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Group.AuthorizationRules}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Group.AuthorizationRules}${Url.MetadataModelSearchPath}`)
+		this._pageNavigation = new SpaPageNavigation(new AppContextProvider(undefined))
+		this._metadataModelsSearch = new MetadataModelSearchController(this, `${Url.ApiUrlPaths.Storage.Drives.Url}${Url.MetadataModelSearchGetMMPath}`, `${Url.ApiUrlPaths.Storage.Drives.Url}${Url.MetadataModelSearchPath}`)
 	}
 
 	private _getMetatadaModelsMmTask = new Task(this, {
@@ -85,15 +88,23 @@ class Component extends LitElement {
 		if (this._metadataModelsSearch.searchmetadatamodel) {
 			if (this._fullTextSearchQuery.length > 0) {
 				newQc['$'] = {
-					[MetadataModel.QcProperties.D_TABLE_COLLECTION_NAME]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_NAME],
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.StorageDrives.FieldColumn.Description,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
-					[MetadataModel.QcProperties.D_FULL_TEXT_SEARCH_QUERY]: this._fullTextSearchQuery
+					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
+						[
+							{
+								[MetadataModel.FConditionProperties.NEGATE]: false,
+								[MetadataModel.FConditionProperties.CONDITION]: MetadataModel.FilterCondition.TEXT_CONTAINS,
+								[MetadataModel.FConditionProperties.VALUE]: this._fullTextSearchQuery
+							}
+						]
+					]
 				}
 			}
 
 			if (this._dateOfCreationFrom.length > 0) {
 				newQc['$.created_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.CreatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.StorageDrives.FieldColumn.CreatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -109,7 +120,7 @@ class Component extends LitElement {
 			}
 			if (this._dateOfCreationTo.length > 0) {
 				newQc['$.created_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.CreatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.StorageDrives.FieldColumn.CreatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -126,7 +137,7 @@ class Component extends LitElement {
 
 			if (this._dateOfLastUpdatedOnFrom.length > 0) {
 				newQc['$.last_updated_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.LastUpdatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.StorageDrives.FieldColumn.LastUpdatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -142,7 +153,7 @@ class Component extends LitElement {
 			}
 			if (this._dateOfLastUpdatedOnTo.length > 0) {
 				newQc['$.last_updated_on'] = {
-					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.GroupAuthorizationRules.FieldColumn.LastUpdatedOn,
+					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.StorageDrives.FieldColumn.LastUpdatedOn,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [
 						[
@@ -207,6 +218,74 @@ class Component extends LitElement {
 	@state() private _showFilterMenu: boolean = false
 	@state() private _showQueryPanel: boolean = false
 
+	private _pageNavigation: ISpaPageNavigation
+
+	private async _handlePageNavigation(path: string, title: string | undefined = undefined) {
+		try {
+			const targetElement = document.querySelector(`#${import.meta.env.VITE_LAYOUT_ROUTES_GROUPID}`)
+			if (targetElement !== null) {
+				const dgid = this._appContext.GetCurrentdirectorygroupid()
+				if (dgid) {
+					let url = new URL(path, window.location.origin)
+					url.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, dgid)
+					Url.AddBaseUrl(url)
+					await this._pageNavigation.Navigate(targetElement, url, title)
+				}
+			}
+		} catch (e) {
+			console.error('page navigation failed', e)
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: 'page navigation failed' }, bubbles: true, composed: true }))
+		}
+	}
+
+	private async _handleDeleteStorageDrives(selectedDataIndexes: number[]) {
+		const data = selectedDataIndexes.map((dIndex) => this._metadataModelsSearch.searchresults.data![dIndex])
+
+		try {
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting/deactivating ${Entities.StorageDrives.RepositoryName}...` }, bubbles: true, composed: true }))
+			if (!this._appContext.GetCurrentdirectorygroupid()) {
+				return
+			}
+			const fetchUrl = new URL(`${Url.ApiUrlPaths.Storage.Drives.Url}/${Url.Action.DELETE}`)
+			fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
+			fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
+			if (this._appContext.appcontext?.verboseresponse) {
+				fetchUrl.searchParams.append(Url.SearchParams.VERBOSE_RESPONSE, `${true}`)
+			}
+
+			Log.Log(Log.Level.DEBUG, this.localName, fetchUrl, data)
+
+			const fetchResponse = await fetch(fetchUrl, {
+				method: 'POST',
+				credentials: 'include',
+				body: JSON.stringify(data)
+			})
+
+			const fetchData: Entities.MetadataModel.IVerboseResponse = await fetchResponse.json()
+			if (fetchResponse.ok) {
+				this.dispatchEvent(
+					new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, {
+						detail: { toastType: !fetchData.failed ? Lib.ToastType.SUCCESS : fetchData.successful && fetchData.successful > 0 ? Lib.ToastType.INFO : Lib.ToastType.ERROR, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) },
+						bubbles: true,
+						composed: true
+					})
+				)
+			} else {
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
+			}
+		} catch (e) {
+			console.error(e)
+			if (Array.isArray(e)) {
+				if (e[1] && typeof e[1] == 'object' && e[1].message) {
+					this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+				}
+			}
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+		} finally {
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+		}
+	}
+
 	protected render(): unknown {
 		return html`
 			<div class="flex-1 flex flex-col rounded-md bg-white shadow-md shadow-gray-800 overflow-hidden p-2 gap-y-1">
@@ -215,7 +294,7 @@ class Component extends LitElement {
 						<input
 							class="join-item input input-ghost flex-[9]"
 							type="search"
-							placeholder="Search group authorization rules..."
+							placeholder="Search storage drives..."
 							.value=${this._fullTextSearchQuery}
 							@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 								this._fullTextSearchQuery = e.currentTarget.value
@@ -481,6 +560,21 @@ class Component extends LitElement {
 														.data=${this._metadataModelsSearch.searchresults.data!}
 														.getmetadatamodel=${this._fieldAnyMetadataModels}
 														.filterexcludeindexes=${this.filterExcludeIndexes}
+														@metadata-model-view-table:rowclick=${async (e: CustomEvent) => {
+															const datum = e.detail.value as Entities.StorageDrives.Interface
+															if (Array.isArray(datum.id) && datum.id.length == 1) {
+																this._handlePageNavigation(`${Url.WebsitePaths.Storage.Drives.Url}/${datum.id[0]}`, `Storage Drive: ${datum.id[0]}`)
+															}
+														}}
+														.addselectcolumn=${true}
+														.selecteddataindexesactions=${[
+															{
+																actionName: 'Delete/deactivate selected storage drives',
+																action: (selectedDataIndexes: number[]) => {
+																	this._handleDeleteStorageDrives(selectedDataIndexes)
+																}
+															}
+														]}
 													></metadata-model-view-table>
 												</div>
 											`,
@@ -501,15 +595,30 @@ class Component extends LitElement {
 											if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0) {
 												return nothing
 											}
-											return html` <div class="text-xl font-bold break-words text-center">${Url.groupAuthorizationRulesNavigation.description}</div> `
+											return html` <div class="text-xl font-bold break-words text-center">${Url.storageDrivesNavigation.description}</div> `
 										})()}
 										<div class="flex justify-evenly flex-wrap gap-8">
-											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showQueryPanel = true)}>
+											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => this._handlePageNavigation(`${Url.WebsitePaths.Storage.Drives.Url}/new`, 'New Storage Drive')}>
 												<div class="flex gap-x-1 self-center">
-													<!--carbon:subnet-acl-rules source: https://icon-sets.iconify.design-->
-													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 32 32">
-														<path d="M18 14h12v2H18zm0 5h8v2h-8zm0-10h12v2H18z" />
-														<path d="M22 24v4H6V16h8v-2h-4V8a4 4 0 0 1 7.668-1.6l1.832-.8A6.001 6.001 0 0 0 8 8v6H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4Z" />
+													<!--mdi:network-attached-storage source: https://icon-sets.iconify.design-->
+													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
+														<path d="M4 5c-1.11 0-2 .89-2 2v10c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V7c0-1.11-.89-2-2-2zm.5 2a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1M7 7h13v10H7zm1 1v8h3V8zm4 0v8h3V8zm4 0v8h3V8zM9 9h1v1H9zm4 0h1v1h-1zm4 0h1v1h-1z" />
+													</svg>
+													<!--mdi:plus-thick source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M20 14h-6v6h-4v-6H4v-4h6V4h4v6h6z" /></svg>
+												</div>
+												${(() => {
+													if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
+														return nothing
+													}
+													return html`<div>Create new storage drives</div>`
+												})()}
+											</button>
+											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showFilterMenu = true)}>
+												<div class="flex gap-x-1 self-center">
+													<!--mdi:network-attached-storage source: https://icon-sets.iconify.design-->
+													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
+														<path d="M4 5c-1.11 0-2 .89-2 2v10c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V7c0-1.11-.89-2-2-2zm.5 2a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1M7 7h13v10H7zm1 1v8h3V8zm4 0v8h3V8zm4 0v8h3V8zM9 9h1v1H9zm4 0h1v1h-1zm4 0h1v1h-1z" />
 													</svg>
 													<!--mdi:search source: https://icon-sets.iconify.design-->
 													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -520,15 +629,19 @@ class Component extends LitElement {
 													if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
 														return nothing
 													}
-													return html`<div>Search for authorizations rules</div>`
+													return html`<div>Search for storage drives</div>`
 												})()}
 											</button>
-											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showQueryPanel = true)}>
+											<button
+												class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center"
+												@click=${() => {
+													this._showQueryPanel = true
+												}}
+											>
 												<div class="flex gap-x-1 self-center">
-													<!--carbon:subnet-acl-rules source: https://icon-sets.iconify.design-->
-													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 32 32">
-														<path d="M18 14h12v2H18zm0 5h8v2h-8zm0-10h12v2H18z" />
-														<path d="M22 24v4H6V16h8v-2h-4V8a4 4 0 0 1 7.668-1.6l1.832-.8A6.001 6.001 0 0 0 8 8v6H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4Z" />
+													<!--mdi:network-attached-storage source: https://icon-sets.iconify.design-->
+													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
+														<path d="M4 5c-1.11 0-2 .89-2 2v10c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V7c0-1.11-.89-2-2-2zm.5 2a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1M7 7h13v10H7zm1 1v8h3V8zm4 0v8h3V8zm4 0v8h3V8zM9 9h1v1H9zm4 0h1v1h-1zm4 0h1v1h-1z" />
 													</svg>
 													<!--mdi:edit source: https://icon-sets.iconify.design-->
 													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" /></svg>
@@ -537,7 +650,23 @@ class Component extends LitElement {
 													if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
 														return nothing
 													}
-													return html`<div>Update group authorization rules' tags</div>`
+													return html`<div>Update storage drives</div>`
+												})()}
+											</button>
+											<button class="link link-hover min-h-fit h-fit min-w-fit w-fit flex flex-col justify-center" @click=${() => (this._showQueryPanel = true)}>
+												<div class="flex gap-x-1 self-center">
+													<!--mdi:network-attached-storage source: https://icon-sets.iconify.design-->
+													<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
+														<path d="M4 5c-1.11 0-2 .89-2 2v10c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V7c0-1.11-.89-2-2-2zm.5 2a1 1 0 0 1 1 1a1 1 0 0 1-1 1a1 1 0 0 1-1-1a1 1 0 0 1 1-1M7 7h13v10H7zm1 1v8h3V8zm4 0v8h3V8zm4 0v8h3V8zM9 9h1v1H9zm4 0h1v1h-1zm4 0h1v1h-1z" />
+													</svg>
+													<!--mdi:delete source: https://icon-sets.iconify.design-->
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
+												</div>
+												${(() => {
+													if (this._metadataModelsSearch.searchmetadatamodel && this._metadataModelsSearch.searchresults.data && this._metadataModelsSearch.searchresults.data.length > 0 && this._windowWidth < 800) {
+														return nothing
+													}
+													return html`<div>Delete storage drives</div>`
 												})()}
 											</button>
 										</div>
@@ -554,6 +683,6 @@ class Component extends LitElement {
 
 declare global {
 	interface HTMLElementTagNameMap {
-		'group-authorization-rules': Component
+		'storage-drives': Page
 	}
 }

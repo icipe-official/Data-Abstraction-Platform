@@ -11,8 +11,8 @@
                 "$FIELD_GROUP_MAX_ENTRIES": 1,
                 "$FIELD_DATATYPE": "text",
                 "$FIELD_UI": "text",
-                "$DATABASE_TABLE_COLLECTION_UID": "storage_drives_id",
-                "$DATABASE_FIELD_COLUMN_NAME": "storage_drives_groups",
+                "$DATABASE_FIELD_COLUMN_NAME": "storage_drives_id",
+                "$DATABASE_TABLE_COLLECTION_UID": "storage_drives_groups",
                 "$FIELD_GROUP_INPUT_DISABLE": true,
                 "$FIELD_GROUP_IS_PRIMARY_KEY": true
             },

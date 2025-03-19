@@ -7,25 +7,46 @@ export class FieldAnyMetadataModel implements IFieldAnyMetadataModelGet {
 	async GetMetadataModel(actionID: string, currentFgKey: string, tableCollectionUid: string, argument: any) {
 		Log.Log(Log.Level.DEBUG, FieldAnyMetadataModel.name, actionID, currentFgKey, tableCollectionUid, argument)
 		try {
+			let fetchUrl
+			let fetchResponse
+			let fetchData
 			switch (actionID) {
 				case Entities.MetadataModelsDirectoryGroups.RepositoryName:
 				case Entities.MetadataModelsDirectory.RepositoryName:
 					if (!Array.isArray(argument) || argument.length != 1) {
 						return undefined
 					}
-					const fetchUrl = new URL(Url.ApiUrlPaths.MetadataModel)
+					fetchUrl = new URL(Url.ApiUrlPaths.MetadataModel)
 					fetchUrl.pathname = fetchUrl.pathname + `/${actionID}/${argument[0]}`
-					const fetchResponse = await fetch(fetchUrl, {
+					fetchResponse = await fetch(fetchUrl, {
 						credentials: 'include'
 					})
-					let data = await fetchResponse.json()
+					fetchData = await fetchResponse.json()
 					if (fetchResponse.ok) {
-						if (typeof data !== 'object') {
+						if (typeof fetchData !== 'object') {
 							return undefined
 						}
-						return data
+						return fetchData
 					} else {
-						throw [fetchResponse.status, data]
+						throw [fetchResponse.status, fetchData]
+					}
+				case Entities.StorageDrivesTypes.RepositoryName:
+					if (!Array.isArray(argument) || argument.length != 1) {
+						return undefined
+					}
+					fetchUrl = new URL(Url.ApiUrlPaths.Storage.Drives.Types)
+					fetchUrl.pathname = fetchUrl.pathname + `/metadata-model/${argument[0]}`
+					fetchResponse = await fetch(fetchUrl, {
+						credentials: 'include'
+					})
+					fetchData = await fetchResponse.json()
+					if (fetchResponse.ok) {
+						if (typeof fetchData !== 'object') {
+							return undefined
+						}
+						return fetchData
+					} else {
+						throw [fetchResponse.status, fetchData]
 					}
 				default:
 					return undefined

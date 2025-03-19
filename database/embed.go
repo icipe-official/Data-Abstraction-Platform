@@ -8,8 +8,8 @@ var MetadataModels embed.FS
 //go:embed group_authorization_rules
 var GroupAuthorizationRules embed.FS
 
-//go:embed storage_types
-var StorageTypes embed.FS
+//go:embed metadata_models_storage_drives_types
+var StorageTypesMetadataModels embed.FS
 
 //go:embed metadata_models_misc
 var MiscMetadataModels embed.FS

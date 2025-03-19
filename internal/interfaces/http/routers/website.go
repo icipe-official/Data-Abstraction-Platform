@@ -16,6 +16,8 @@ import (
 	metadatamodel "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-model"
 	metadatamodelsdirectory "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-models/directory"
 	metadatamodelsdirectorygroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-models/directory/groups"
+	storagedrives "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/storage/drives"
+	storagedrivesgroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/storage/drives/groups"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 
 	metadatamodels "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-models"
@@ -49,6 +51,12 @@ func InitWebServiceWebsiteRouter(router *chi.Mux, webService *inthttp.WebService
 		baseRouter.Route("/iam", func(iamRouter chi.Router) {
 			iamRouter.Mount("/credentials", credentials.WebsiteRouter(webService))
 			iamRouter.Mount("/group-authorizations", groupauthorizations.WebsiteRouter(webService))
+		})
+		baseRouter.Route("/storage", func(storageRouter chi.Router) {
+			storageRouter.Route("/drives", func(drivesRouter chi.Router) {
+				drivesRouter.Mount("/groups", storagedrivesgroups.WebsiteRouter(webService))
+				drivesRouter.Mount("/", storagedrives.WebsiteRouter(webService))
+			})
 		})
 	})
 }

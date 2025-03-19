@@ -180,7 +180,7 @@ class Page extends LitElement {
 		}
 	}
 
-	private async _handleCreateDirectoryGroups() {
+	private async _handleCreateDirectory() {
 		if (!this._data) {
 			return
 		}
@@ -228,7 +228,7 @@ class Page extends LitElement {
 		}
 	}
 
-	private async _handleDeleteMetadataModel() {
+	private async _handleDeleteDirectory() {
 		if (!this.data || !this.data.datum) {
 			return
 		}
@@ -318,7 +318,7 @@ class Page extends LitElement {
 											if (edit) {
 												this._handleUpdateDirectory()
 											} else {
-												this._handleCreateDirectoryGroups()
+												this._handleCreateDirectory()
 											}
 										}}
 									>
@@ -413,7 +413,7 @@ class Page extends LitElement {
 													return html`<div>Edit Directory Info</div>`
 												})()}
 											</button>
-											<button class="flex-1 join-item btn btn-secondary flex flex-col justify-center" @click=${this._handleDeleteMetadataModel}>
+											<button class="flex-1 join-item btn btn-secondary flex flex-col justify-center" @click=${this._handleDeleteDirectory}>
 												<!--mdi:delete source: https://icon-sets.iconify.design-->
 												<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="${Theme.Color.SECONDARY_CONTENT}" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 												${(() => {

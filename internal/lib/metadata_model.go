@@ -39,6 +39,18 @@ func MetadataModelMiscGet(name string) (map[string]any, error) {
 	return jsonParsed, nil
 }
 
+func MetadataModelStorageDrivesTypesGet(name string) (map[string]any, error) {
+	contentBytes, err := embedded.StorageTypesMetadataModels.ReadFile(fmt.Sprintf("metadata_models_storage_drives_types/%s.metadata_model.json", name))
+	if err != nil {
+		return nil, FunctionNameAndError(MetadataModelStorageDrivesTypesGet, err)
+	}
+	var jsonParsed map[string]any
+	if err := json.Unmarshal(contentBytes, &jsonParsed); err != nil {
+		return nil, FunctionNameAndError(MetadataModelStorageDrivesTypesGet, err)
+	}
+	return jsonParsed, nil
+}
+
 func MetadataModelMiscVerboseReponseGet(replaceFgPropertes map[string]any, dataMetadataModel map[string]any) (map[string]any, error) {
 	verboseResponseMetadataModel, err := MetadataModelGet(METADATA_MODELS_MISC_VERBOSE_RESPONSE)
 	if err != nil {

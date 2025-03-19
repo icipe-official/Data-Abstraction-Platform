@@ -346,7 +346,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			authedIamCredential,
 			nil,
 			authContextDirectoryGroupID,
-			intfieldanymm.NewFieldAnyMetadataModelGet(webService.Logger, webService.PostgresRepository),
+			intfieldanymm.NewFieldAnyMetadataModelGet(webService.Logger, webService.PostgresRepository, nil),
 			verboseResponse,
 			data,
 		); err != nil {
@@ -411,7 +411,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			authedIamCredential,
 			nil,
 			authContextDirectoryGroupID,
-			intfieldanymm.NewFieldAnyMetadataModelGet(webService.Logger, webService.PostgresRepository),
+			intfieldanymm.NewFieldAnyMetadataModelGet(webService.Logger, webService.PostgresRepository, nil),
 			verboseResponse,
 			data,
 		); err != nil {

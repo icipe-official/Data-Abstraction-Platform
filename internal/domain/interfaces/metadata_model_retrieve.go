@@ -3,9 +3,11 @@ package interfaces
 import "context"
 
 type MetadataModelRetrieve interface {
+	StorageDrivesGroupsGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
 	StorageDrivesTypesGetMetadataModel(ctx context.Context) (map[string]any, error)
 	StorageDrivesGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
 	GetMetadataModel(tableCollectionName string) (map[string]any, error)
+	GetStorageDriveTypeMetadataModel(storageDriveTypeID string) (map[string]any, error)
 	DefaultAuthorizationIDsGetMetadataModel(
 		ctx context.Context,
 		tableCollectionName string,

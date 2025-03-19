@@ -370,7 +370,7 @@ func (n *PostrgresRepository) RepoMetadataModelsUpdateOne(
 	valuesToUpdate = append(valuesToUpdate, datum.ID[0])
 
 	if _, err := n.db.Exec(ctx, query, valuesToUpdate...); err != nil {
-		return intlib.FunctionNameAndError(n.RepoMetadataModelsInsertOne, fmt.Errorf("update %s failed, err: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
+		return intlib.FunctionNameAndError(n.RepoMetadataModelsUpdateOne, fmt.Errorf("update %s failed, err: %v", intdoment.MetadataModelsRepository().RepositoryName, err))
 	}
 
 	return nil
@@ -888,9 +888,9 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 		}
 	}
 
-	metadatamodelsJoinDirectoryAuthorizationIDs := intlib.MetadataModelGenJoinKey(intdoment.MetadataModelsRepository().RepositoryName, intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName)
-	if value, err := n.extractChildMetadataModel(metadataModel, metadatamodelsJoinDirectoryAuthorizationIDs); err != nil {
-		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", metadatamodelsJoinDirectoryAuthorizationIDs, err))
+	metadatamodelsJoinMetadatamodelsAuthorizationIDs := intlib.MetadataModelGenJoinKey(intdoment.MetadataModelsRepository().RepositoryName, intdoment.MetadataModelsAuthorizationIDsRepository().RepositoryName)
+	if value, err := n.extractChildMetadataModel(metadataModel, metadatamodelsJoinMetadatamodelsAuthorizationIDs); err != nil {
+		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", metadatamodelsJoinMetadatamodelsAuthorizationIDs, err))
 	} else {
 		if sq, err := n.AuthorizationIDsGetSelectQuery(
 			ctx,
@@ -901,13 +901,9 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 			intdoment.MetadataModelsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID,
 			intdoment.MetadataModelsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID,
 		); err != nil {
-			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", metadatamodelsJoinDirectoryAuthorizationIDs, err))
+			n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("get child %s psql query failed, error: %v", metadatamodelsJoinMetadatamodelsAuthorizationIDs, err))
 		} else {
-			if len(sq.Where) == 0 {
-				sq.JoinType = JOIN_LEFT
-			} else {
-				sq.JoinType = JOIN_INNER
-			}
+			sq.JoinType = JOIN_INNER
 			sq.JoinQuery = make([]string, 1)
 			sq.JoinQuery[0] = fmt.Sprintf(
 				"%[1]s = %[2]s",
@@ -915,7 +911,7 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 				GetJoinColumnName(selectQuery.TableUid, intdoment.MetadataModelsRepository().ID, false),       //2
 			)
 
-			selectQuery.Join[metadatamodelsJoinDirectoryAuthorizationIDs] = sq
+			selectQuery.Join[metadatamodelsJoinMetadatamodelsAuthorizationIDs] = sq
 		}
 	}
 
