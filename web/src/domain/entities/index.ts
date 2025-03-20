@@ -1,9 +1,3 @@
-import _Abstractions from './abstractions'
-import _AbstractionsAuthorizationIDs from './abstractions_authorization_ids'
-import _AbstractionsDirectoryGroups from './abstractions_directory_groups'
-import _AbstractionsDirectoryGroupsAuthorizationIDs from './abstractions_directory_groups_authorization_ids'
-import _AbstractionsReviews from './abstractions_reviews'
-import _AbstractionsReviewsComments from './abstractions_reviews_comments'
 import _AppContext from './app_context'
 import _Directory from './directory'
 import _DirectoryAuthorizationIDs from './directory_authorization_ids'
@@ -52,12 +46,6 @@ namespace Entities {
 	export import DirectoryGroups = _DirectoryGroups
 	export import DirectoryAuthorizationIDs = _DirectoryAuthorizationIDs
 	export import Directory = _Directory
-	export import AbstractionsReviewsComments = _AbstractionsReviewsComments
-	export import AbstractionsReviews = _AbstractionsReviews
-	export import AbstractionsDirectoryGroupsAuthorizationIDs = _AbstractionsDirectoryGroupsAuthorizationIDs
-	export import AbstractionsDirectoryGroups = _AbstractionsDirectoryGroups
-	export import AbstractionsAuthorizationIDs = _AbstractionsAuthorizationIDs
-	export import Abstractions = _Abstractions
 	export import AppContext = _AppContext
 	export import MetadataModel = _MetadataModel
 	export import MetadataModelsDirectoryGroups = _MetadataModelsDirectoryGroups
