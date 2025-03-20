@@ -36,6 +36,16 @@
                 "$DATABASE_TABLE_COLLECTION_UID": "storage_files",
                 "$FIELD_GROUP_INPUT_DISABLE": true
             },
+            "directory_id": {
+                "$FIELD_GROUP_KEY": "$.$GROUP_FIELDS[*].directory_id",
+                "$FIELD_GROUP_NAME": "directory id",
+                "$FIELD_GROUP_MAX_ENTRIES": 1,
+                "$FIELD_DATATYPE": "text",
+                "$FIELD_UI": "text",
+                "$DATABASE_TABLE_COLLECTION_UID": "storage_files",
+                "$DATABASE_FIELD_COLUMN_NAME": "directory_id",
+                "$FIELD_GROUP_INPUT_DISABLE": true
+            },
             "storage_file_mime_type": {
                 "$FIELD_GROUP_KEY": "$.$GROUP_FIELDS[*].storage_file_mime_type",
                 "$FIELD_GROUP_NAME": "storage file mime type",
@@ -153,6 +163,7 @@
         "id",
         "storage_drives_id",
         "directory_groups_id",
+        "directory_id",
         "storage_file_mime_type",
         "original_name",
         "tags",

@@ -1,0 +1,3 @@
+:host{
+    @apply flex-1 flex flex-col space-y-1 overflow-hidden w-full h-full;
+}

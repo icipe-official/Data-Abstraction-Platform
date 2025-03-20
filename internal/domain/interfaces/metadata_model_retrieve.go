@@ -3,6 +3,7 @@ package interfaces
 import "context"
 
 type MetadataModelRetrieve interface {
+	StorageFilesGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
 	StorageDrivesGroupsGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)
 	StorageDrivesTypesGetMetadataModel(ctx context.Context) (map[string]any, error)
 	StorageDrivesGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error)

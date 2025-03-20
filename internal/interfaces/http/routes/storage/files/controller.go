@@ -1,4 +1,4 @@
-package metadatamodels
+package files
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
 	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
+	intfm "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/file_management"
 	inthttp "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http"
 	intmmretrieve "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/metadata_model_retrieve"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
@@ -32,7 +33,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			return
 		}
 
-		data := make([]*intdoment.MetadataModels, 0)
+		data := make([]*intdoment.StorageFiles, 0)
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
 			return
@@ -62,7 +63,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			authContextDirectoryGroupID = value
 		}
 
-		if code, verbres, err := s.ServiceMetadataModelsDeleteMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, data); err != nil {
+		if code, verbres, err := s.ServiceStorageFilesDeleteMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, data, intfm.NewFileManagement(webService.Logger)); err != nil {
 			intlib.SendJsonErrorResponse(err, w)
 			return
 		} else {
@@ -70,7 +71,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			webService.Logger.Log(
 				ctx,
 				slog.LevelInfo+1,
-				intlib.LogAction(intlib.LOG_ACTION_DELETE, intdoment.MetadataModelsRepository().RepositoryName),
+				intlib.LogAction(intlib.LOG_ACTION_DELETE, intdoment.StorageFilesRepository().RepositoryName),
 				ctx.Value(intlib.LOG_ATTR_CTX_KEY),
 				"authenicated iam credential",
 				intlib.JsonStringifyMust(authedIamCredential),
@@ -85,7 +86,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 
 		authedIamCredential, _ := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
 
-		data := make([]*intdoment.MetadataModels, 0)
+		data := make([]*intdoment.StorageFiles, 0)
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
 			return
@@ -117,7 +118,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			authContextDirectoryGroupID = value
 		}
 
-		if code, verbres, err := s.ServiceMetadataModelsUpdateMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, data); err != nil {
+		if code, verbres, err := s.ServiceStorageFilesUpdateMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, data); err != nil {
 			intlib.SendJsonErrorResponse(err, w)
 			return
 		} else {
@@ -125,7 +126,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			webService.Logger.Log(
 				ctx,
 				slog.LevelInfo+1,
-				intlib.LogAction(intlib.LOG_ACTION_UPDATE, intdoment.MetadataModelsRepository().RepositoryName),
+				intlib.LogAction(intlib.LOG_ACTION_UPDATE, intdoment.StorageFilesRepository().RepositoryName),
 				ctx.Value(intlib.LOG_ATTR_CTX_KEY),
 				"authenicated iam credential",
 				intlib.JsonStringifyMust(authedIamCredential),
@@ -133,6 +134,133 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 				intlib.JsonStringifyMust(verbres.MetadataModelVerboseResponse.Data),
 			)
 		}
+	})
+
+	router.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
+
+		authedIamCredential, _ := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
+
+		s := initApiCoreService(ctx, webService)
+		if s == nil {
+			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+			return
+		}
+
+		var authContextDirectoryGroupID uuid.UUID
+		if value, err := intlib.UrlSearchParamGetUuid(r, intlib.URL_SEARCH_PARAM_AUTH_CONTEXT_DIRECTORY_GROUP_ID); err != nil {
+			if authedIamCredential != nil {
+				if directoryGroup, err := s.ServiceDirectoryGroupsFindOneByIamCredentialID(ctx, authedIamCredential.ID[0]); err != nil {
+					intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+					return
+				} else {
+					if directoryGroup == nil {
+						intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+						return
+					}
+					authContextDirectoryGroupID = directoryGroup.ID[0]
+				}
+			}
+		} else {
+			authContextDirectoryGroupID = value
+		}
+
+		storageFile := new(intdoment.StorageFiles)
+		if storageFileID, err := uuid.FromString(chi.URLParam(r, "id")); err == nil && !storageFileID.IsNil() {
+			mmSearch := new(intdoment.MetadataModelSearch)
+			if value, err := s.ServiceStorageFilesGetMetadataModel(
+				ctx,
+				intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
+				1,
+			); err != nil {
+				intlib.SendJsonErrorResponse(err, w)
+				return
+			} else {
+				mmSearch.MetadataModel = value
+			}
+			tableCollectionUid := ""
+			if value, ok := mmSearch.MetadataModel[intlibmmodel.QUERY_CONDITION_PROP_D_TABLE_COLLECTION_UID].(string); ok {
+				tableCollectionUid = value
+			} else {
+				webService.Logger.Log(ctx, slog.LevelError, fmt.Sprintf("fetched metadata-model %s is empty", intlibmmodel.QUERY_CONDITION_PROP_D_TABLE_COLLECTION_UID), ctx.Value(intlib.LOG_ATTR_CTX_KEY))
+				intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+				return
+			}
+			mmSearch.QueryConditions = make([]intdoment.MetadataModelQueryConditions, 1)
+			mmSearch.QueryConditions[0] = intdoment.MetadataModelQueryConditions{
+				"$.id": intdoment.MetadataModelQueryCondition{
+					DatabaseTableCollectionUid: tableCollectionUid,
+					DatabaseFieldColumnName:    intdoment.StorageFilesRepository().ID,
+					FilterCondition: [][]intdoment.MetadataModelFilterCondition{
+						{
+							{
+								Negate:    false,
+								Condition: intlibmmodel.FILTER_CONDTION_EQUAL_TO,
+								Value: map[string]any{
+									intlibmmodel.FIELD_SELECT_PROP_TYPE:  intlibmmodel.FIELD_SELECT_TYPE_TEXT,
+									intlibmmodel.FIELD_SELECT_PROP_VALUE: storageFileID.String(),
+								},
+							},
+						},
+					},
+				},
+			}
+			var mmSearchResults *intdoment.MetadataModelSearchResults
+			if searchResults, err := s.ServiceStorageFilesSearch(
+				ctx,
+				mmSearch,
+				webService.PostgresRepository,
+				authedIamCredential,
+				nil,
+				authContextDirectoryGroupID,
+				authContextDirectoryGroupID,
+				true,
+				true,
+				false,
+			); err != nil {
+				intlib.SendJsonErrorResponse(err, w)
+				return
+			} else {
+				mmSearchResults = searchResults
+			}
+
+			if len(mmSearchResults.Data) != 1 {
+				intlib.SendJsonErrorResponse(intlib.NewError(http.StatusNotFound, http.StatusText(http.StatusNotFound)), w)
+				return
+			}
+
+			if jsonData, err := json.Marshal(mmSearchResults.Data[0]); err != nil {
+				webService.Logger.Log(ctx, slog.LevelError, fmt.Sprintf("convert  mmSearchResults.Data[0] to json failed, error: %v", err), ctx.Value(intlib.LOG_ATTR_CTX_KEY))
+				intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+				return
+			} else {
+				if err = json.Unmarshal(jsonData, storageFile); err != nil {
+					webService.Logger.Log(ctx, slog.LevelError, fmt.Sprintf("convert  jsonData from json failed, error: %v", err), ctx.Value(intlib.LOG_ATTR_CTX_KEY))
+					intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+					return
+				}
+			}
+		} else {
+			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
+			return
+
+		}
+
+		if err := s.ServiceStorageFilesDownload(ctx, storageFile, intfm.NewFileManagement(webService.Logger), w); err != nil {
+			intlib.SendJsonErrorResponse(err, w)
+			return
+		}
+
+		webService.Logger.Log(
+			ctx,
+			slog.LevelInfo+1,
+			fmt.Sprintf("%s with ID %v downloaded", intdoment.StorageFilesRepository().RepositoryName, storageFile.ID[0]),
+			ctx.Value(intlib.LOG_ATTR_CTX_KEY),
+			"storage File",
+			storageFile,
+			"authenicated iam credential",
+			intlib.JsonStringifyMust(authedIamCredential),
+		)
 	})
 
 	router.Post("/create", func(w http.ResponseWriter, r *http.Request) {
@@ -144,19 +272,11 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			return
 		}
 
-		data := make([]*intdoment.MetadataModels, 0)
-		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
-			return
-		}
-
 		s := initApiCoreService(ctx, webService)
 		if s == nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
 			return
 		}
-
-		verboseResponse := intlib.UrlSearchParamGetBool(r, intlib.URL_SEARCH_PARAM_VERBOSE_RESPONSE, false)
 
 		var authContextDirectoryGroupID uuid.UUID
 		if value, err := intlib.UrlSearchParamGetUuid(r, intlib.URL_SEARCH_PARAM_AUTH_CONTEXT_DIRECTORY_GROUP_ID); err != nil {
@@ -174,20 +294,18 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			authContextDirectoryGroupID = value
 		}
 
-		if code, verbres, err := s.ServiceMetadataModelsInsertMany(ctx, authedIamCredential, nil, authContextDirectoryGroupID, verboseResponse, data); err != nil {
+		if value, err := s.ServiceStorageFileCreate(ctx, authedIamCredential, authContextDirectoryGroupID, r, intfm.NewFileManagement(webService.Logger)); err != nil {
 			intlib.SendJsonErrorResponse(err, w)
 			return
 		} else {
-			intlib.SendJsonResponse(code, verbres, w)
+			intlib.SendJsonResponse(http.StatusOK, value, w)
 			webService.Logger.Log(
 				ctx,
 				slog.LevelInfo+1,
-				intlib.LogAction(intlib.LOG_ACTION_CREATE, intdoment.MetadataModelsRepository().RepositoryName),
+				intlib.LogAction(intlib.LOG_ACTION_CREATE, intdoment.StorageFilesRepository().RepositoryName),
 				ctx.Value(intlib.LOG_ATTR_CTX_KEY),
 				"authenicated iam credential",
 				intlib.JsonStringifyMust(authedIamCredential),
-				"verbose response data",
-				intlib.JsonStringifyMust(verbres.MetadataModelVerboseResponse.Data),
 			)
 		}
 	})
@@ -196,7 +314,11 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 		searchRouter.Post("/", func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 
-			authedIamCredential, _ := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
+			authedIamCredential, err := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
+			if err != nil {
+				intlib.SendJsonErrorResponse(err, w)
+				return
+			}
 
 			mmSearch := new(intdoment.MetadataModelSearch)
 			json.NewDecoder(r.Body).Decode(mmSearch)
@@ -209,17 +331,15 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 
 			var authContextDirectoryGroupID uuid.UUID
 			if value, err := intlib.UrlSearchParamGetUuid(r, intlib.URL_SEARCH_PARAM_AUTH_CONTEXT_DIRECTORY_GROUP_ID); err != nil {
-				if authedIamCredential != nil {
-					if directoryGroup, err := s.ServiceDirectoryGroupsFindOneByIamCredentialID(ctx, authedIamCredential.ID[0]); err != nil {
+				if directoryGroup, err := s.ServiceDirectoryGroupsFindOneByIamCredentialID(ctx, authedIamCredential.ID[0]); err != nil {
+					intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+					return
+				} else {
+					if directoryGroup == nil {
 						intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
 						return
-					} else {
-						if directoryGroup == nil {
-							intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
-							return
-						}
-						authContextDirectoryGroupID = directoryGroup.ID[0]
 					}
+					authContextDirectoryGroupID = directoryGroup.ID[0]
 				}
 			} else {
 				authContextDirectoryGroupID = value
@@ -227,7 +347,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 
 			mmSearchModelWasEmpty := false
 			if mmSearch.MetadataModel == nil {
-				if value, err := s.ServiceMetadataModelsGetMetadataModel(
+				if value, err := s.ServiceStorageFilesGetMetadataModel(
 					ctx,
 					intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
 					1,
@@ -251,7 +371,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			skipIfFGDisabled := intlib.UrlSearchParamGetBool(r, intlib.URL_SEARCH_PARAM_SKIP_IF_FG_DISABLED, true)
 			whereAfterJoin := intlib.UrlSearchParamGetBool(r, intlib.URL_SEARCH_PARAM_WHERE_AFTER_JOIN, false)
 
-			if searchResults, err := s.ServiceMetadataModelsSearch(
+			if searchResults, err := s.ServiceStorageFilesSearch(
 				ctx,
 				mmSearch,
 				webService.PostgresRepository,
@@ -274,7 +394,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 					ctx,
 					slog.LevelInfo+1,
 					fmt.Sprintln(
-						intdoment.DirectoryRepository().RepositoryName,
+						intdoment.StorageFilesRepository().RepositoryName,
 						"searched successfully",
 					),
 					ctx.Value(intlib.LOG_ATTR_CTX_KEY),
@@ -301,17 +421,15 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 
 			var authContextDirectoryGroupID uuid.UUID
 			if value, err := intlib.UrlSearchParamGetUuid(r, intlib.URL_SEARCH_PARAM_AUTH_CONTEXT_DIRECTORY_GROUP_ID); err != nil {
-				if authedIamCredential != nil {
-					if directoryGroup, err := s.ServiceDirectoryGroupsFindOneByIamCredentialID(ctx, authedIamCredential.ID[0]); err != nil {
+				if directoryGroup, err := s.ServiceDirectoryGroupsFindOneByIamCredentialID(ctx, authedIamCredential.ID[0]); err != nil {
+					intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+					return
+				} else {
+					if directoryGroup == nil {
 						intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
 						return
-					} else {
-						if directoryGroup == nil {
-							intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
-							return
-						}
-						authContextDirectoryGroupID = directoryGroup.ID[0]
 					}
+					authContextDirectoryGroupID = directoryGroup.ID[0]
 				}
 			} else {
 				authContextDirectoryGroupID = value
@@ -324,7 +442,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 				targetJoinDepth = 1
 			}
 
-			if value, err := s.ServiceMetadataModelsGetMetadataModel(
+			if value, err := s.ServiceStorageFilesGetMetadataModel(
 				ctx,
 				intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
 				targetJoinDepth,
@@ -337,7 +455,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 					ctx,
 					slog.LevelInfo+1,
 					fmt.Sprintln(
-						intdoment.DirectoryRepository().RepositoryName,
+						intdoment.StorageFilesRepository().RepositoryName,
 						"metadata-model successfully retrieved",
 					),
 					ctx.Value(intlib.LOG_ATTR_CTX_KEY),
@@ -355,33 +473,6 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 	router := chi.NewRouter()
 
 	acceptedHTMLPartialNames := []string{intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTES, intdoment.WEBSITE_HTMLTMPL_PRTL_ROUTESGROUPID}
-
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
-		s := initWebsiteService(ctx, webService)
-		if s == nil {
-			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
-			return
-		}
-
-		authedIamCredential, _ := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
-
-		authContextDirectoryGroupID := uuid.Nil
-		if authedIamCredential != nil {
-			if directoryGroup, err := s.ServiceDirectoryGroupsFindOneByIamCredentialID(ctx, authedIamCredential.ID[0]); err == nil {
-				if directoryGroup != nil {
-					authContextDirectoryGroupID = directoryGroup.ID[0]
-				}
-			}
-		}
-
-		isPartialRequest, partialName := intlib.WebsiteValidateHTMLPartialRequest(r, acceptedHTMLPartialNames)
-		if htmlContent, err := s.ServiceGetMetadataModelsPageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential, authContextDirectoryGroupID, nil); err != nil {
-			intlib.SendJsonErrorResponse(err, w)
-		} else {
-			intlib.WebsiteSendHTMLResponse(htmlContent, w)
-		}
-	})
 
 	router.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
@@ -407,7 +498,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 		var data any
 		if metadataModelID, err := uuid.FromString(chi.URLParam(r, "id")); err == nil && !metadataModelID.IsNil() {
 			mmSearch := new(intdoment.MetadataModelSearch)
-			if value, err := s.ServiceMetadataModelsGetMetadataModel(
+			if value, err := s.ServiceStorageFilesGetMetadataModel(
 				ctx,
 				intmmretrieve.NewMetadataModelRetrieve(webService.Logger, webService.PostgresRepository, authContextDirectoryGroupID, authedIamCredential, nil),
 				1,
@@ -429,7 +520,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 			mmSearch.QueryConditions[0] = intdoment.MetadataModelQueryConditions{
 				"$.id": intdoment.MetadataModelQueryCondition{
 					DatabaseTableCollectionUid: tableCollectionUid,
-					DatabaseFieldColumnName:    intdoment.MetadataModelsRepository().ID,
+					DatabaseFieldColumnName:    intdoment.StorageFilesRepository().ID,
 					FilterCondition: [][]intdoment.MetadataModelFilterCondition{
 						{
 							{
@@ -445,7 +536,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 				},
 			}
 			var mmSearchResults *intdoment.MetadataModelSearchResults
-			if searchResults, err := s.ServiceMetadataModelsSearch(
+			if searchResults, err := s.ServiceStorageFilesSearch(
 				ctx,
 				mmSearch,
 				webService.PostgresRepository,
@@ -485,9 +576,43 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 					data = value
 				}
 			}
+		} else {
+			if d, err := intdoment.WebsiteAddErrorToHTMLTemplateContext(data, isPartialRequest, partialName, http.StatusBadRequest, http.StatusText(http.StatusBadRequest)); err != nil {
+				intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
+				return
+			} else {
+				data = d
+			}
 		}
 
-		if htmlContent, err := s.ServiceGetMedataModelPageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential, authContextDirectoryGroupID, data); err != nil {
+		if htmlContent, err := s.ServiceGetStorageFilePageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential, authContextDirectoryGroupID, data); err != nil {
+			intlib.SendJsonErrorResponse(err, w)
+		} else {
+			intlib.WebsiteSendHTMLResponse(htmlContent, w)
+		}
+	})
+
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
+		s := initWebsiteService(ctx, webService)
+		if s == nil {
+			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)), w)
+			return
+		}
+
+		authedIamCredential, _ := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
+
+		authContextDirectoryGroupID := uuid.Nil
+		if authedIamCredential != nil {
+			if directoryGroup, err := s.ServiceDirectoryGroupsFindOneByIamCredentialID(ctx, authedIamCredential.ID[0]); err == nil {
+				if directoryGroup != nil {
+					authContextDirectoryGroupID = directoryGroup.ID[0]
+				}
+			}
+		}
+
+		isPartialRequest, partialName := intlib.WebsiteValidateHTMLPartialRequest(r, acceptedHTMLPartialNames)
+		if htmlContent, err := s.ServiceGetStorageFilesPageHtml(ctx, webService.WebsiteTemplate, webService.OpenID, isPartialRequest, partialName, authedIamCredential, authContextDirectoryGroupID, nil); err != nil {
 			intlib.SendJsonErrorResponse(err, w)
 		} else {
 			intlib.WebsiteSendHTMLResponse(htmlContent, w)
@@ -497,9 +622,9 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 	return router
 }
 
-func initApiCoreService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteMetadataModelsApiService {
+func initWebsiteService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteStorageFilesWebsiteService {
 	if value, err := NewService(webService); err != nil {
-		errmsg := fmt.Errorf("initialize api core service failed, error: %v", err)
+		errmsg := fmt.Errorf("initialize website service failed, error: %v", err)
 		if value.logger != nil {
 			value.logger.Log(ctx, slog.LevelError, errmsg.Error())
 		} else {
@@ -512,9 +637,9 @@ func initApiCoreService(ctx context.Context, webService *inthttp.WebService) int
 	}
 }
 
-func initWebsiteService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteMetadataModelsWebsiteService {
+func initApiCoreService(ctx context.Context, webService *inthttp.WebService) intdomint.RouteStorageFilesApiCoreService {
 	if value, err := NewService(webService); err != nil {
-		errmsg := fmt.Errorf("initialize website service failed, error: %v", err)
+		errmsg := fmt.Errorf("initialize api core service failed, error: %v", err)
 		if value.logger != nil {
 			value.logger.Log(ctx, slog.LevelError, errmsg.Error())
 		} else {

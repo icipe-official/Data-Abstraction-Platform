@@ -41,18 +41,18 @@ func (n *MetadataModelRetrieve) StorageDrivesGetMetadataModel(ctx context.Contex
 			skipJoin = make(map[string]bool)
 		}
 
-		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().StorageDriveTypesID, intdoment.StorageDrivesTypesRepository().RepositoryName)]; !ok || !skipMMJoin {
-			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().StorageDriveTypesID, intdoment.StorageDrivesTypesRepository().RepositoryName)
+		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().StorageDrivesTypesID, intdoment.StorageDrivesTypesRepository().RepositoryName)]; !ok || !skipMMJoin {
+			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().StorageDrivesTypesID, intdoment.StorageDrivesTypesRepository().RepositoryName)
 			if childMetadataModel, err := n.StorageDrivesTypesGetMetadataModel(ctx); err != nil {
 				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.MetadataModelsGetMetadataModel))
 			} else {
 				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(
 					parentMetadataModel,
 					childMetadataModel,
-					intdoment.StorageDrivesRepository().StorageDriveTypesID,
+					intdoment.StorageDrivesRepository().StorageDrivesTypesID,
 					false,
 					newChildMetadataModelfgSuffix,
-					[]string{intdoment.StorageDrivesRepository().StorageDriveTypesID},
+					[]string{intdoment.StorageDrivesRepository().StorageDrivesTypesID},
 				)
 				if err != nil {
 					return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)

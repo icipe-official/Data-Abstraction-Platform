@@ -1,0 +1,22 @@
+meta {
+  name: Create
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{web_service_api_core_url}}/storage/files/create?auth_context_directory_group_id={{auth_context_directory_group_id}}
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  auth_context_directory_group_id: {{auth_context_directory_group_id}}
+}
+
+body:multipart-form {
+  storage_drives_id: 0195b2dc-65ce-73d9-ab5f-53074a73e6ab
+  directory_groups_id: {{auth_context_directory_group_id}}
+  tags: test upload
+  storage_files: @file(/home/zero/Downloads/card.jpeg)
+}

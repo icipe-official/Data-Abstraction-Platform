@@ -16,14 +16,14 @@ COMMENT ON TABLE public.storage_drives_types
 CREATE TABLE public.storage_drives
 (
     id uuid NOT NULL DEFAULT uuid_generate_v7(),
-    storage_drive_types_id text NOT NULL,
+    storage_drives_types_id text NOT NULL,
     description text NOT NULL,
     data json NOT NULL,
     created_on timestamp without time zone NOT NULL DEFAULT NOW(),
     last_updated_on timestamp without time zone NOT NULL DEFAULT NOW(),
     deactivated_on timestamp without time zone,
     PRIMARY KEY (id),
-    CONSTRAINT storage_drive_types_id FOREIGN KEY (storage_drive_types_id)
+    CONSTRAINT storage_drives_types_id FOREIGN KEY (storage_drives_types_id)
         REFERENCES public.storage_drives_types (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
@@ -38,7 +38,7 @@ COMMENT ON TABLE public.storage_drives
 
 -- storage_drives trigger to update last_updated_on column
 CREATE TRIGGER storage_drives_update_last_updated_on
-    BEFORE UPDATE OF data, storage_drive_types_id, description
+    BEFORE UPDATE OF data, storage_drives_types_id, description
     ON public.storage_drives
     FOR EACH ROW
     EXECUTE FUNCTION public.update_last_updated_on();
@@ -151,6 +151,7 @@ CREATE TABLE public.storage_files
     id uuid NOT NULL DEFAULT uuid_generate_v7(),
     storage_drives_id uuid NOT NULL,
     directory_groups_id uuid NOT NULL,
+    directory_id uuid,
     storage_file_mime_type text,
     original_name text NOT NULL,
     tags text[],
@@ -165,6 +166,11 @@ CREATE TABLE public.storage_files
     PRIMARY KEY (id),
     CONSTRAINT storage_drives_groups_id FOREIGN KEY (storage_drives_id, directory_groups_id)
         REFERENCES public.storage_drives_groups (storage_drives_id, directory_groups_id) MATCH SIMPLE
+        ON UPDATE RESTRICT
+        ON DELETE RESTRICT
+        NOT VALID,
+    CONSTRAINT directory_id FOREIGN KEY (directory_id)
+        REFERENCES public.directory (id) MATCH SIMPLE
         ON UPDATE RESTRICT
         ON DELETE RESTRICT
         NOT VALID
@@ -182,7 +188,7 @@ CREATE INDEX storage_files_full_text_search_index
 
 -- storage_files trigger to update last_updated_on column
 CREATE TRIGGER storage_files_update_last_updated_on
-    BEFORE UPDATE OF storage_file_mime_type, original_name, tags, edit_authorized, view_authorized, view_unauthorized
+    BEFORE UPDATE OF directory_id, storage_file_mime_type, original_name, tags, edit_authorized, view_authorized, view_unauthorized
     ON public.storage_files
     FOR EACH ROW
     EXECUTE FUNCTION public.update_last_updated_on();
@@ -198,12 +204,18 @@ CREATE FUNCTION public.storage_files_update_full_text_search_index()
 AS $BODY$
 DECLARE original_name text;
 DECLARE tags text[];
+DECLARE storage_file_mime_type text;
 
 BEGIN
 	IF NEW.original_name IS DISTINCT FROM OLD.original_name THEN
 		original_name = NEW.original_name;
 	ELSE
 		original_name = OLD.original_name;
+	END IF;
+    IF NEW.storage_file_mime_type IS DISTINCT FROM OLD.storage_file_mime_type THEN
+		storage_file_mime_type = NEW.storage_file_mime_type;
+	ELSE
+		storage_file_mime_type = OLD.storage_file_mime_type;
 	END IF;
 	IF array_length(NEW.tags,1) > 0 THEN
 		tags = NEW.tags;
@@ -217,7 +229,8 @@ BEGIN
 
     NEW.full_text_search = 
         setweight(to_tsvector(coalesce(original_name,'')),'A') ||
-        setweight(to_tsvector(coalesce(array_to_string(tags,' ','*'),'')),'B');
+        setweight(to_tsvector(coalesce(storage_file_mime_type,'')),'B') ||
+        setweight(to_tsvector(coalesce(array_to_string(tags,' ','*'),'')),'C');
     	
 	RETURN NEW;   
 END

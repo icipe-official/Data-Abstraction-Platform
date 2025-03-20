@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, unsafeCSS } from 'lit'
+import { html, LitElement, nothing, PropertyValues, unsafeCSS } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import indexCss from '@assets/index.css?inline'
 import componentCss from './component.css?inline'
@@ -427,6 +427,25 @@ class Page extends LitElement {
 			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
 		} finally {
 			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+		}
+	}
+
+	protected firstUpdated(_changedProperties: PropertyValues): void {
+		const url = new URL(window.location.toString())
+		const action = url.searchParams.get(Url.SearchParams.ACTION)
+		if (action) {
+			switch (action) {
+				case Url.Action.CREATE:
+					this._showCreateNewStorageDrivesGroups = true
+					break
+				case Url.Action.RETRIEVE:
+					this._showFilterMenu = true
+					break
+				case Url.Action.UPDATE:
+				case Url.Action.DELETE:
+					this._showQueryPanel = true
+					break
+			}
 		}
 	}
 

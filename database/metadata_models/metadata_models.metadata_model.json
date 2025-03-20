@@ -26,6 +26,16 @@
                 "$DATABASE_TABLE_COLLECTION_UID": "metadata_models",
                 "$FIELD_GROUP_INPUT_DISABLE": true
             },
+            "directory_id": {
+                "$FIELD_GROUP_KEY": "$.$GROUP_FIELDS[*].directory_id",
+                "$FIELD_GROUP_NAME": "directory id",
+                "$FIELD_GROUP_MAX_ENTRIES": 1,
+                "$FIELD_DATATYPE": "text",
+                "$FIELD_UI": "text",
+                "$DATABASE_TABLE_COLLECTION_UID": "metadata_models",
+                "$DATABASE_FIELD_COLUMN_NAME": "directory_id",
+                "$FIELD_GROUP_INPUT_DISABLE": true
+            },
             "name": {
                 "$FIELD_GROUP_KEY": "$.$GROUP_FIELDS[*].name",
                 "$FIELD_GROUP_NAME": "name",
@@ -153,6 +163,7 @@
     "$GROUP_READ_ORDER_OF_FIELDS": [
         "id",
         "directory_groups_id",
+        "directory_id",
         "name",
         "description",
         "edit_authorized",

@@ -162,6 +162,8 @@ func (n *PostrgresRepository) RepoStorageDrivesGroupsInsertOne(
 	columnsToInsert := make([]string, 0)
 	if v, c, err := n.RepoStorageDrivesGroupsValidateAndGetColumnsAndData(datum, true); err != nil {
 		return nil, err
+	} else if len(c) == 0 || len(v) == 0 {
+		return nil, intlib.NewError(http.StatusBadRequest, "no values to insert")
 	} else {
 		valuesToInsert = append(valuesToInsert, v...)
 		columnsToInsert = append(columnsToInsert, c...)
@@ -205,7 +207,7 @@ func (n *PostrgresRepository) RepoStorageDrivesGroupsInsertOne(
 
 	if len(array2DToObject.Objects()) == 0 {
 		transaction.Rollback(ctx)
-		return nil, nil
+		return nil, fmt.Errorf("insert %s did not return any row", intdoment.StorageDrivesGroupsRepository().RepositoryName)
 	}
 
 	if len(array2DToObject.Objects()) > 1 {

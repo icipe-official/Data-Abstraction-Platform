@@ -217,7 +217,7 @@ func (n *PostrgresRepository) RepoIamGroupAuthorizationsInsertOne(ctx context.Co
 
 	if len(array2DToObject.Objects()) == 0 {
 		transaction.Rollback(ctx)
-		return nil, nil
+		return nil, fmt.Errorf("insert %s did not return any row", intdoment.IamGroupAuthorizationsRepository().RepositoryName)
 	}
 
 	if len(array2DToObject.Objects()) > 1 {

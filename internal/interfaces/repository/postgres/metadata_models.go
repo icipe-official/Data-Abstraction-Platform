@@ -275,7 +275,6 @@ func (n *PostrgresRepository) RepoMetadataModelsUpdateOne(
 	iamAuthorizationRules *intdoment.IamAuthorizationRules,
 	authContextDirectoryGroupID uuid.UUID,
 	datum *intdoment.MetadataModels,
-	columns []string,
 ) error {
 	query := ""
 	where := ""
@@ -405,6 +404,8 @@ func (n *PostrgresRepository) RepoMetadataModelsInsertOne(
 	columnsToInsert := []string{intdoment.MetadataModelsRepository().DirectoryGroupsID, intdoment.MetadataModelsRepository().DirectoryID}
 	if v, c, err := n.RepoMetadataModelsValidateAndGetColumnsAndData(datum, true); err != nil {
 		return nil, err
+	} else if len(c) == 0 || len(v) == 0 {
+		return nil, intlib.NewError(http.StatusBadRequest, "no values to insert")
 	} else {
 		valuesToInsert = append(valuesToInsert, v...)
 		columnsToInsert = append(columnsToInsert, c...)
@@ -453,7 +454,7 @@ func (n *PostrgresRepository) RepoMetadataModelsInsertOne(
 
 	if len(array2DToObject.Objects()) == 0 {
 		transaction.Rollback(ctx)
-		return nil, nil
+		return nil, fmt.Errorf("insert %s did not return any row", intdoment.MetadataModelsRepository().RepositoryName)
 	}
 
 	if len(array2DToObject.Objects()) > 1 {
@@ -709,7 +710,7 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 		n.iamAuthorizationRules,
 	); err == nil && iamAuthorizationRule != nil {
 		if len(n.iamCredential.DirectoryID) > 0 {
-			selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = '%s'", selectQuery.TableUid, intdoment.MetadataModelsRepository().DirectoryGroupsID, n.iamCredential.DirectoryID[0].String()))
+			selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = '%s'", selectQuery.TableUid, intdoment.MetadataModelsRepository().DirectoryID, n.iamCredential.DirectoryID[0].String()))
 		} else {
 			selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewUnauthorized))
 		}

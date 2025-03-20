@@ -123,7 +123,7 @@ func (n *PostrgresRepository) RepoMetadataModelsDirectoryInsertOne(ctx context.C
 	}
 
 	if len(array2DToObject.Objects()) == 0 {
-		return nil, nil
+		return nil, fmt.Errorf("insert %s did not return any row", intdoment.MetadataModelsDirectoryRepository().RepositoryName)
 	}
 
 	if len(array2DToObject.Objects()) > 1 {

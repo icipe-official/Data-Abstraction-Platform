@@ -107,11 +107,11 @@ func (n *MetadataModelRetrieve) MetadataModelsGetMetadataModel(ctx context.Conte
 				intdoment.MetadataModelsAuthorizationIDsRepository().CreationIamGroupAuthorizationsID,
 				intdoment.MetadataModelsAuthorizationIDsRepository().DeactivationIamGroupAuthorizationsID,
 			); err != nil {
-				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.DirectoryGroupsGetMetadataModel))
+				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.MetadataModelsGetMetadataModel))
 			} else {
 				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(parentMetadataModel, childMetadataModel, "", false, newChildMetadataModelfgSuffix, nil)
 				if err != nil {
-					return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetMetadataModel, err)
+					return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 namespace _StorageDrives {
 	export enum FieldColumn {
 		ID = 'id',
-		StorageDriveTypeID = 'storage_drive_types_id',
+		StorageDrivesTypeID = 'storage_drives_types_id',
 		Description = 'description',
 		Data = 'data',
 		CreatedOn = 'created_on',
@@ -13,7 +13,7 @@ namespace _StorageDrives {
 
 	export interface Interface {
 		id?: string[]
-		storage_drive_types_id?: string[]
+		storage_drives_types_id?: string[]
 		description?: string[]
 		data?: any[]
 		created_on?: string[]

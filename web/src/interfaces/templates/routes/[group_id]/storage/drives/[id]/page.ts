@@ -47,7 +47,7 @@ class Page extends LitElement {
 		super.connectedCallback()
 		window.addEventListener('resize', this._handleWindowResize)
 		if (this.data && this.data.metadata_model && this.data.datum) {
-			let value = MetadataModel.DatabaseGetColumnFieldValue(this.data.metadata_model, Entities.StorageDrives.FieldColumn.StorageDriveTypeID, this.data.metadata_model[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID], this.data.datum)
+			let value = MetadataModel.DatabaseGetColumnFieldValue(this.data.metadata_model, Entities.StorageDrives.FieldColumn.StorageDrivesTypeID, this.data.metadata_model[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID], this.data.datum)
 			if (Array.isArray(value)) {
 				this._storageDriveTypeID = structuredClone(value[0])
 			}
@@ -149,8 +149,8 @@ class Page extends LitElement {
 			id: (this.data.datum as Entities.StorageDrives.Interface).id
 		}
 
-		if (!Json.AreValuesEqual([this._storageDriveTypeID], (this.data.datum as Entities.StorageDrives.Interface).storage_drive_types_id)) {
-			data.storage_drive_types_id = [this._storageDriveTypeID]
+		if (!Json.AreValuesEqual([this._storageDriveTypeID], (this.data.datum as Entities.StorageDrives.Interface).storage_drives_types_id)) {
+			data.storage_drives_types_id = [this._storageDriveTypeID]
 		}
 
 		if (!Json.AreValuesEqual([this._description], (this.data.datum as Entities.StorageDrives.Interface).description)) {
@@ -191,8 +191,8 @@ class Page extends LitElement {
 					})
 				)
 				if (fetchData.successful && fetchData.successful > 0 && !fetchData.failed) {
-					if (!Json.AreValuesEqual([this._storageDriveTypeID], (this.data.datum as Entities.StorageDrives.Interface).storage_drive_types_id)) {
-						;(this.data.datum as Entities.StorageDrives.Interface).storage_drive_types_id = [this._storageDriveTypeID]
+					if (!Json.AreValuesEqual([this._storageDriveTypeID], (this.data.datum as Entities.StorageDrives.Interface).storage_drives_types_id)) {
+						;(this.data.datum as Entities.StorageDrives.Interface).storage_drives_types_id = [this._storageDriveTypeID]
 					}
 
 					if (!Json.AreValuesEqual([this._description], (this.data.datum as Entities.StorageDrives.Interface).description)) {
@@ -218,9 +218,9 @@ class Page extends LitElement {
 		let data: Entities.StorageDrives.Interface = {}
 
 		if (this._storageDriveTypeID.length > 0) {
-			data.storage_drive_types_id = [this._storageDriveTypeID]
+			data.storage_drives_types_id = [this._storageDriveTypeID]
 		} else {
-			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${Entities.StorageDrives.FieldColumn.StorageDriveTypeID} is not valid` }, bubbles: true, composed: true }))
+			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${Entities.StorageDrives.FieldColumn.StorageDrivesTypeID} is not valid` }, bubbles: true, composed: true }))
 			return
 		}
 
@@ -358,13 +358,13 @@ class Page extends LitElement {
 							<div class="join join-vertical">
 								<span class="join-item join-label-primary p-1">Storage Drive Type ID</span>
 								<select class="join-item select select-primary w-full" @change=${this._handleInputStorageDriveTypeID}>
-									<option value="" .selected=${this._storageDriveTypeID === ''}>Pick ${Entities.StorageDrives.FieldColumn.StorageDriveTypeID}...</option>
+									<option value="" .selected=${this._storageDriveTypeID === ''}>Pick ${Entities.StorageDrives.FieldColumn.StorageDrivesTypeID}...</option>
 									<option value="local" .selected=${this._storageDriveTypeID === 'local'}>Local</option>
 								</select>
 							</div>
 							<div class="join join-vertical">
 								<span class="join-item join-label-primary p-1">Description</span>
-								<textarea class="join-item textarea textarea-primary max-h-[40vh]" placeholder="Enter metadata-model description..." .value=${this._description || ''} @input=${this._handleInputDescription}></textarea>
+								<textarea class="join-item textarea textarea-primary max-h-[40vh]" placeholder="Enter description..." .value=${this._description || ''} @input=${this._handleInputDescription}></textarea>
 							</div>
 							${(() => {
 								const edit = this.data && this.data.metadata_model && this.data.datum

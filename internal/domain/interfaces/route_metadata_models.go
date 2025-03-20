@@ -27,7 +27,6 @@ type RouteMetadataModelsRepository interface {
 		iamAuthorizationRules *intdoment.IamAuthorizationRules,
 		authContextDirectoryGroupID uuid.UUID,
 		datum *intdoment.MetadataModels,
-		columns []string,
 	) error
 	RepoMetadataModelsInsertOne(
 		ctx context.Context,

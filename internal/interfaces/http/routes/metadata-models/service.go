@@ -27,7 +27,7 @@ func (n *service) ServiceMetadataModelsDeleteMany(
 	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
 	if verboseResponse {
 		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsInsertMany, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDeleteMany, err).Error())
 			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
 		} else {
 			verbres.MetadataModelVerboseResponse.MetadataModel = d
@@ -43,7 +43,7 @@ func (n *service) ServiceMetadataModelsDeleteMany(
 		if len(datum.ID) > 0 {
 			mm, iamAuthorizationRule, err := n.repo.RepoMetadataModelsFindOneForDeletionByID(ctx, iamCredential, iamAuthorizationRules, authContextDirectoryGroupID, datum, nil)
 			if err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsInsertMany, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDeleteMany, err).Error())
 				verbRes.Data = []any{datum}
 				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -62,7 +62,7 @@ func (n *service) ServiceMetadataModelsDeleteMany(
 			}
 
 			if err := n.repo.RepoMetadataModelsDeleteOne(ctx, iamAuthorizationRule, mm); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsInsertMany, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsDeleteMany, err).Error())
 				verbRes.Data = []any{datum}
 				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -107,7 +107,7 @@ func (n *service) ServiceMetadataModelsUpdateMany(
 	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
 	if verboseResponse {
 		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsInsertMany, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsUpdateMany, err).Error())
 			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
 		} else {
 			verbres.MetadataModelVerboseResponse.MetadataModel = d
@@ -121,8 +121,8 @@ func (n *service) ServiceMetadataModelsUpdateMany(
 		verbRes := new(intdoment.MetadataModelVerboseResponseData)
 
 		if len(datum.ID) > 0 {
-			if err := n.repo.RepoMetadataModelsUpdateOne(ctx, iamCredential, iamAuthorizationRules, authContextDirectoryGroupID, datum, nil); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsInsertMany, err).Error())
+			if err := n.repo.RepoMetadataModelsUpdateOne(ctx, iamCredential, iamAuthorizationRules, authContextDirectoryGroupID, datum); err != nil {
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceMetadataModelsUpdateMany, err).Error())
 				verbRes.Data = []any{datum}
 				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}

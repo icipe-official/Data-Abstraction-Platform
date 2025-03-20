@@ -85,7 +85,7 @@ func WebsiteRouter(webService *inthttp.WebService) *chi.Mux {
 				mmSearch.QueryConditions[0] = intdoment.MetadataModelQueryConditions{
 					"$.id": intdoment.MetadataModelQueryCondition{
 						DatabaseTableCollectionUid: tableCollectionUid,
-						DatabaseFieldColumnName:    intdoment.DirectoryGroupsRepository().ID,
+						DatabaseFieldColumnName:    intdoment.DirectoryRepository().ID,
 						FilterCondition: [][]intdoment.MetadataModelFilterCondition{
 							{
 								{

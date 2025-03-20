@@ -18,6 +18,7 @@ import (
 	storagedrives "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/storage/drives"
 	storagedrivesgroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/storage/drives/groups"
 	storagedrivestypes "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/storage/drives/types"
+	storagefiles "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/storage/files"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 )
 
@@ -54,6 +55,7 @@ func InitApiCoreRouter(router *chi.Mux, webService *inthttp.WebService) {
 					drivesRouter.Mount("/types", storagedrivestypes.ApiCoreRouter(webService))
 					drivesRouter.Mount("/", storagedrives.ApiCoreRouter(webService))
 				})
+				storageRouter.Mount("/files", storagefiles.ApiCoreRouter(webService))
 			})
 		})
 	})

@@ -217,7 +217,7 @@ func (n *PostrgresRepository) RepoDirectoryInsertOne(
 
 	if len(array2DToObject.Objects()) == 0 {
 		transaction.Rollback(ctx)
-		return nil, nil
+		return nil, fmt.Errorf("insert %s did not return any row", intdoment.DirectoryRepository().RepositoryName)
 	}
 
 	if len(array2DToObject.Objects()) > 1 {

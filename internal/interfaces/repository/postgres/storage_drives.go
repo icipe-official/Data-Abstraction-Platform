@@ -19,6 +19,99 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+func (n *PostrgresRepository) RepoStorageDrivesFindOneActiveByStorageDrivesGroup(
+	ctx context.Context,
+	storageDrivesID uuid.UUID,
+	directoryGroupsID uuid.UUID,
+	columns []string,
+) (*intdoment.StorageDrives, error) {
+	storageDrivesMetadataModel, err := intlib.MetadataModelGet(intdoment.StorageDrivesRepository().RepositoryName)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesFindOneActiveByStorageDrivesGroup, err)
+	}
+
+	if len(columns) == 0 {
+		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(storageDrivesMetadataModel, intdoment.StorageDrivesRepository().RepositoryName, false, false); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesFindOneActiveByStorageDrivesGroup, err)
+		} else {
+			columns = dbColumnFields.ColumnFieldsReadOrder
+		}
+	}
+
+	if !slices.Contains(columns, intdoment.StorageDrivesRepository().ID) {
+		columns = append(columns, intdoment.StorageDrivesRepository().ID)
+	}
+
+	if !slices.Contains(columns, intdoment.StorageDrivesRepository().StorageDrivesTypesID) {
+		columns = append(columns, intdoment.StorageDrivesRepository().StorageDrivesTypesID)
+	}
+
+	if !slices.Contains(columns, intdoment.StorageDrivesRepository().Data) {
+		columns = append(columns, intdoment.StorageDrivesRepository().Data)
+	}
+
+	selectColumns := make([]string, len(columns))
+	for cIndex, cValue := range columns {
+		selectColumns[cIndex] = intdoment.StorageDrivesRepository().RepositoryName + "." + cValue
+	}
+
+	query := fmt.Sprintf(
+		"SELECT %[1]s FROM %[2]s INNER JOIN %[3]s ON %[2]s.%[4]s IS NULL AND %[3]s.%[5]s IS NULL AND %[2]s.%[6]s = %[3]s.%[7]s AND %[3]s.%[7]s = $1 AND %[3]s.%[8]s = $2;",
+		strings.Join(selectColumns, ","),                            //1
+		intdoment.StorageDrivesRepository().RepositoryName,          //2
+		intdoment.StorageDrivesGroupsRepository().RepositoryName,    //3
+		intdoment.StorageDrivesRepository().DeactivatedOn,           //4
+		intdoment.StorageDrivesGroupsRepository().DeactivatedOn,     //5
+		intdoment.StorageDrivesRepository().ID,                      //6
+		intdoment.StorageDrivesGroupsRepository().StorageDrivesID,   //7
+		intdoment.StorageDrivesGroupsRepository().DirectoryGroupsID, //8
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoStorageDrivesFindOneActiveByStorageDrivesGroup))
+
+	rows, err := n.db.Query(ctx, query, storageDrivesID, directoryGroupsID)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesFindOneActiveByStorageDrivesGroup, fmt.Errorf("retrieve %s failed, err: %v", intdoment.StorageDrivesRepository().RepositoryName, err))
+	}
+	defer rows.Close()
+	dataRows := make([]any, 0)
+	for rows.Next() {
+		if r, err := rows.Values(); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesFindOneActiveByStorageDrivesGroup, err)
+		} else {
+			dataRows = append(dataRows, r)
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(storageDrivesMetadataModel, nil, false, false, columns)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesInsertOne, err)
+	}
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesInsertOne, err)
+	}
+
+	if len(array2DToObject.Objects()) == 0 {
+		return nil, nil
+	}
+
+	if len(array2DToObject.Objects()) > 1 {
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoStorageDrivesInsertOne))
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesInsertOne, fmt.Errorf("more than one %s found", intdoment.StorageDrivesRepository().RepositoryName))
+	}
+
+	storageDrive := new(intdoment.StorageDrives)
+	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesInsertOne, err)
+	} else {
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing storageDrive", "storageDrive", string(jsonData), "function", intlib.FunctionName(n.RepoStorageDrivesInsertOne))
+		if err := json.Unmarshal(jsonData, storageDrive); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoStorageDrivesInsertOne, err)
+		}
+	}
+
+	return storageDrive, nil
+}
+
 func (n *PostrgresRepository) RepoStorageDrivesDeleteOne(
 	ctx context.Context,
 	iamAuthRule *intdoment.IamAuthorizationRule,
@@ -152,6 +245,8 @@ func (n *PostrgresRepository) RepoStorageDrivesInsertOne(
 	columnsToInsert := make([]string, 0)
 	if v, c, err := n.RepoStorageDrivesValidateAndGetColumnsAndData(datum, true); err != nil {
 		return nil, err
+	} else if len(c) == 0 || len(v) == 0 {
+		return nil, intlib.NewError(http.StatusBadRequest, "no values to insert")
 	} else {
 		valuesToInsert = append(valuesToInsert, v...)
 		columnsToInsert = append(columnsToInsert, c...)
@@ -182,6 +277,7 @@ func (n *PostrgresRepository) RepoStorageDrivesInsertOne(
 			dataRows = append(dataRows, r)
 		}
 	}
+	fmt.Println(dataRows)
 
 	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(storageDrivesMetadataModel, nil, false, false, columns)
 	if err != nil {
@@ -195,7 +291,7 @@ func (n *PostrgresRepository) RepoStorageDrivesInsertOne(
 
 	if len(array2DToObject.Objects()) == 0 {
 		transaction.Rollback(ctx)
-		return nil, nil
+		return nil, fmt.Errorf("insert %s did not return any row", intdoment.StorageDrivesRepository().RepositoryName)
 	}
 
 	if len(array2DToObject.Objects()) > 1 {
@@ -240,13 +336,13 @@ func (n *PostrgresRepository) RepoStorageDrivesValidateAndGetColumnsAndData(datu
 	values := make([]any, 0)
 	columns := make([]string, 0)
 
-	if len(datum.StorageDriveTypesID) == 0 || len(datum.StorageDriveTypesID[0]) < 4 {
+	if len(datum.StorageDrivesTypesID) == 0 || len(datum.StorageDrivesTypesID[0]) < 4 {
 		if insert {
-			return nil, nil, fmt.Errorf("%s is not valid", intdoment.StorageDrivesRepository().StorageDriveTypesID)
+			return nil, nil, fmt.Errorf("%s is not valid", intdoment.StorageDrivesRepository().StorageDrivesTypesID)
 		}
 	} else {
-		values = append(values, datum.StorageDriveTypesID[0])
-		columns = append(columns, intdoment.StorageDrivesRepository().StorageDriveTypesID)
+		values = append(values, datum.StorageDrivesTypesID[0])
+		columns = append(columns, intdoment.StorageDrivesRepository().StorageDrivesTypesID)
 	}
 
 	if len(datum.Description) == 0 || len(datum.Description[0]) < 4 {
@@ -385,9 +481,9 @@ func (n *PostgresSelectQuery) StorageDrivesGetSelectQuery(ctx context.Context, m
 			selectQuery.Where[intdoment.StorageDrivesRepository().ID] = value
 		}
 	}
-	if _, ok := selectQuery.Columns.Fields[intdoment.StorageDrivesRepository().StorageDriveTypesID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
-		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.StorageDrivesRepository().StorageDriveTypesID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
-			selectQuery.Where[intdoment.StorageDrivesRepository().StorageDriveTypesID] = value
+	if _, ok := selectQuery.Columns.Fields[intdoment.StorageDrivesRepository().StorageDrivesTypesID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.StorageDrivesRepository().StorageDrivesTypesID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.StorageDrivesRepository().StorageDrivesTypesID] = value
 		}
 	}
 	if _, ok := selectQuery.Columns.Fields[intdoment.StorageDrivesRepository().Description][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
@@ -411,7 +507,7 @@ func (n *PostgresSelectQuery) StorageDrivesGetSelectQuery(ctx context.Context, m
 		}
 	}
 
-	storageDriveTypeIDJoinStorageDriveTypes := intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().StorageDriveTypesID, intdoment.StorageDrivesTypesRepository().RepositoryName)
+	storageDriveTypeIDJoinStorageDriveTypes := intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().StorageDrivesTypesID, intdoment.StorageDrivesTypesRepository().RepositoryName)
 	if value, err := n.extractChildMetadataModel(metadataModel, storageDriveTypeIDJoinStorageDriveTypes); err != nil {
 		n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("extract %s child metadata model failed, error: %v", storageDriveTypeIDJoinStorageDriveTypes, err))
 	} else {
@@ -426,8 +522,8 @@ func (n *PostgresSelectQuery) StorageDrivesGetSelectQuery(ctx context.Context, m
 			sq.JoinQuery = make([]string, 1)
 			sq.JoinQuery[0] = fmt.Sprintf(
 				"%[1]s = %[2]s",
-				GetJoinColumnName(sq.TableUid, intdoment.StorageDrivesTypesRepository().ID, true),                       //1
-				GetJoinColumnName(selectQuery.TableUid, intdoment.StorageDrivesRepository().StorageDriveTypesID, false), //2
+				GetJoinColumnName(sq.TableUid, intdoment.StorageDrivesTypesRepository().ID, true),                        //1
+				GetJoinColumnName(selectQuery.TableUid, intdoment.StorageDrivesRepository().StorageDrivesTypesID, false), //2
 			)
 
 			selectQuery.Join[storageDriveTypeIDJoinStorageDriveTypes] = sq

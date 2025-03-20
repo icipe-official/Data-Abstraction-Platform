@@ -18,6 +18,7 @@ import (
 	metadatamodelsdirectorygroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-models/directory/groups"
 	storagedrives "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/storage/drives"
 	storagedrivesgroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/storage/drives/groups"
+	storagefiles "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/storage/files"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 
 	metadatamodels "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/metadata-models"
@@ -57,6 +58,7 @@ func InitWebServiceWebsiteRouter(router *chi.Mux, webService *inthttp.WebService
 				drivesRouter.Mount("/groups", storagedrivesgroups.WebsiteRouter(webService))
 				drivesRouter.Mount("/", storagedrives.WebsiteRouter(webService))
 			})
+			storageRouter.Mount("/files", storagefiles.WebsiteRouter(webService))
 		})
 	})
 }
