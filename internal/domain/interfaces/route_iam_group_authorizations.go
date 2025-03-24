@@ -34,8 +34,8 @@ type RouteIamGroupAuthorizationsRepository interface {
 	RepoIamGroupAuthorizationsFindOneActiveRule(ctx context.Context, iamCredentialID uuid.UUID, groupRuleAuthorizationID uuid.UUID, columns []string) (*intdoment.IamGroupAuthorizations, error)
 	RepoIamGroupAuthorizationsDeleteOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.IamGroupAuthorizations) error
 	RepoIamGroupAuthorizationsInsertOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.IamGroupAuthorizations, columns []string) (*intdoment.IamGroupAuthorizations, error)
-	RepoGroupRuleAuthorizationsFindActiveOneByID(ctx context.Context, groupRuleAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorization, error)
-	RepoGroupRuleAuthorizationsFindOneByIamGroupAuthorizationID(ctx context.Context, iamGroupAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorization, error)
+	RepoGroupRuleAuthorizationsFindActiveOneByID(ctx context.Context, groupRuleAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorizations, error)
+	RepoGroupRuleAuthorizationsFindOneByIamGroupAuthorizationID(ctx context.Context, iamGroupAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorizations, error)
 }
 
 type RouteIamGroupAuthorizationsWebsiteService interface {

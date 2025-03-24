@@ -55,7 +55,7 @@ class Layout extends LitElement {
 			const fetchData = await fetchResponse.json()
 			if (fetchResponse.ok) {
 				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.SUCCESS, toastMessage: `logout by ${(fetchData as Entities.IamCredentials.Interface).id![0]}` }, bubbles: true, composed: true }))
-				const targetElement = document.querySelector(`#${import.meta.env.VITE_LAYOUT_ROUTES_GROUPID}`)
+				const targetElement = document.querySelector(`#${import.meta.env.VITE_LAYOUT_ROUTES}`)
 				if (targetElement !== null) {
 					this._appContextProvider.UpdateIamcredential(undefined)
 					this._appContextProvider.UpdateIamdirectorygroupid(undefined)

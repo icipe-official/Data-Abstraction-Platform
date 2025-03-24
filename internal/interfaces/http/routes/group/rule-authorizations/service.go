@@ -21,7 +21,7 @@ func (n *service) ServiceGroupRuleAuthorizationsDeleteMany(
 	iamAuthorizationRules *intdoment.IamAuthorizationRules,
 	authContextDirectoryGroupID uuid.UUID,
 	verboseResponse bool,
-	data []*intdoment.GroupRuleAuthorization,
+	data []*intdoment.GroupRuleAuthorizations,
 ) (int, *intdoment.MetadataModelVerbRes, error) {
 	verbres := new(intdoment.MetadataModelVerbRes)
 	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
@@ -180,7 +180,7 @@ func (n *service) ServiceGroupRuleAuthorizationsInsertMany(
 	iamAuthorizationRules *intdoment.IamAuthorizationRules,
 	authContextDirectoryGroupID uuid.UUID,
 	verboseResponse bool,
-	data []*intdoment.GroupRuleAuthorization,
+	data []*intdoment.GroupRuleAuthorizations,
 ) (int, *intdoment.MetadataModelVerbRes, error) {
 	verbres := new(intdoment.MetadataModelVerbRes)
 	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)

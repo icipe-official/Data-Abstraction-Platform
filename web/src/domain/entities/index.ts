@@ -1,3 +1,4 @@
+import _AbstractionsDirectoryGroups from './abstractions_directory_groups'
 import _AppContext from './app_context'
 import _Directory from './directory'
 import _DirectoryAuthorizationIDs from './directory_authorization_ids'
@@ -50,6 +51,7 @@ namespace Entities {
 	export import MetadataModel = _MetadataModel
 	export import MetadataModelsDirectoryGroups = _MetadataModelsDirectoryGroups
 	export import MetadataModelsDirectory = _MetadataModelsDirectory
+	export import AbstractionsDirectoryGroups = _AbstractionsDirectoryGroups
 }
 
 export default Entities

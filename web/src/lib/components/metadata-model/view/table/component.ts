@@ -638,12 +638,12 @@ class Component extends LitElement {
 		}
 	}
 
-	private _resetSelectedFields() {
-		this._selectedrowminindex = -1
-		this._selectedrowmaxindex = -1
-		this._selectedcolumnminindex = -1
-		this._selectedcolumnmaxindex = -1
-	}
+	// private _resetSelectedFields() {
+	// 	this._selectedrowminindex = -1
+	// 	this._selectedrowmaxindex = -1
+	// 	this._selectedcolumnminindex = -1
+	// 	this._selectedcolumnmaxindex = -1
+	// }
 
 	private _isSelectedFieldsIndexesValid = () => this._selectedrowminindex > -1 && this._selectedrowmaxindex > -1 && this._selectedcolumnminindex > -1 && this._selectedcolumnmaxindex > -1
 

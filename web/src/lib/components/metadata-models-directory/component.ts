@@ -8,13 +8,13 @@ import { AppContextConsumer } from '@interfaces/context/app'
 import { MetadataModelSearchController } from '@interfaces/controllers/metadata_model'
 import { FieldAnyMetadataModel } from '@interfaces/field_any_metadata_model/field_any_metadata_model'
 import Lib from '@lib/lib'
-import { IFieldAnyMetadataModelGet } from '@lib/metadata_model/_export'
 import Theme from '@lib/theme'
 import Url from '@lib/url'
 import { Task } from '@lit/task'
 import MetadataModel from '@lib/metadata_model'
 import Entities from '@domentities'
 import Log from '@lib/log'
+import { IFieldAnyMetadataModelGet } from '@dominterfaces/field_any_metadata_model/field_any_metadata_model'
 
 @customElement('metadata-models-directory')
 class Component extends LitElement {

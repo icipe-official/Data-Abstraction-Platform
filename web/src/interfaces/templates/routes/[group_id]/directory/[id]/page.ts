@@ -100,7 +100,7 @@ class Page extends LitElement {
 				return
 			}
 			Log.Log(Log.Level.DEBUG, this.localName, '_importIntroPosterTask')
-			this._importedMMViewDatum = true
+			this._importedIntroPoster = true
 			await import('@lib/components/intro-poster/component')
 		},
 		args: () => [this._windowWidth]

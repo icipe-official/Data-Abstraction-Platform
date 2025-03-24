@@ -30,7 +30,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			return
 		}
 
-		data := make([]*intdoment.GroupRuleAuthorization, 0)
+		data := make([]*intdoment.GroupRuleAuthorizations, 0)
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
 			return
@@ -87,7 +87,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 			return
 		}
 
-		data := make([]*intdoment.GroupRuleAuthorization, 0)
+		data := make([]*intdoment.GroupRuleAuthorizations, 0)
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			intlib.SendJsonErrorResponse(intlib.NewError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)), w)
 			return

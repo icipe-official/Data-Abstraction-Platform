@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	inthttp "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http"
+	abstractionsdirectorygroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/abstractions/directory-groups"
 	"github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/directory"
 	directorygroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/directory/groups"
 	authorizationrules "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/group/authorization-rules"
@@ -59,6 +60,9 @@ func InitWebServiceWebsiteRouter(router *chi.Mux, webService *inthttp.WebService
 				drivesRouter.Mount("/", storagedrives.WebsiteRouter(webService))
 			})
 			storageRouter.Mount("/files", storagefiles.WebsiteRouter(webService))
+		})
+		baseRouter.Route("/abstractions", func(abstractionsRouter chi.Router) {
+			abstractionsRouter.Mount("/directory-groups", abstractionsdirectorygroups.WebsiteRouter(webService))
 		})
 	})
 }

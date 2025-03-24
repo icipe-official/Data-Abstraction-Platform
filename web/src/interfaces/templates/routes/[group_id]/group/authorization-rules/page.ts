@@ -8,7 +8,6 @@ import { AppContextConsumer } from '@interfaces/context/app'
 import { MetadataModelSearchController } from '@interfaces/controllers/metadata_model'
 import { FieldAnyMetadataModel } from '@interfaces/field_any_metadata_model/field_any_metadata_model'
 import Lib from '@lib/lib'
-import { IFieldAnyMetadataModelGet } from '@lib/metadata_model/_export'
 import Theme from '@lib/theme'
 import Url from '@lib/url'
 import { Task } from '@lit/task'
@@ -17,6 +16,7 @@ import Entities from '@domentities'
 import MetadataModelUtils from '@lib/metadata_model_utils'
 import Log from '@lib/log'
 import '@lib/components/calendar-time/component'
+import { IFieldAnyMetadataModelGet } from '@dominterfaces/field_any_metadata_model/field_any_metadata_model'
 
 @customElement('group-authorization-rules')
 class Page extends LitElement {

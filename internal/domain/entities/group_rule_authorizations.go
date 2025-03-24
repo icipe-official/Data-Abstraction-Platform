@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-type GroupRuleAuthorization struct {
+type GroupRuleAuthorizations struct {
 	ID                       []uuid.UUID `json:"id,omitempty"`
 	DirectoryGroupsID        []uuid.UUID `json:"directory_groups_id,omitempty"`
 	GroupAuthorizationRuleID []struct {

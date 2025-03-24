@@ -666,7 +666,7 @@ func genIamGroupAuthorizationIDsKey(groupRuleAuthorizationID uuid.UUID, groupRul
 	)
 }
 
-func (n *PostrgresRepository) RepoIamGroupAuthorizationsSystemRolesInsertMany(ctx context.Context, iamCredenial *intdoment.IamCredentials, groupRuleAuthorizations []intdoment.GroupRuleAuthorization) (int, error) {
+func (n *PostrgresRepository) RepoIamGroupAuthorizationsSystemRolesInsertMany(ctx context.Context, iamCredenial *intdoment.IamCredentials, groupRuleAuthorizations []intdoment.GroupRuleAuthorizations) (int, error) {
 	query := fmt.Sprintf(
 		"INSERT INTO %[1]s (%[2]s, %[3]s) VALUES ($1, $2);",
 		intdoment.IamGroupAuthorizationsRepository().RepositoryName,            //1

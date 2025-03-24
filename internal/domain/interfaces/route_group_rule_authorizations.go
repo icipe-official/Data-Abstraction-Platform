@@ -30,10 +30,10 @@ type RouteGroupRuleAuthorizationsRepository interface {
 	RepoDirectoryGroupsFindOneByIamCredentialID(ctx context.Context, iamCredentialID uuid.UUID, columns []string) (*intdoment.DirectoryGroups, error)
 	RepoDirectoryGroupsFindSystemGroup(ctx context.Context, columns []string) (*intdoment.DirectoryGroups, error)
 	RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx context.Context, parentGroupID uuid.UUID, subGroupID uuid.UUID) (*intdoment.DirectoryGroupsSubGroups, error)
-	RepoGroupRuleAuthorizationsFindOneInactiveRule(ctx context.Context, groupRuleAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorization, error)
-	RepoGroupRuleAuthorizationsFindOneActiveRule(ctx context.Context, directoryGroupID uuid.UUID, groupAuthorizationRuleID string, groupAuthorizationRuleGroup string, columns []string) (*intdoment.GroupRuleAuthorization, error)
-	RepoGroupRuleAuthorizationsDeleteOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.GroupRuleAuthorization) error
-	RepoGroupRuleAuthorizationsInsertOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.GroupRuleAuthorization, columns []string) (*intdoment.GroupRuleAuthorization, error)
+	RepoGroupRuleAuthorizationsFindOneInactiveRule(ctx context.Context, groupRuleAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorizations, error)
+	RepoGroupRuleAuthorizationsFindOneActiveRule(ctx context.Context, directoryGroupID uuid.UUID, groupAuthorizationRuleID string, groupAuthorizationRuleGroup string, columns []string) (*intdoment.GroupRuleAuthorizations, error)
+	RepoGroupRuleAuthorizationsDeleteOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.GroupRuleAuthorizations) error
+	RepoGroupRuleAuthorizationsInsertOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.GroupRuleAuthorizations, columns []string) (*intdoment.GroupRuleAuthorizations, error)
 }
 
 type RouteGroupRuleAuthorizationsWebsiteService interface {
@@ -64,7 +64,7 @@ type RouteGroupRuleAuthorizationsApiCoreService interface {
 		iamAuthorizationRules *intdoment.IamAuthorizationRules,
 		authContextDirectoryGroupID uuid.UUID,
 		verboseResponse bool,
-		data []*intdoment.GroupRuleAuthorization,
+		data []*intdoment.GroupRuleAuthorizations,
 	) (int, *intdoment.MetadataModelVerbRes, error)
 	ServiceGroupRuleAuthorizationsInsertMany(
 		ctx context.Context,
@@ -72,7 +72,7 @@ type RouteGroupRuleAuthorizationsApiCoreService interface {
 		iamAuthorizationRules *intdoment.IamAuthorizationRules,
 		authContextDirectoryGroupID uuid.UUID,
 		verboseResponse bool,
-		data []*intdoment.GroupRuleAuthorization,
+		data []*intdoment.GroupRuleAuthorizations,
 	) (int, *intdoment.MetadataModelVerbRes, error)
 	ServiceGroupRuleAuthorizationsSearch(
 		ctx context.Context,

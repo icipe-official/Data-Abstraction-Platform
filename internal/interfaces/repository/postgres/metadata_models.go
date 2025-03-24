@@ -680,6 +680,7 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 		selectQuery.Columns = value
 	}
 
+	iamWhereOr := make([]string, 0)
 	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
 		ctx,
 		n.iamCredential,
@@ -696,8 +697,9 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 		},
 		n.iamAuthorizationRules,
 	); err == nil && iamAuthorizationRule != nil {
-		selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewAuthorized))
-	} else if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
+		iamWhereOr = append(iamWhereOr, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewAuthorized))
+	}
+	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
 		ctx,
 		n.iamCredential,
 		n.authContextDirectoryGroupID,
@@ -710,13 +712,15 @@ func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, 
 		n.iamAuthorizationRules,
 	); err == nil && iamAuthorizationRule != nil {
 		if len(n.iamCredential.DirectoryID) > 0 {
-			selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = '%s'", selectQuery.TableUid, intdoment.MetadataModelsRepository().DirectoryID, n.iamCredential.DirectoryID[0].String()))
+			iamWhereOr = append(iamWhereOr, fmt.Sprintf("%s.%s = '%s'", selectQuery.TableUid, intdoment.MetadataModelsRepository().DirectoryID, n.iamCredential.DirectoryID[0].String()))
 		} else {
-			selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewUnauthorized))
+			iamWhereOr = append(iamWhereOr, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewUnauthorized))
 		}
-	} else {
-		selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewUnauthorized))
 	}
+	if len(iamWhereOr) == 0 {
+		iamWhereOr = append(iamWhereOr, fmt.Sprintf("%s.%s = TRUE", selectQuery.TableUid, intdoment.MetadataModelsRepository().ViewUnauthorized))
+	}
+	selectQuery.WhereAnd = append(selectQuery.WhereAnd, fmt.Sprintf("(%s)", strings.Join(iamWhereOr, " OR ")))
 
 	if !n.startSearchDirectoryGroupID.IsNil() {
 		cteName := fmt.Sprintf("%s_%s", selectQuery.TableUid, RECURSIVE_DIRECTORY_GROUPS_DEFAULT_CTE_NAME)

@@ -16,11 +16,11 @@ type CreateSuperUserRepository interface {
 	//
 	// - columnfields - columns/field data to obtain. Leave empty or nil to get all columns/fields
 	RepoDirectoryGroupsFindSystemGroup(ctx context.Context, columnfields []string) (*intdoment.DirectoryGroups, error)
-	RepoDirectoryGroupsFindSystemGroupRuleAuthorizations(ctx context.Context) ([]intdoment.GroupRuleAuthorization, error)
+	RepoDirectoryGroupsFindSystemGroupRuleAuthorizations(ctx context.Context) ([]intdoment.GroupRuleAuthorizations, error)
 	// returns no of successful inserts.
 	//
 	// will not check if role exists as it only anticipates finding intdoment.GroupRuleAuthorization.ID having been set.
-	RepoIamGroupAuthorizationsSystemRolesInsertMany(ctx context.Context, iamCredenial *intdoment.IamCredentials, groupRuleAuthorizations []intdoment.GroupRuleAuthorization) (int, error)
+	RepoIamGroupAuthorizationsSystemRolesInsertMany(ctx context.Context, iamCredenial *intdoment.IamCredentials, groupRuleAuthorizations []intdoment.GroupRuleAuthorizations) (int, error)
 	RepoDirectoryInsertOneAndUpdateIamCredentials(ctx context.Context, iamCredential *intdoment.IamCredentials) error
 }
 

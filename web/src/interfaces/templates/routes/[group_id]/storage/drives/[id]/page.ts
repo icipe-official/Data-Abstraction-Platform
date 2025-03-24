@@ -106,6 +106,7 @@ class Page extends LitElement {
 				await import('@lib/components/metadata-model/datum-input/component')
 				this._importedMMDatumInput = true
 			}
+			this._data = {}
 			this._datametadatamodel = await this._fieldAnyMetadataModels.GetMetadataModel(Entities.StorageDrivesTypes.RepositoryName, '$', Entities.StorageDrivesTypes.RepositoryName, [_storageDriveTypeID])
 		},
 		args: () => [this._storageDriveTypeID]
@@ -118,7 +119,7 @@ class Page extends LitElement {
 				return
 			}
 			Log.Log(Log.Level.DEBUG, this.localName, '_importIntroPosterTask')
-			this._importedMMViewDatum = true
+			this._importedIntroPoster = true
 			await import('@lib/components/intro-poster/component')
 		},
 		args: () => [this._windowWidth]

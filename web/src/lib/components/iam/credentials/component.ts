@@ -8,7 +8,6 @@ import { AppContextConsumer } from '@interfaces/context/app'
 import { MetadataModelSearchController } from '@interfaces/controllers/metadata_model'
 import { FieldAnyMetadataModel } from '@interfaces/field_any_metadata_model/field_any_metadata_model'
 import Lib from '@lib/lib'
-import { IFieldAnyMetadataModelGet } from '@lib/metadata_model/_export'
 import Theme from '@lib/theme'
 import Url from '@lib/url'
 import { Task } from '@lit/task'
@@ -17,6 +16,7 @@ import Entities from '@domentities'
 import MetadataModelUtils from '@lib/metadata_model_utils'
 import Log from '@lib/log'
 import '@lib/components/calendar-time/component'
+import { IFieldAnyMetadataModelGet } from '@dominterfaces/field_any_metadata_model/field_any_metadata_model'
 
 @customElement('iam-credentials')
 class Component extends LitElement {
@@ -339,53 +339,53 @@ class Component extends LitElement {
 		}
 	}
 
-	private async _handleDeleteMMDGs(selectedDataIndexes: number[]) {
-		const data = selectedDataIndexes.map((dIndex) => this._metadataModelsSearch.searchresults.data![dIndex])
+	// private async _handleDeleteMMDGs(selectedDataIndexes: number[]) {
+	// 	const data = selectedDataIndexes.map((dIndex) => this._metadataModelsSearch.searchresults.data![dIndex])
 
-		try {
-			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting ${Entities.MetadataModelsDirectory.RepositoryName}...` }, bubbles: true, composed: true }))
-			if (!this._appContext.GetCurrentdirectorygroupid()) {
-				return
-			}
-			const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels.Directory.Url}/${Url.Action.DELETE}`)
-			fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
-			fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
-			if (this._appContext.appcontext?.verboseresponse) {
-				fetchUrl.searchParams.append(Url.SearchParams.VERBOSE_RESPONSE, `${true}`)
-			}
+	// 	try {
+	// 		this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Deleting ${Entities.MetadataModelsDirectory.RepositoryName}...` }, bubbles: true, composed: true }))
+	// 		if (!this._appContext.GetCurrentdirectorygroupid()) {
+	// 			return
+	// 		}
+	// 		const fetchUrl = new URL(`${Url.ApiUrlPaths.MetadataModels.Directory.Url}/${Url.Action.DELETE}`)
+	// 		fetchUrl.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, this._appContext.GetCurrentdirectorygroupid()!)
+	// 		fetchUrl.searchParams.append(Url.SearchParams.AUTH_CONTEXT_DIRECTORY_GROUP_ID, this._appContext.Getauthcontextdirectorygroupid())
+	// 		if (this._appContext.appcontext?.verboseresponse) {
+	// 			fetchUrl.searchParams.append(Url.SearchParams.VERBOSE_RESPONSE, `${true}`)
+	// 		}
 
-			Log.Log(Log.Level.DEBUG, this.localName, fetchUrl, data)
+	// 		Log.Log(Log.Level.DEBUG, this.localName, fetchUrl, data)
 
-			const fetchResponse = await fetch(fetchUrl, {
-				method: 'POST',
-				credentials: 'include',
-				body: JSON.stringify(data)
-			})
+	// 		const fetchResponse = await fetch(fetchUrl, {
+	// 			method: 'POST',
+	// 			credentials: 'include',
+	// 			body: JSON.stringify(data)
+	// 		})
 
-			const fetchData: Entities.MetadataModel.IVerboseResponse = await fetchResponse.json()
-			if (fetchResponse.ok) {
-				this.dispatchEvent(
-					new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, {
-						detail: { toastType: !fetchData.failed ? Lib.ToastType.SUCCESS : fetchData.successful && fetchData.successful > 0 ? Lib.ToastType.INFO : Lib.ToastType.ERROR, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) },
-						bubbles: true,
-						composed: true
-					})
-				)
-			} else {
-				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
-			}
-		} catch (e) {
-			console.error(e)
-			if (Array.isArray(e)) {
-				if (e[1] && typeof e[1] == 'object' && e[1].message) {
-					this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
-				}
-			}
-			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
-		} finally {
-			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
-		}
-	}
+	// 		const fetchData: Entities.MetadataModel.IVerboseResponse = await fetchResponse.json()
+	// 		if (fetchResponse.ok) {
+	// 			this.dispatchEvent(
+	// 				new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, {
+	// 					detail: { toastType: !fetchData.failed ? Lib.ToastType.SUCCESS : fetchData.successful && fetchData.successful > 0 ? Lib.ToastType.INFO : Lib.ToastType.ERROR, ...Entities.MetadataModel.GetToastFromJsonVerboseResponse(fetchData) },
+	// 					bubbles: true,
+	// 					composed: true
+	// 				})
+	// 			)
+	// 		} else {
+	// 			this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: fetchData.message }, bubbles: true, composed: true }))
+	// 		}
+	// 	} catch (e) {
+	// 		console.error(e)
+	// 		if (Array.isArray(e)) {
+	// 			if (e[1] && typeof e[1] == 'object' && e[1].message) {
+	// 				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: `${e[0]}: ${e[1].message}` }, bubbles: true, composed: true }))
+	// 			}
+	// 		}
+	// 		this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: Lib.DEFAULT_FETCH_ERROR }, bubbles: true, composed: true }))
+	// 	} finally {
+	// 		this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: null, loadingMessage: null }, bubbles: true, composed: true }))
+	// 	}
+	// }
 
 	protected firstUpdated(_changedProperties: PropertyValues): void {
 		const url = new URL(window.location.toString())

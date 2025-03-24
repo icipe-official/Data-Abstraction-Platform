@@ -2,10 +2,10 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- postigs extension
-CREATE EXTENSION postgis;
+-- CREATE EXTENSION postgis;
 
 -- will be used to generate password hashes
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- function to update last_updated_on column
 CREATE FUNCTION public.update_last_updated_on()

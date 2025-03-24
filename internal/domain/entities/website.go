@@ -13,6 +13,9 @@ const (
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_ABSTRACTIONS_ID_PAGE string = "routes/[group_id]/abstractions/[id]/page"
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_ABSTRACTIONS_PAGE    string = "routes/[group_id]/abstractions/page"
 
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_ABSTRACTIONS_DIRECTORY_GROUPS_ID_PAGE string = "routes/[group_id]/abstractions/directory-groups/[id]/page"
+	WEBSITE_HTMLTMPL_ROUTES_GROUPID_ABSTRACTIONS_DIRECTORY_GROUPS_PAGE    string = "routes/[group_id]/abstractions/directory-groups/page"
+
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_ID_PAGE string = "routes/[group_id]/metadata-models/[id]/page"
 	WEBSITE_HTMLTMPL_ROUTES_GROUPID_METADATAMODELS_PAGE    string = "routes/[group_id]/metadata-models/page"
 

@@ -19,25 +19,29 @@ func IamAuthenticationMiddleware(logger intdomint.Logger, env *EnvVariables, ope
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			openIDToken := new(intdoment.OpenIDToken)
 			if encryptedCookie, err := r.Cookie(IamCookieGetAccessTokenName(iamCookie.Name)); err == nil {
-				token := encryptedCookie.Value
+				token := ""
 				if env.Get(ENV_IAM_ENCRYPT_TOKENS) != "false" {
-					if decrypted, err := DecryptData(env.Get(ENV_IAM_ENCRYPTION_KEY), token); err != nil {
-						logger.Log(r.Context(), slog.LevelError, fmt.Sprintf("decrypt access token failed, error: %v", err))
-						next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ERROR_CODE_CTX_KEY, NewError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized)))))
-						return
+					if decrypted, err := DecryptData(env.Get(ENV_IAM_ENCRYPTION_KEY), encryptedCookie.Value); err != nil {
+						logger.Log(r.Context(), slog.LevelWarn, fmt.Sprintf("decrypt access token failed, error: %v", err))
 					} else {
 						token = decrypted
 					}
-				}
-				if tokenBytes, err := base64.StdEncoding.DecodeString(token); err != nil {
-					logger.Log(r.Context(), slog.LevelError, fmt.Sprintf("decode access token failed, error: %v", err))
-					next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ERROR_CODE_CTX_KEY, NewError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized)))))
 				} else {
-					openIDToken.AccessToken = string(tokenBytes)
+					token = encryptedCookie.Value
+				}
+
+				if len(token) > 0 {
+					if tokenBytes, err := base64.StdEncoding.DecodeString(token); err != nil {
+						logger.Log(r.Context(), slog.LevelError, fmt.Sprintf("decode access token failed, error: %v", err))
+						next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ERROR_CODE_CTX_KEY, NewError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized)))))
+						return
+					} else {
+						openIDToken.AccessToken = string(tokenBytes)
+					}
 				}
 			}
 
-			if encryptedCookie, err := r.Cookie(IamCookieGetAccessTokenName(iamCookie.Name)); err == nil {
+			if encryptedCookie, err := r.Cookie(IamCookieGetRefreshTokenName(iamCookie.Name)); err == nil {
 				token := encryptedCookie.Value
 				if env.Get(ENV_IAM_ENCRYPT_TOKENS) != "false" {
 					if decrypted, err := DecryptData(env.Get(ENV_IAM_ENCRYPTION_KEY), token); err != nil {

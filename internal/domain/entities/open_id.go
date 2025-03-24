@@ -80,7 +80,7 @@ type OpenIDTokenIntrospect struct {
 	Iat            int64    `json:"iat,omitempty"`
 	Jti            string   `json:"jti,omitempty"`
 	Iss            string   `json:"iss,omitempty"`
-	Aud            []string `json:"aud,omitempty"`
+	Aud            any      `json:"aud,omitempty"`
 	Sub            string   `json:"sub,omitempty"`
 	Type           string   `json:"type,omitempty"`
 	Azp            string   `json:"azp,omitempty"`

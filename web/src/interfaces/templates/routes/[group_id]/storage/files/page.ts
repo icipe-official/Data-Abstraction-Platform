@@ -8,7 +8,6 @@ import { AppContextConsumer, AppContextProvider } from '@interfaces/context/app'
 import { MetadataModelSearchController } from '@interfaces/controllers/metadata_model'
 import { FieldAnyMetadataModel } from '@interfaces/field_any_metadata_model/field_any_metadata_model'
 import Lib from '@lib/lib'
-import { IFieldAnyMetadataModelGet } from '@lib/metadata_model/_export'
 import Theme from '@lib/theme'
 import Url from '@lib/url'
 import { Task } from '@lit/task'
@@ -19,6 +18,7 @@ import Log from '@lib/log'
 import '@lib/components/calendar-time/component'
 import { ISpaPageNavigation } from '@dominterfaces/spa_page_navigation/spa_page_navigation'
 import { SpaPageNavigation } from '@interfaces/spa_page_navigation/spa_page_navigation'
+import { IFieldAnyMetadataModelGet } from '@dominterfaces/field_any_metadata_model/field_any_metadata_model'
 
 @customElement('storage-files')
 class Page extends LitElement {

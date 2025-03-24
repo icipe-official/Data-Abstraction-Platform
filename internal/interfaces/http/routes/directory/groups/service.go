@@ -27,7 +27,7 @@ func (n *service) ServiceDirectoryGroupsDeleteMany(
 	verbres.MetadataModelVerboseResponse = new(intdoment.MetadataModelVerboseResponse)
 	if verboseResponse {
 		if d, err := intlib.MetadataModelMiscGet(intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE); err != nil {
-			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsUpdateMany, err).Error())
+			n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsDeleteMany, err).Error())
 			return 0, nil, intlib.NewError(http.StatusInternalServerError, fmt.Sprintf("Get %v metadata-model failed", intlib.METADATA_MODELS_MISC_VERBOSE_RESPONSE))
 		} else {
 			verbres.MetadataModelVerboseResponse.MetadataModel = d
@@ -73,7 +73,7 @@ func (n *service) ServiceDirectoryGroupsDeleteMany(
 
 			if datum.ID[0].String() != authContextDirectoryGroupID.String() {
 				if value, err := n.repo.RepoDirectoryGroupsSubGroupsFindOneBySubGroupID(ctx, authContextDirectoryGroupID, datum.ID[0]); err != nil {
-					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsUpdateMany, err).Error())
+					n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsDeleteMany, err).Error())
 					verbRes.Data = []any{datum}
 					verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 					verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -93,7 +93,7 @@ func (n *service) ServiceDirectoryGroupsDeleteMany(
 			}
 
 			if value, err := n.repo.RepoDirectoryGroupsCheckIfSystemGroup(ctx, datum.ID[0]); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsUpdateMany, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsDeleteMany, err).Error())
 				verbRes.Data = []any{datum}
 				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}
@@ -112,7 +112,7 @@ func (n *service) ServiceDirectoryGroupsDeleteMany(
 			}
 
 			if err := n.repo.RepoDirectoryGroupsDeleteOne(ctx, iamAuthorizationRule, datum); err != nil {
-				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsInsertMany, err).Error())
+				n.logger.Log(ctx, slog.LevelError, intlib.FunctionNameAndError(n.ServiceDirectoryGroupsDeleteMany, err).Error())
 				verbRes.Data = []any{datum}
 				verbRes.Status = make([]intdoment.MetadataModelVerboseResponseStatus, 1)
 				verbRes.Status[0].StatusCode = []int{http.StatusInternalServerError}

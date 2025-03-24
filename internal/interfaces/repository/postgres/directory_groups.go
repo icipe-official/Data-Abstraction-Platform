@@ -658,7 +658,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindOneByIamCredentialID(ctx co
 	return directoryGroup, nil
 }
 
-func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroupRuleAuthorizations(ctx context.Context) ([]intdoment.GroupRuleAuthorization, error) {
+func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroupRuleAuthorizations(ctx context.Context) ([]intdoment.GroupRuleAuthorizations, error) {
 	systemGroup, err := n.RepoDirectoryGroupsFindSystemGroup(ctx, []string{intdoment.DirectoryGroupsRepository().ID})
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, err)
@@ -701,7 +701,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsFindSystemGroupRuleAuthorizatio
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, err)
 	}
 
-	groupRuleAuthorizations := make([]intdoment.GroupRuleAuthorization, 0)
+	groupRuleAuthorizations := make([]intdoment.GroupRuleAuthorizations, 0)
 	if jsonData, err := json.Marshal(array2DToObject.Objects()); err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsFindSystemGroupRuleAuthorizations, err)
 	} else {

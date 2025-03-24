@@ -17,7 +17,7 @@ class Component extends LitElement {
 
 	@state() private _contentElementLeftRightFixedPosition: string = 'left'
 	@state() private _contentElementLeftRightPosition: number = -window.innerWidth / 2
-	@state() private _minwidth: number = 700
+	// @state() private _minwidth: number = 700
 
 	private _contentPositionInterval: number | undefined
 
@@ -47,17 +47,17 @@ class Component extends LitElement {
 	@state() private _headerIsFocused: boolean = false
 	@state() private _contentIsFocused: boolean = false
 
-	@state() private _windowWidth: number = window.innerWidth
-	private _handleWindowResize = (_: UIEvent) => {
-		this._windowWidth = window.innerWidth //1000
-	}
+	// @state() private _windowWidth: number = window.innerWidth
+	// private _handleWindowResize = (_: UIEvent) => {
+	// 	this._windowWidth = window.innerWidth //1000
+	// }
 
 	connectedCallback(): void {
 		super.connectedCallback()
 		let randomContentID = new Int32Array(1)
 		window.crypto.getRandomValues(randomContentID)
 		this._contentElementID = this._contentElementID + randomContentID[0].toString()
-		window.addEventListener('resize', this._handleWindowResize)
+		// window.addEventListener('resize', this._handleWindowResize)
 	}
 
 	disconnectedCallback(): void {
@@ -67,7 +67,7 @@ class Component extends LitElement {
 		if (typeof this._removeContentFromViewTimeout === 'number') {
 			window.clearTimeout(this._removeContentFromViewTimeout)
 		}
-		window.removeEventListener('resize', this._handleWindowResize)
+		// window.removeEventListener('resize', this._handleWindowResize)
 	}
 
 	private _removeContentFromView() {

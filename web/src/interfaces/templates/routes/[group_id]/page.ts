@@ -46,7 +46,7 @@ class Page extends LitElement {
 
 	private _fieldAnyMetadataModels: IFieldAnyMetadataModelGet
 
-	@state() private _editGroupData: Entities.DirectoryGroups.Interface | undefined
+	// @state() private _editGroupData: Entities.DirectoryGroups.Interface | undefined
 	@state() private _editGroup = false
 
 	private _importMMViewDatumTask = new Task(this, {

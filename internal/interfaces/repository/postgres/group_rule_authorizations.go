@@ -19,7 +19,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneByIamGroupAuthorizationID(ctx context.Context, iamGroupAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorization, error) {
+func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneByIamGroupAuthorizationID(ctx context.Context, iamGroupAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorizations, error) {
 	groupRuleAuthorizationsMModel, err := intlib.MetadataModelGet(intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneByIamGroupAuthorizationID, err)
@@ -84,7 +84,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneByIamGroupAuthor
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneByIamGroupAuthorizationID, fmt.Errorf("more than one %s found", intdoment.GroupRuleAuthorizationsRepository().RepositoryName))
 	}
 
-	groupRuleAuthorization := new(intdoment.GroupRuleAuthorization)
+	groupRuleAuthorization := new(intdoment.GroupRuleAuthorizations)
 	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneByIamGroupAuthorizationID, err)
 	} else {
@@ -97,7 +97,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneByIamGroupAuthor
 	return groupRuleAuthorization, nil
 }
 
-func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindActiveOneByID(ctx context.Context, groupRuleAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorization, error) {
+func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindActiveOneByID(ctx context.Context, groupRuleAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorizations, error) {
 	groupRuleAuthorizationsMModel, err := intlib.MetadataModelGet(intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindActiveOneByID, err)
@@ -155,7 +155,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindActiveOneByID(ctx c
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindActiveOneByID, fmt.Errorf("more than one %s found", intdoment.GroupRuleAuthorizationsRepository().RepositoryName))
 	}
 
-	groupRuleAuthorization := new(intdoment.GroupRuleAuthorization)
+	groupRuleAuthorization := new(intdoment.GroupRuleAuthorizations)
 	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindActiveOneByID, err)
 	} else {
@@ -168,7 +168,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindActiveOneByID(ctx c
 	return groupRuleAuthorization, nil
 }
 
-func (n *PostrgresRepository) RepoGroupRuleAuthorizationsDeleteOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.GroupRuleAuthorization) error {
+func (n *PostrgresRepository) RepoGroupRuleAuthorizationsDeleteOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.GroupRuleAuthorizations) error {
 	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsDeleteOne, fmt.Errorf("start transaction to delete %s failed, error: %v", intdoment.GroupRuleAuthorizationsRepository().RepositoryName, err))
@@ -236,7 +236,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsDeleteOne(ctx context.C
 	return nil
 }
 
-func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneInactiveRule(ctx context.Context, groupRuleAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorization, error) {
+func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneInactiveRule(ctx context.Context, groupRuleAuthorizationID uuid.UUID, columns []string) (*intdoment.GroupRuleAuthorizations, error) {
 	groupRuleAuthorizationsMModel, err := intlib.MetadataModelGet(intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneInactiveRule, err)
@@ -294,7 +294,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneInactiveRule(ctx
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneInactiveRule, fmt.Errorf("more than one %s found", intdoment.GroupRuleAuthorizationsRepository().RepositoryName))
 	}
 
-	groupRuleAuthorization := new(intdoment.GroupRuleAuthorization)
+	groupRuleAuthorization := new(intdoment.GroupRuleAuthorizations)
 	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneInactiveRule, err)
 	} else {
@@ -307,7 +307,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneInactiveRule(ctx
 	return groupRuleAuthorization, nil
 }
 
-func (n *PostrgresRepository) RepoGroupRuleAuthorizationsInsertOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.GroupRuleAuthorization, columns []string) (*intdoment.GroupRuleAuthorization, error) {
+func (n *PostrgresRepository) RepoGroupRuleAuthorizationsInsertOne(ctx context.Context, iamAuthRule *intdoment.IamAuthorizationRule, datum *intdoment.GroupRuleAuthorizations, columns []string) (*intdoment.GroupRuleAuthorizations, error) {
 	groupRuleAuthorizationsMModel, err := intlib.MetadataModelGet(intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, err)
@@ -378,7 +378,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsInsertOne(ctx context.C
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, fmt.Errorf("more than one %s found", intdoment.GroupRuleAuthorizationsRepository().RepositoryName))
 	}
 
-	groupRuleAuthorization := new(intdoment.GroupRuleAuthorization)
+	groupRuleAuthorization := new(intdoment.GroupRuleAuthorizations)
 	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
 		transaction.Rollback(ctx)
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsInsertOne, err)
@@ -410,7 +410,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsInsertOne(ctx context.C
 	return groupRuleAuthorization, nil
 }
 
-func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneActiveRule(ctx context.Context, directoryGroupID uuid.UUID, groupAuthorizationRuleID string, groupAuthorizationRuleGroup string, columns []string) (*intdoment.GroupRuleAuthorization, error) {
+func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneActiveRule(ctx context.Context, directoryGroupID uuid.UUID, groupAuthorizationRuleID string, groupAuthorizationRuleGroup string, columns []string) (*intdoment.GroupRuleAuthorizations, error) {
 	groupRuleAuthorizationsMModel, err := intlib.MetadataModelGet(intdoment.GroupRuleAuthorizationsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, err)
@@ -470,7 +470,7 @@ func (n *PostrgresRepository) RepoGroupRuleAuthorizationsFindOneActiveRule(ctx c
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, fmt.Errorf("more than one %s found", intdoment.GroupRuleAuthorizationsRepository().RepositoryName))
 	}
 
-	groupRuleAuthorization := new(intdoment.GroupRuleAuthorization)
+	groupRuleAuthorization := new(intdoment.GroupRuleAuthorizations)
 	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoGroupRuleAuthorizationsFindOneActiveRule, err)
 	} else {
