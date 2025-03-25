@@ -1383,10 +1383,16 @@ namespace Url {
 				path: '/abstractions/directory-groups',
 				title: 'Abstractions Directory Groups',
 				icon: html`
-					<!--mdi:file-multiple source: https://icon-sets.iconify.design-->
-					<svg class="self-center" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-						<path d="M15 7h5.5L15 1.5zM8 0h8l6 6v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2M4 4v18h16v2H4a2 2 0 0 1-2-2V4z" />
-					</svg>
+					<div class="flex gap-x-1 self-center">
+						<!--mdi:notebook source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M3 7V5h2V4a2 2 0 0 1 2-2h6v7l2.5-1.5L18 9V2h1c1.05 0 2 .95 2 2v16c0 1.05-.95 2-2 2H7c-1.05 0-2-.95-2-2v-1H3v-2h2v-4H3v-2h2V7zm4 4H5v2h2zm0-4V5H5v2zm0 12v-2H5v2z" /></svg>
+						<!--mdi:account-group source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+							<path
+								d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9A3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42c-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3a3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13zM0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9c-.59.68-.95 1.62-.95 2.65V20zm24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65c2.56.34 4.45 1.51 4.45 2.9z"
+							/>
+						</svg>
+					</div>
 				`,
 				description: "Create and manage abstraction's sessions information in the context of a group."
 			},
@@ -1471,13 +1477,89 @@ namespace Url {
 		]
 	}
 
+	export const abstractionsNavigation: IGroupNavigationInfo = {
+		title: 'Abstractions',
+		icon: html`
+			<!--mdi:notebook source: https://icon-sets.iconify.design-->
+			<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M3 7V5h2V4a2 2 0 0 1 2-2h6v7l2.5-1.5L18 9V2h1c1.05 0 2 .95 2 2v16c0 1.05-.95 2-2 2H7c-1.05 0-2-.95-2-2v-1H3v-2h2v-4H3v-2h2V7zm4 4H5v2h2zm0-4V5H5v2zm0 12v-2H5v2z" /></svg>
+		`,
+		description: 'Create and manage abstractions in the context of a group.',
+		navinfo: [
+			{
+				path: '/abstractions',
+				title: 'Abstractions',
+				icon: html`
+					<!--mdi:notebook source: https://icon-sets.iconify.design-->
+					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M3 7V5h2V4a2 2 0 0 1 2-2h6v7l2.5-1.5L18 9V2h1c1.05 0 2 .95 2 2v16c0 1.05-.95 2-2 2H7c-1.05 0-2-.95-2-2v-1H3v-2h2v-4H3v-2h2V7zm4 4H5v2h2zm0-4V5H5v2zm0 12v-2H5v2z" /></svg>
+				`,
+				description: 'Create and manage abstractions in the context of a group.'
+			},
+			{
+				path: `/abstractions?${SearchParams.ACTION}=${Action.CREATE}`,
+				title: 'Create Abstractions',
+				icon: html`
+					<div class="flex gap-x-1 self-center">
+						<!--mdi:notebook source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M3 7V5h2V4a2 2 0 0 1 2-2h6v7l2.5-1.5L18 9V2h1c1.05 0 2 .95 2 2v16c0 1.05-.95 2-2 2H7c-1.05 0-2-.95-2-2v-1H3v-2h2v-4H3v-2h2V7zm4 4H5v2h2zm0-4V5H5v2zm0 12v-2H5v2z" /></svg>
+
+						<!--mdi:plus-thick source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M20 14h-6v6h-4v-6H4v-4h6V4h4v6h6z" /></svg>
+					</div>
+				`,
+				description: 'Create new abstractions.'
+			},
+			{
+				path: `/abstractions?${SearchParams.ACTION}=${Action.RETRIEVE}`,
+				title: 'Search Abstractions',
+				icon: html`
+					<div class="flex gap-x-1 self-center">
+						<!--mdi:notebook source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M3 7V5h2V4a2 2 0 0 1 2-2h6v7l2.5-1.5L18 9V2h1c1.05 0 2 .95 2 2v16c0 1.05-.95 2-2 2H7c-1.05 0-2-.95-2-2v-1H3v-2h2v-4H3v-2h2V7zm4 4H5v2h2zm0-4V5H5v2zm0 12v-2H5v2z" /></svg>
+
+						<!--mdi:search source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+							<path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5l-1.5 1.5l-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16A6.5 6.5 0 0 1 3 9.5A6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14S14 12 14 9.5S12 5 9.5 5" />
+						</svg>
+					</div>
+				`,
+				description: 'Search for abstractions.'
+			},
+			{
+				path: `/abstractions?${SearchParams.ACTION}=${Action.UPDATE}`,
+				title: 'Update Abstractions',
+				icon: html`
+					<div class="flex gap-x-1 self-center">
+						<!--mdi:notebook source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M3 7V5h2V4a2 2 0 0 1 2-2h6v7l2.5-1.5L18 9V2h1c1.05 0 2 .95 2 2v16c0 1.05-.95 2-2 2H7c-1.05 0-2-.95-2-2v-1H3v-2h2v-4H3v-2h2V7zm4 4H5v2h2zm0-4V5H5v2zm0 12v-2H5v2z" /></svg>
+
+						<!--mdi:edit source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" /></svg>
+					</div>
+				`,
+				description: 'Update abstractions.'
+			},
+			{
+				path: `/abstractions?${SearchParams.ACTION}=${Action.DELETE}`,
+				title: 'Delete Abstractions',
+				icon: html`
+					<div class="flex gap-x-1 self-center">
+						<!--mdi:notebook source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M3 7V5h2V4a2 2 0 0 1 2-2h6v7l2.5-1.5L18 9V2h1c1.05 0 2 .95 2 2v16c0 1.05-.95 2-2 2H7c-1.05 0-2-.95-2-2v-1H3v-2h2v-4H3v-2h2V7zm4 4H5v2h2zm0-4V5H5v2zm0 12v-2H5v2z" /></svg>
+
+						<!--mdi:delete source: https://icon-sets.iconify.design-->
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
+					</div>
+				`,
+				description: 'Delete/deactivate abstractions.'
+			}
+		]
+	}
+
 	export const groupNavigation: IGroupNavigationInfo[] = [
-		{
-			title: 'Abstractions',
-			navinfo: [abstractionsDirectoryGroupsNavigation]
-		},
+		abstractionsNavigation,
 		metadataModelsNavigation,
 		storageFilesNavigation,
+		abstractionsDirectoryGroupsNavigation,
 		{
 			title: 'Administration',
 			navinfo: [
