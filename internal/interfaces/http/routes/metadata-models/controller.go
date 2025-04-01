@@ -287,11 +287,7 @@ func ApiCoreRouter(webService *inthttp.WebService) *chi.Mux {
 		searchRouter.Get("/metadata-model", func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), intlib.LOG_ATTR_CTX_KEY, slog.Attr{Key: intlib.LogSectionAttrKey, Value: slog.StringValue(intlib.LogSectionName(r.URL.Path, webService.Env))})
 
-			authedIamCredential, err := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
-			if err != nil {
-				intlib.SendJsonErrorResponse(err, w)
-				return
-			}
+			authedIamCredential, _ := intlib.IamHttpRequestCtxGetAuthedIamCredential(r)
 
 			s := initApiCoreService(ctx, webService)
 			if s == nil {

@@ -10,29 +10,6 @@ import (
 )
 
 func (n *MetadataModelRetrieve) StorageFilesGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error) {
-	// if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
-	// 	ctx,
-	// 	n.iamCredential,
-	// 	n.authContextDirectoryGroupID,
-	// 	[]*intdoment.IamGroupAuthorizationRule{
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE_SELF,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_STORAGE_FILES,
-	// 		},
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_STORAGE_FILES,
-	// 		},
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_STORAGE_FILES,
-	// 		},
-	// 	},
-	// 	n.iamAuthorizationRules,
-	// ); err != nil || iamAuthorizationRule == nil {
-	// 	return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
-	// }
-
 	parentMetadataModel, err := n.GetMetadataModel(intdoment.StorageFilesRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.StorageFilesGetMetadataModel, err)

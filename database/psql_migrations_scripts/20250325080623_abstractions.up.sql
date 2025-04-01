@@ -2,7 +2,7 @@
 CREATE TABLE public.abstractions
 (
     id uuid NOT NULL DEFAULT uuid_generate_v7(),
-    directory_groups_id uuid NOT NULL,
+    abstractions_directory_groups_id uuid NOT NULL,
     directory_id uuid NOT NULL,
     storage_files_id uuid NOT NULL,
     data jsonb,
@@ -13,7 +13,7 @@ CREATE TABLE public.abstractions
     deactivated_on timestamp without time zone,
     full_text_search tsvector,
     PRIMARY KEY (id),
-    CONSTRAINT directory_groups_id FOREIGN KEY (directory_groups_id)
+    CONSTRAINT abstractions_directory_groups_id FOREIGN KEY (abstractions_directory_groups_id)
         REFERENCES public.abstractions_directory_groups (directory_groups_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE RESTRICT

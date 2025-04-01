@@ -87,7 +87,7 @@ class Page extends LitElement {
 		let newQc: MetadataModel.QueryConditions = {}
 		if (this._metadataModelsSearch.searchmetadatamodel) {
 			if (this._fullTextSearchQuery.length > 0) {
-				newQc['$'] = {
+				newQc['$.description'] = {
 					[MetadataModel.QcProperties.D_FIELD_COLUMN_NAME]: Entities.AbstractionsDirectoryGroups.FieldColumn.Description,
 					[MetadataModel.QcProperties.D_TABLE_COLLECTION_UID]: this._metadataModelsSearch.searchmetadatamodel[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID],
 					[MetadataModel.QcProperties.FG_FILTER_CONDITION]: [

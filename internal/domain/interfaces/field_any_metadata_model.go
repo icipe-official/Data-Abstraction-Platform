@@ -18,4 +18,5 @@ type FieldAnyMetadataModelRepository interface {
 		metadataDirectoryGroupIDFieldColumn string,
 		directoryGroupID uuid.UUID,
 	) (map[string]any, error)
+	RepoMetadataModelFindOneByAbstractionsDirectoryGroupsID(ctx context.Context, directoryGroupID uuid.UUID) (map[string]any, error)
 }

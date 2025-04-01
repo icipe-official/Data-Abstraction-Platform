@@ -48,6 +48,24 @@ export class FieldAnyMetadataModel implements IFieldAnyMetadataModelGet {
 					} else {
 						throw [fetchResponse.status, fetchData]
 					}
+				case Entities.AbstractionsDirectoryGroups.RepositoryName:
+					if (!Array.isArray(argument) || argument.length != 1) {
+						return undefined
+					}
+					fetchUrl = new URL(Url.ApiUrlPaths.Abstractions.Url)
+					fetchUrl.pathname = fetchUrl.pathname + `/metadata-model/${argument[0]}`
+					fetchResponse = await fetch(fetchUrl, {
+						credentials: 'include'
+					})
+					fetchData = await fetchResponse.json()
+					if (fetchResponse.ok) {
+						if (typeof fetchData !== 'object') {
+							return undefined
+						}
+						return fetchData
+					} else {
+						throw [fetchResponse.status, fetchData]
+					}
 				default:
 					return undefined
 			}

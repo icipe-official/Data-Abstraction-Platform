@@ -73,6 +73,26 @@ func (n *FieldAnyMetadataModelGet) GetMetadataModel(ctx context.Context, actionI
 
 			return n.mmretrieve.GetStorageDriveTypeMetadataModel(storageDriveTypeID)
 		}
+	case intdoment.AbstractionsDirectoryGroupsRepository().RepositoryName:
+		if argArray, ok := argument.([]any); ok && len(argArray) > 0 {
+			directoryGroupID := uuid.Nil
+			if value, ok := argArray[0].(uuid.UUID); ok {
+				directoryGroupID = value
+			} else {
+				if v, ok := argArray[0].(string); ok {
+					if vUUID, err := uuid.FromString(v); err == nil {
+						directoryGroupID = vUUID
+					}
+				}
+			}
+			if directoryGroupID.IsNil() {
+				return nil, fmt.Errorf("in actionID %s, directoryGroupID is nil", actionID)
+			}
+
+			return n.repo.RepoMetadataModelFindOneByAbstractionsDirectoryGroupsID(ctx, directoryGroupID)
+		}
+
+		return nil, fmt.Errorf("actionID %s arguments not valid", actionID)
 	}
 
 	return nil, fmt.Errorf("actionID %s not recognized", actionID)

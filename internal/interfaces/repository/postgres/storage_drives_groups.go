@@ -349,8 +349,12 @@ func (n *PostgresSelectQuery) StorageDrivesGroupsGetSelectQuery(ctx context.Cont
 		n.authContextDirectoryGroupID,
 		[]*intdoment.IamGroupAuthorizationRule{
 			{
-				ID:        intdoment.AUTH_RULE_RETRIEVE,
+				ID:        "",
 				RuleGroup: intdoment.AUTH_RULE_GROUP_STORAGE_DRIVES,
+			},
+			{
+				ID:        "",
+				RuleGroup: intdoment.AUTH_RULE_GROUP_STORAGE_FILES,
 			},
 		},
 		n.iamAuthorizationRules,

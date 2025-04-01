@@ -39,9 +39,13 @@ class ViewFile extends LitElement {
 				if (this.data?.storage_file_mime_type) {
 					if (this.data?.storage_file_mime_type![0]?.startsWith('image/')) {
 						return html` <img src=${srcUrl.toString()} alt=${this.data.original_name ? this.data.original_name[0] : 'image'} /> `
-					} else if (this.data?.storage_file_mime_type![0]?.startsWith('audio/')) {
+					}
+
+					if (this.data?.storage_file_mime_type![0]?.startsWith('audio/')) {
 						return html` <audio controls src=${srcUrl.toString()}></audio> `
-					} else if (this.data?.storage_file_mime_type![0]?.startsWith('video/')) {
+					}
+
+					if (this.data?.storage_file_mime_type![0]?.startsWith('video/')) {
 						return html`
 							<video controls>
 								<source src=${srcUrl.toString()} />
@@ -49,10 +53,9 @@ class ViewFile extends LitElement {
 							</video>
 						`
 					}
-					return html`<iframe src=${srcUrl.toString()} title=${this.data.original_name ? this.data.original_name[0] : 'file'} height="100%" width="100%"></iframe>`
-				} else {
-					return html`<iframe src=${srcUrl.toString()} title=${this.data.original_name ? this.data.original_name[0] : 'file'} height="100%" width="100%"></iframe>`
 				}
+				
+				return html`<iframe src=${srcUrl.toString()} title=${this.data.original_name ? this.data.original_name[0] : 'file'} height="100%" width="100%"></iframe>`
 			})()}
 			<a class="btn btn-primary w-full" href=${`${srcUrl.toString()}`} target="_blank"> download file </a>
 		`

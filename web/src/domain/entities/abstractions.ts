@@ -1,7 +1,7 @@
 namespace _Abstractions {
 	export enum FieldColumn {
 		ID = 'id',
-		DirectoryGroupsID = 'directory_groups_id',
+		AbstractionsDirectoryGroupsID = 'abstractions_directory_groups_id',
 		DirectoryID = 'directory_id',
 		StorageFilesID = 'storage_files_id',
 		ReviewPass = 'review_pass',
@@ -9,14 +9,15 @@ namespace _Abstractions {
 		Data = 'data',
 		CreatedOn = 'created_on',
 		LastUpdatedOn = 'last_updated_on',
-		DeactivatedOn = 'deactivated_on'
+		DeactivatedOn = 'deactivated_on',
+		FullTextSearch = 'full_text_search'
 	}
 
 	export const RepositoryName = 'abstractions'
 
 	export interface Interface {
 		id?: string[]
-		directory_groups_id?: string[]
+		abstractions_directory_groups_id?: string[]
 		metadata_models_id?: string[]
 		directory_id?: string[]
 		storage_files_id?: string[]

@@ -495,65 +495,65 @@ func (n *PostrgresRepository) RepoMetadataModelsInsertOne(
 	return metadataModel, nil
 }
 
-func (n *PostrgresRepository) RepoMetadataModelsValidateAndGetColumnsAndData(mm *intdoment.MetadataModels, insert bool) ([]any, []string, error) {
+func (n *PostrgresRepository) RepoMetadataModelsValidateAndGetColumnsAndData(datum *intdoment.MetadataModels, insert bool) ([]any, []string, error) {
 	values := make([]any, 0)
 	columns := make([]string, 0)
 
-	if len(mm.Name) == 0 || len(mm.Name[0]) < 4 {
+	if len(datum.Name) == 0 || len(datum.Name[0]) < 4 {
 		if insert {
 			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsRepository().Name)
 		}
 	} else {
-		values = append(values, mm.Name[0])
+		values = append(values, datum.Name[0])
 		columns = append(columns, intdoment.MetadataModelsRepository().Name)
 	}
 
-	if len(mm.Description) == 0 || len(mm.Description[0]) < 4 {
+	if len(datum.Description) == 0 || len(datum.Description[0]) < 4 {
 		if insert {
 			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsRepository().Description)
 		}
 	} else {
-		values = append(values, mm.Description[0])
+		values = append(values, datum.Description[0])
 		columns = append(columns, intdoment.MetadataModelsRepository().Description)
 	}
 
-	if len(mm.Data) == 0 {
+	if len(datum.Data) == 0 {
 		if insert {
 			return nil, nil, fmt.Errorf("%s is not valid", intdoment.MetadataModelsRepository().Data)
 		}
 	} else {
-		values = append(values, mm.Data[0])
+		values = append(values, datum.Data[0])
 		columns = append(columns, intdoment.MetadataModelsRepository().Data)
 	}
 
-	if len(mm.EditAuthorized) > 0 {
-		values = append(values, mm.EditAuthorized[0])
+	if len(datum.EditAuthorized) > 0 {
+		values = append(values, datum.EditAuthorized[0])
 		columns = append(columns, intdoment.MetadataModelsRepository().EditAuthorized)
 	}
 
-	if len(mm.EditUnauthorized) > 0 {
-		values = append(values, mm.EditUnauthorized[0])
+	if len(datum.EditUnauthorized) > 0 {
+		values = append(values, datum.EditUnauthorized[0])
 		columns = append(columns, intdoment.MetadataModelsRepository().EditUnauthorized)
 	}
 
-	if len(mm.ViewAuthorized) > 0 {
-		values = append(values, mm.ViewAuthorized[0])
+	if len(datum.ViewAuthorized) > 0 {
+		values = append(values, datum.ViewAuthorized[0])
 		columns = append(columns, intdoment.MetadataModelsRepository().ViewAuthorized)
 	}
 
-	if len(mm.ViewUnauthorized) > 0 {
-		values = append(values, mm.ViewUnauthorized[0])
+	if len(datum.ViewUnauthorized) > 0 {
+		values = append(values, datum.ViewUnauthorized[0])
 		columns = append(columns, intdoment.MetadataModelsRepository().ViewUnauthorized)
 	}
 
 	if insert {
-		if len(mm.Tags) > 0 {
-			values = append(values, mm.Tags)
+		if len(datum.Tags) > 0 {
+			values = append(values, datum.Tags)
 			columns = append(columns, intdoment.MetadataModelsRepository().Tags)
 		}
 	} else {
-		if mm.Tags != nil && len(mm.Tags) >= 0 {
-			values = append(values, mm.Tags)
+		if datum.Tags != nil && len(datum.Tags) >= 0 {
+			values = append(values, datum.Tags)
 			columns = append(columns, intdoment.MetadataModelsRepository().Tags)
 		}
 	}
@@ -627,29 +627,6 @@ func (n *PostrgresRepository) RepoMetadataModelsSearch(
 }
 
 func (n *PostgresSelectQuery) MetadataModelsGetSelectQuery(ctx context.Context, metadataModel map[string]any, metadataModelParentPath string) (*SelectQuery, error) {
-	// if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
-	// 	ctx,
-	// 	n.iamCredential,
-	// 	n.authContextDirectoryGroupID,
-	// 	[]*intdoment.IamGroupAuthorizationRule{
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE_SELF,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
-	// 		},
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
-	// 		},
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_METADATA_MODELS,
-	// 		},
-	// 	},
-	// 	n.iamAuthorizationRules,
-	// ); err != nil || iamAuthorizationRule == nil {
-	// 	return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
-	// }
-
 	quoteColumns := true
 	if len(metadataModelParentPath) == 0 {
 		metadataModelParentPath = "$"

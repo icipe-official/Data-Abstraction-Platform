@@ -118,14 +118,13 @@ func (n *PostrgresRepository) RepoDirectoryUpdateOne(
 	}
 
 	query += fmt.Sprintf(
-		" UPDATE %[1]s SET %[2]s WHERE %[3]s = %[4]s AND %[5]s IS NULL AND %[6]s IS NOT NULL AND (%[7]s);",
+		" UPDATE %[1]s SET %[2]s WHERE %[3]s = %[4]s AND %[5]s IS NULL AND (%[6]s);",
 		intdoment.DirectoryRepository().RepositoryName,                     //1
 		GetUpdateSetColumnsWithVQuery(columnsToUpdate, valueToUpdateQuery), //2
 		intdoment.DirectoryRepository().ID,                                 //3
 		GetandUpdateNextPlaceholder(&nextPlaceholder),                      //4
 		intdoment.DirectoryRepository().DeactivatedOn,                      //5
-		intdoment.DirectoryRepository().Data,                               //6
-		where,                                                              //7
+		where, //6
 	)
 	query = strings.TrimLeft(query, " \n")
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryUpdateOne))
@@ -163,11 +162,6 @@ func (n *PostrgresRepository) RepoDirectoryInsertOne(
 		columns = append(columns, intdoment.DirectoryRepository().ID)
 	}
 
-	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, fmt.Errorf("start transaction to create %s failed, error: %v", intdoment.DirectoryRepository().RepositoryName, err))
-	}
-
 	valuesToInsert := make([]any, 0)
 	valueToInsertQuery := make([]string, 0)
 	columnsToInsert := make([]string, 0)
@@ -188,6 +182,12 @@ func (n *PostrgresRepository) RepoDirectoryInsertOne(
 		strings.Join(columns, " , "),                   //4
 	)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryInsertOne))
+
+	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsInsertOne, fmt.Errorf("start transaction to create %s failed, error: %v", intdoment.DirectoryRepository().RepositoryName, err))
+	}
+
 	rows, err := transaction.Query(ctx, query, valuesToInsert...)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryInsertOne, fmt.Errorf("insert %s failed, err: %v", intdoment.DirectoryRepository().RepositoryName, err))

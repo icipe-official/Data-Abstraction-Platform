@@ -24,6 +24,7 @@ class Component extends LitElement {
 		`
 	}
 }
+
 declare global {
 	interface HTMLElementTagNameMap {
 		'error-section': Component

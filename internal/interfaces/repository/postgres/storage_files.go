@@ -647,29 +647,6 @@ func (n *PostrgresRepository) RepoStorageFilesSearch(
 }
 
 func (n *PostgresSelectQuery) StorageFilesGetSelectQuery(ctx context.Context, metadataModel map[string]any, metadataModelParentPath string) (*SelectQuery, error) {
-	// if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
-	// 	ctx,
-	// 	n.iamCredential,
-	// 	n.authContextDirectoryGroupID,
-	// 	[]*intdoment.IamGroupAuthorizationRule{
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE_SELF,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_STORAGE_FILES,
-	// 		},
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_STORAGE_FILES,
-	// 		},
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_STORAGE_FILES,
-	// 		},
-	// 	},
-	// 	n.iamAuthorizationRules,
-	// ); err != nil || iamAuthorizationRule == nil {
-	// 	return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
-	// }
-
 	quoteColumns := true
 	if len(metadataModelParentPath) == 0 {
 		metadataModelParentPath = "$"

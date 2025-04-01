@@ -189,11 +189,6 @@ func (n *PostrgresRepository) RepoDirectoryGroupsInsertOne(
 		columns = append(columns, intdoment.DirectoryGroupsRepository().ID)
 	}
 
-	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsInsertOne, fmt.Errorf("start transaction to create %s failed, error: %v", intdoment.DirectoryGroupsRepository().RepositoryName, err))
-	}
-
 	valuesToInsert := make([]any, 0)
 	valueToInsertQuery := make([]string, 0)
 	columnsToInsert := make([]string, 0)
@@ -214,6 +209,11 @@ func (n *PostrgresRepository) RepoDirectoryGroupsInsertOne(
 		strings.Join(columns, " , "),                         //4
 	)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsInsertOne))
+
+	transaction, err := n.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsInsertOne, fmt.Errorf("start transaction to create %s failed, error: %v", intdoment.DirectoryGroupsRepository().RepositoryName, err))
+	}
 
 	rows, err := transaction.Query(ctx, query, valuesToInsert...)
 	if err != nil {

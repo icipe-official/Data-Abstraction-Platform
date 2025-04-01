@@ -10,25 +10,6 @@ import (
 )
 
 func (n *MetadataModelRetrieve) AbstractionsGetMetadataModel(ctx context.Context, currentJoinDepth int, targetJoinDepth int, skipJoin map[string]bool) (map[string]any, error) {
-	// if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
-	// 	ctx,
-	// 	n.iamCredential,
-	// 	n.authContextDirectoryGroupID,
-	// 	[]*intdoment.IamGroupAuthorizationRule{
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_ABSTRACTIONS,
-	// 		},
-	// 		{
-	// 			ID:        intdoment.AUTH_RULE_RETRIEVE_OTHERS,
-	// 			RuleGroup: intdoment.AUTH_RULE_GROUP_ABSTRACTIONS,
-	// 		},
-	// 	},
-	// 	n.iamAuthorizationRules,
-	// ); err != nil || iamAuthorizationRule == nil {
-	// 	return nil, intlib.NewError(http.StatusForbidden, http.StatusText(http.StatusForbidden))
-	// }
-
 	parentMetadataModel, err := n.GetMetadataModel(intdoment.AbstractionsRepository().RepositoryName)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.AbstractionsGetMetadataModel, err)
@@ -44,8 +25,8 @@ func (n *MetadataModelRetrieve) AbstractionsGetMetadataModel(ctx context.Context
 			skipJoin = make(map[string]bool)
 		}
 
-		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.AbstractionsRepository().DirectoryGroupsID, intdoment.AbstractionsDirectoryGroupsRepository().RepositoryName)]; !ok || !skipMMJoin {
-			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.AbstractionsRepository().DirectoryGroupsID, intdoment.AbstractionsDirectoryGroupsRepository().RepositoryName)
+		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.AbstractionsRepository().AbstractionsDirectoryGroupsID, intdoment.AbstractionsDirectoryGroupsRepository().RepositoryName)]; !ok || !skipMMJoin {
+			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.AbstractionsRepository().AbstractionsDirectoryGroupsID, intdoment.AbstractionsDirectoryGroupsRepository().RepositoryName)
 			if childMetadataModel, err := n.AbstractionsDirectoryGroupsGetMetadataModel(
 				ctx,
 				currentJoinDepth+1,
@@ -57,10 +38,10 @@ func (n *MetadataModelRetrieve) AbstractionsGetMetadataModel(ctx context.Context
 				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(
 					parentMetadataModel,
 					childMetadataModel,
-					intdoment.AbstractionsRepository().DirectoryGroupsID,
+					intdoment.AbstractionsRepository().AbstractionsDirectoryGroupsID,
 					false,
 					newChildMetadataModelfgSuffix,
-					[]string{intdoment.AbstractionsRepository().DirectoryGroupsID},
+					[]string{intdoment.AbstractionsRepository().AbstractionsDirectoryGroupsID},
 				)
 				if err != nil {
 					return nil, intlib.FunctionNameAndError(n.AbstractionsGetMetadataModel, err)
