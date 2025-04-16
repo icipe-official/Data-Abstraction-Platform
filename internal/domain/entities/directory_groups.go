@@ -8,6 +8,7 @@ import (
 
 type DirectoryGroups struct {
 	ID            []uuid.UUID `json:"id,omitempty"`
+	DisplayName   []string    `json:"display_name,omitempty"`
 	Data          []any       `json:"data,omitempty"`
 	CreatedOn     []time.Time `json:"created_on,omitempty"`
 	LastUpdatedOn []time.Time `json:"last_updated_on,omitempty"`
@@ -18,6 +19,7 @@ type directoryGroupsRepository struct {
 	RepositoryName string
 
 	ID             string
+	DisplayName    string
 	Data           string
 	CreatedOn      string
 	LastUpdatedOn  string
@@ -30,6 +32,7 @@ func DirectoryGroupsRepository() directoryGroupsRepository {
 		RepositoryName: "directory_groups",
 
 		ID:             "id",
+		DisplayName:    "display_name",
 		Data:           "data",
 		CreatedOn:      "created_on",
 		LastUpdatedOn:  "last_updated_on",

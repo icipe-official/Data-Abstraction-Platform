@@ -304,6 +304,7 @@ func (n *PostrgresRepository) RepoDirectoryGroupsValidateAndGetColumnsAndData(ct
 	valuesQuery := make([]string, 0)
 	columns := make([]string, 0)
 
+	fullTextSearchValue := make([]string, 0)
 	if len(datum.Data) > 0 {
 		if dMap, ok := datum.Data[0].(map[string]any); ok {
 			columns = append(columns, intdoment.DirectoryGroupsRepository().Data)
@@ -326,14 +327,25 @@ func (n *PostrgresRepository) RepoDirectoryGroupsValidateAndGetColumnsAndData(ct
 		}
 	}
 
+	if len(datum.DisplayName) > 0 {
+		columns = append(columns, intdoment.DirectoryGroupsRepository().DisplayName)
+		values = append(values, datum.DisplayName[0])
+		valuesQuery = append(valuesQuery, GetandUpdateNextPlaceholder(nextPlaceholder))
+		fullTextSearchValue = append(fullTextSearchValue, datum.DisplayName...)
+	}
+
 	if slices.Contains(columns, intdoment.DirectoryGroupsRepository().Data) {
 		if mm, err := fieldAnyMetadataModelGet.GetMetadataModel(ctx, intdoment.MetadataModelsDirectoryGroupsRepository().RepositoryName, "$", intdoment.MetadataModelsDirectoryGroupsRepository().RepositoryName, []any{directoryGroupID}); err == nil {
 			if value := MetadataModelExtractFullTextSearchValue(mm, datum.Data[0]); len(value) > 0 {
-				columns = append(columns, intdoment.DirectoryGroupsRepository().FullTextSearch)
-				values = append(values, strings.Join(value, " "))
-				valuesQuery = append(valuesQuery, fmt.Sprintf("to_tsvector(%s)", GetandUpdateNextPlaceholder(nextPlaceholder)))
+				fullTextSearchValue = append(fullTextSearchValue, value...)
 			}
 		}
+	}
+
+	if len(fullTextSearchValue) > 0 {
+		columns = append(columns, intdoment.DirectoryGroupsRepository().FullTextSearch)
+		values = append(values, strings.Join(fullTextSearchValue, " "))
+		valuesQuery = append(valuesQuery, fmt.Sprintf("to_tsvector(%s)", GetandUpdateNextPlaceholder(nextPlaceholder)))
 	}
 
 	return values, valuesQuery, columns
@@ -509,6 +521,11 @@ func (n *PostgresSelectQuery) DirectoryGroupsGetSelectQuery(ctx context.Context,
 	if _, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().ID][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
 		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().ID, "", PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
 			selectQuery.Where[intdoment.DirectoryGroupsRepository().ID] = value
+		}
+	}
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().DisplayName][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryGroupsRepository().DisplayName, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryGroupsRepository().DisplayName] = value
 		}
 	}
 	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryGroupsRepository().Data][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
@@ -738,14 +755,16 @@ func (n *PostrgresRepository) RepoDirectoryGroupsCreateSystemGroup(ctx context.C
 	}
 
 	query := fmt.Sprintf(
-		"INSERT INTO %[1]s (%[2]s) VALUES (NULL) RETURNING %[3]s;",
+		"INSERT INTO %[1]s (%[2]s, %[3]s, %[4]s) VALUES ($1, NULL,to_tsvector($1)) RETURNING %[5]s;",
 		intdoment.DirectoryGroupsRepository().RepositoryName, //1
-		intdoment.DirectoryGroupsRepository().Data,           //2
-		strings.Join(columns, ","),                           //3
+		intdoment.DirectoryGroupsRepository().DisplayName,    //2
+		intdoment.DirectoryGroupsRepository().Data,           //3
+		intdoment.DirectoryGroupsRepository().FullTextSearch, //4
+		strings.Join(columns, ","),                           //5
 	)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryGroupsCreateSystemGroup))
 
-	rows, err := transaction.Query(ctx, query)
+	rows, err := transaction.Query(ctx, query, "system")
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.RepoDirectoryGroupsCreateSystemGroup, fmt.Errorf("insert system %s failed, err: %v", intdoment.DirectoryGroupsRepository().RepositoryName, err))
 	}

@@ -1,6 +1,7 @@
 namespace _DirectoryGroups {
 	export enum FieldColumn {
 		ID = 'id',
+		DisplayName = 'display_name',
 		Data = 'data',
 		CreatedOn = 'created_on',
 		LastUpdatedOn = 'last_updated_on',
@@ -12,14 +13,12 @@ namespace _DirectoryGroups {
 
 	export interface Interface {
 		id?: string[]
+		display_name?: string[]
 		data?: any[]
 		created_on?: string[]
 		last_updated_on?: string[]
 		deactivated_on?: string[]
 	}
-
-	export const RepositorySearchMetadatamodelUrl = `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/directory-groups/search/metadata-model`
-	export const RepositorySearchUrl = `${import.meta.env.VITE_WEB_SERVICE_API_CORE_URL}/directory-groups/search`
 }
 
 export default _DirectoryGroups

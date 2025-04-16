@@ -43,5 +43,5 @@ else
 fi
 
 echo "Using ${BASH_ALIASES[ccli]} to build container image..."
-${BASH_ALIASES[ccli]} build --no-cache -t data_abstraction_platform/web_service:$CONTAINER_TAG -f $WORKING_DIR/build/Dockerfile.web_service $WORKING_DIR
+${BASH_ALIASES[ccli]} build --no-cache -t rahab_platform/web_service:$CONTAINER_TAG -f $WORKING_DIR/build/Dockerfile.web_service $WORKING_DIR
 echo "... container complete"

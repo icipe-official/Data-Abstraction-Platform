@@ -20,13 +20,13 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/rogonion/rahab-platform.git"
+		"url": "git+https://github.com/icipe-official/Data-Abstraction-Platform.git"
 	},
 	"keywords": [
-		"Rahab",
+		"Data",
+		"Abstraction",
 		"Platform",
-		"Web",
-		"App"
+		"Website"
 	],
 	"author": "Declan Joseph",
 	"license": "MIT",

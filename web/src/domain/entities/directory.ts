@@ -2,6 +2,7 @@ namespace _Directory {
 	export enum FieldColumn {
 		ID = 'id',
 		DirectoryGroupsID = 'directory_groups_id',
+		DisplayName = 'display_name',
 		Data = 'data',
 		CreatedOn = 'created_on',
 		LastUpdatedOn = 'last_updated_on',
@@ -14,6 +15,7 @@ namespace _Directory {
 	export interface Interface {
 		id?: string[]
 		directory_groups_id?: string[]
+		display_name?: string[]
 		data?: any[]
 		created_on?: string[]
 		last_updated_on?: string[]

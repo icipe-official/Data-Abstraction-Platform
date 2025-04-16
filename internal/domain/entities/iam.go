@@ -33,6 +33,7 @@ const (
 	AUTH_RULE_GROUP_STORAGE_FILES                    string = "storage_files"
 	AUTH_RULE_GROUP_ABSTRACTIONS_DIRECTORY_GROUPS    string = "abstractions_directory_groups"
 	AUTH_RULE_GROUP_ABSTRACTIONS                     string = "abstractions"
+	AUTH_RULE_GROUP_ABSTRACTIONS_REVIEWS             string = "abstractions_reviews"
 
 	AUTH_RULE_ASSIGN_PREFIX string = "assign_"
 

@@ -18,25 +18,10 @@ while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 WORKING_DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && cd .. && pwd )
 
-mkdir -p $WORKING_DIR/bin
-
-if [ ! -f "$WORKING_DIR/bin/migrate" ]; then
-    echo "Downloading golang migrate executable..."
-    bash $WORKING_DIR/scripts/download_golang_migrate.sh
-    echo "...download complete"
-fi
-
-go mod tidy
-
-echo "Building cmd applications..."
-    bash $WORKING_DIR/scripts/build_cmd_app_create_super_user.sh
-    bash $WORKING_DIR/scripts/build_cmd_app_init_database.sh
-echo "...building cmd applications complete"
-
 echo "Building website..."
-bash $WORKING_DIR/scripts/build_website.sh
-echo "...building website complete"
-
-echo "Creating executable for cmd/web_service..."
-go build -C $WORKING_DIR/cmd/web_service/ -o $WORKING_DIR/bin/web_service
+cd $WORKING_DIR/web
+if [ ! -d "node_modules" ]; then
+  npm install
+fi
+npm run build
 echo "...complete"

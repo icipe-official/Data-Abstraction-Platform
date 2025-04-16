@@ -44,7 +44,12 @@ func (n *CmdCreateSuperUserService) ServiceGetIamCredentials(ctx context.Context
 	columnValue = strings.Trim(columnValue, " \n")
 	n.logger.Log(ctx, slog.LevelDebug, fmt.Sprintf("entered value: %v", columnValue))
 
-	if iamCredential, err := n.repo.RepoIamCredentialsFindOneByID(ctx, repoFieldColumnName, columnValue, []string{intdoment.IamCredentialsRepository().ID, intdoment.IamCredentialsRepository().DirectoryID}); err != nil {
+	if iamCredential, err := n.repo.RepoIamCredentialsFindOneByID(
+		ctx,
+		repoFieldColumnName,
+		columnValue,
+		[]string{intdoment.IamCredentialsRepository().ID, intdoment.IamCredentialsRepository().DirectoryID, intdoment.IamCredentialsRepository().OpenidPreferredUsername},
+	); err != nil {
 		return nil, intlib.FunctionNameAndError(n.ServiceGetIamCredentials, err)
 	} else {
 		return iamCredential, nil

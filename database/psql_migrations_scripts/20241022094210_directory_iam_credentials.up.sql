@@ -3,6 +3,7 @@ CREATE TABLE public.directory
 (
     id uuid NOT NULL DEFAULT uuid_generate_v7(),
     directory_groups_id uuid NOT NULL,
+    display_name text,
     data jsonb,
     created_on timestamp without time zone NOT NULL DEFAULT NOW(),
     last_updated_on timestamp without time zone NOT NULL DEFAULT NOW(),
@@ -32,7 +33,7 @@ CREATE INDEX directory_data_jsonb_index
 
 -- trigger to update directory->last_updated_on column
 CREATE TRIGGER directory_update_last_updated_on
-    BEFORE UPDATE OF data
+    BEFORE UPDATE OF data, display_name
     ON public.directory
     FOR EACH ROW
     EXECUTE FUNCTION public.update_last_updated_on();

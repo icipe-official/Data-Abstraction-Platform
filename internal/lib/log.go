@@ -30,7 +30,7 @@ const LogSectionAttrKey string = "section"
 func LogGetServiceName(serviceSubName string) string {
 	lsn := os.Getenv("LOG_SERVICE_BASE_NAME")
 	if lsn == "" {
-		return fmt.Sprintf("%v-%v", "rahab-platform", serviceSubName)
+		return fmt.Sprintf("%v-%v", "Data-Abstraction-Platform", serviceSubName)
 	} else {
 		return fmt.Sprintf("%v-%v", lsn, serviceSubName)
 	}

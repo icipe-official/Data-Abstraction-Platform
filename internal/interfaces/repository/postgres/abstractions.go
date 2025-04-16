@@ -19,6 +19,92 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+func (n *PostrgresRepository) RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups(
+	ctx context.Context,
+	id uuid.UUID,
+	abstractionsDirectoryGroupsID uuid.UUID,
+	columns []string,
+) (*intdoment.Abstractions, error) {
+	abstractionsMetadataModel, err := intlib.MetadataModelGet(intdoment.AbstractionsRepository().RepositoryName)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups, err)
+	}
+
+	if len(columns) == 0 {
+		if dbColumnFields, err := intlibmmodel.DatabaseGetColumnFields(abstractionsMetadataModel, intdoment.AbstractionsRepository().RepositoryName, false, false); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups, err)
+		} else {
+			columns = dbColumnFields.ColumnFieldsReadOrder
+		}
+	}
+
+	if !slices.Contains(columns, intdoment.AbstractionsRepository().ID) {
+		columns = append(columns, intdoment.AbstractionsRepository().ID)
+	}
+
+	selectColumns := make([]string, len(columns))
+	for cIndex, cValue := range columns {
+		selectColumns[cIndex] = intdoment.AbstractionsRepository().RepositoryName + "." + cValue
+	}
+
+	query := fmt.Sprintf(
+		"SELECT %[1]s FROM %[2]s INNER JOIN %[3]s ON %[2]s.%[4]s = $1 AND %[2]s.%[5]s = $2 AND %[2]s.%[5]s = %[3]s.%[6]s AND %[2]s.%[7]s IS NULL AND %[3]s.%[8]s IS NULL;",
+		strings.Join(selectColumns, ","),                                    //1
+		intdoment.AbstractionsRepository().RepositoryName,                   //2
+		intdoment.AbstractionsDirectoryGroupsRepository().RepositoryName,    //3
+		intdoment.AbstractionsRepository().ID,                               //4
+		intdoment.AbstractionsRepository().AbstractionsDirectoryGroupsID,    //5
+		intdoment.AbstractionsDirectoryGroupsRepository().DirectoryGroupsID, //6
+		intdoment.AbstractionsRepository().DeactivatedOn,                    //7
+		intdoment.AbstractionsDirectoryGroupsRepository().DeactivatedOn,     //8
+	)
+	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups))
+
+	rows, err := n.db.Query(ctx, query, id, abstractionsDirectoryGroupsID)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups, fmt.Errorf("retrieve %s failed, err: %v", intdoment.AbstractionsRepository().RepositoryName, err))
+	}
+
+	defer rows.Close()
+	dataRows := make([]any, 0)
+	for rows.Next() {
+		if r, err := rows.Values(); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups, err)
+		} else {
+			dataRows = append(dataRows, r)
+		}
+	}
+
+	array2DToObject, err := intlibmmodel.NewConvert2DArrayToObjects(abstractionsMetadataModel, nil, false, false, columns)
+	if err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups, err)
+	}
+	if err := array2DToObject.Convert(dataRows); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups, err)
+	}
+
+	if len(array2DToObject.Objects()) == 0 {
+		return nil, fmt.Errorf("insert %s did not return any row", intdoment.AbstractionsRepository().RepositoryName)
+	}
+
+	if len(array2DToObject.Objects()) > 1 {
+		n.logger.Log(ctx, slog.LevelError, fmt.Sprintf("length of array2DToObject.Objects(): %v", len(array2DToObject.Objects())), "function", intlib.FunctionName(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups))
+		return nil, intlib.FunctionNameAndError(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups, fmt.Errorf("more than one %s found", intdoment.AbstractionsRepository().RepositoryName))
+	}
+
+	abstractions := new(intdoment.Abstractions)
+	if jsonData, err := json.Marshal(array2DToObject.Objects()[0]); err != nil {
+		return nil, intlib.FunctionNameAndError(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups, err)
+	} else {
+		n.logger.Log(ctx, slog.LevelDebug, "json parsing abstractions", "abstractions", string(jsonData), "function", intlib.FunctionName(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups))
+		if err := json.Unmarshal(jsonData, abstractions); err != nil {
+			return nil, intlib.FunctionNameAndError(n.RepoAbstractionsFindActiveOneByIDAndAbstractionsDirectoryGroups, err)
+		}
+	}
+
+	return abstractions, nil
+}
+
 func (n *PostrgresRepository) RepoAbstractionsDeleteOne(
 	ctx context.Context,
 	iamAuthRule *intdoment.IamAuthorizationRule,

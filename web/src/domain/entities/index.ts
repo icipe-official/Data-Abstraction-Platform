@@ -1,5 +1,7 @@
 import _Abstractions from './abstractions'
 import _AbstractionsDirectoryGroups from './abstractions_directory_groups'
+import _AbstractionsReviews from './abstractions_reviews'
+import _AbstractionsReviewsComments from './abstractions_reviews_comments'
 import _AppContext from './app_context'
 import _Directory from './directory'
 import _DirectoryAuthorizationIDs from './directory_authorization_ids'
@@ -54,6 +56,8 @@ namespace Entities {
 	export import MetadataModelsDirectory = _MetadataModelsDirectory
 	export import AbstractionsDirectoryGroups = _AbstractionsDirectoryGroups
 	export import Abstractions = _Abstractions
+	export import AbstractionsReviews = _AbstractionsReviews
+	export import AbstractionsReviewsComments = _AbstractionsReviewsComments
 }
 
 export default Entities

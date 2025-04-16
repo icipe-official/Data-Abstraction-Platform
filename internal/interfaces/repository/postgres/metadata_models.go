@@ -277,7 +277,7 @@ func (n *PostrgresRepository) RepoMetadataModelsUpdateOne(
 	datum *intdoment.MetadataModels,
 ) error {
 	query := ""
-	where := ""
+	authWhere := ""
 
 	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
 		ctx,
@@ -293,7 +293,7 @@ func (n *PostrgresRepository) RepoMetadataModelsUpdateOne(
 	); err == nil && iamAuthorizationRule != nil {
 		cteName := fmt.Sprintf("%s_%s", intdoment.MetadataModelsRepository().RepositoryName, RECURSIVE_DIRECTORY_GROUPS_DEFAULT_CTE_NAME)
 		query = RecursiveDirectoryGroupsSubGroupsCte(authContextDirectoryGroupID, cteName)
-		where = fmt.Sprintf("(%s) IN (SELECT %s FROM %s)", intdoment.MetadataModelsRepository().DirectoryGroupsID, intdoment.DirectoryGroupsSubGroupsRepository().SubGroupID, cteName)
+		authWhere = fmt.Sprintf("(%s) IN (SELECT %s FROM %s)", intdoment.MetadataModelsRepository().DirectoryGroupsID, intdoment.DirectoryGroupsSubGroupsRepository().SubGroupID, cteName)
 	}
 	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
 		ctx,
@@ -308,10 +308,10 @@ func (n *PostrgresRepository) RepoMetadataModelsUpdateOne(
 		iamAuthorizationRules,
 	); err == nil && iamAuthorizationRule != nil {
 		whereQuery := fmt.Sprintf("%s = '%s'", intdoment.MetadataModelsRepository().DirectoryGroupsID, authContextDirectoryGroupID.String())
-		if len(where) > 0 {
-			where += " OR " + whereQuery
+		if len(authWhere) > 0 {
+			authWhere += " OR " + whereQuery
 		} else {
-			where = whereQuery
+			authWhere = whereQuery
 		}
 	}
 	if iamAuthorizationRule, err := n.RepoIamGroupAuthorizationsGetAuthorized(
@@ -333,14 +333,14 @@ func (n *PostrgresRepository) RepoMetadataModelsUpdateOne(
 			whereQuery = fmt.Sprintf("%s = TRUE", intdoment.MetadataModelsRepository().EditUnauthorized)
 		}
 
-		if len(where) > 0 {
-			where += " OR " + whereQuery
+		if len(authWhere) > 0 {
+			authWhere += " OR " + whereQuery
 		} else {
-			where = whereQuery
+			authWhere = whereQuery
 		}
 	}
-	if len(where) == 0 {
-		where = fmt.Sprintf("%s = TRUE", intdoment.MetadataModelsRepository().EditUnauthorized)
+	if len(authWhere) == 0 {
+		authWhere = fmt.Sprintf("%s = TRUE", intdoment.MetadataModelsRepository().EditUnauthorized)
 	}
 
 	valuesToUpdate := make([]any, 0)
@@ -362,7 +362,7 @@ func (n *PostrgresRepository) RepoMetadataModelsUpdateOne(
 		intdoment.MetadataModelsRepository().ID,                //3
 		GetandUpdateNextPlaceholder(&nextPlaceholder),          //4
 		intdoment.MetadataModelsRepository().DeactivatedOn,     //5
-		where, //6
+		authWhere, //6
 	)
 	query = strings.TrimLeft(query, " \n")
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoMetadataModelsUpdateOne))

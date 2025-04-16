@@ -43,6 +43,7 @@ class Page extends LitElement {
 	@state() private _currentTab: Tab = Tab.INFORMATION
 
 	@state() private _data: any = {}
+	@state() private _displayName: string = ''
 
 	@state() private _windowWidth: number = window.innerWidth
 	private _handleWindowResize = (_: UIEvent) => {
@@ -59,6 +60,11 @@ class Page extends LitElement {
 			} else {
 				this._data = null
 			}
+
+			value = MetadataModel.DatabaseGetColumnFieldValue(this.data.metadata_model, Entities.DirectoryGroups.FieldColumn.DisplayName, this.data.metadata_model[MetadataModel.FgProperties.DATABASE_TABLE_COLLECTION_UID], this.data.datum)
+			if (Array.isArray(value)) {
+				this._displayName = structuredClone(value[0])
+			}
 		} else {
 			this._showCreateEdit = true
 		}
@@ -73,6 +79,7 @@ class Page extends LitElement {
 
 	private _resetFields() {
 		this._data = {}
+		this._displayName = ''
 	}
 
 	private _importedMMViewDatum = false
@@ -143,6 +150,10 @@ class Page extends LitElement {
 			data.data = [this._data]
 		}
 
+		if (!Json.AreValuesEqual([this._displayName], (this.data.datum as Entities.DirectoryGroups.Interface).display_name)) {
+			data.display_name = [this._displayName]
+		}
+
 		this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Updating ${Entities.DirectoryGroups.RepositoryName}` }, bubbles: true, composed: true }))
 		try {
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
@@ -196,6 +207,10 @@ class Page extends LitElement {
 			data: [this._data]
 		}
 
+		if (this._displayName.length > 0) {
+			data.display_name = [this._displayName]
+		}
+
 		this.dispatchEvent(new CustomEvent(Lib.CustomEvents.SHOW_LOADING_SCREEN, { detail: { loading: true, loadingMessage: `Creating new ${Entities.DirectoryGroups.RepositoryName}` }, bubbles: true, composed: true }))
 		try {
 			if (!this._appContext.GetCurrentdirectorygroupid()) {
@@ -236,7 +251,7 @@ class Page extends LitElement {
 		}
 	}
 
-	private async _handleDeleteMetadataModel() {
+	private async _handleDeleteDirectoryGroup() {
 		if (!this.data || !this.data.datum) {
 			return
 		}
@@ -306,97 +321,113 @@ class Page extends LitElement {
 					<section id="left-section" class="flex-1 flex flex-col rounded-md shadow-md shadow-gray-800 bg-white p-1 gap-y-1 overflow-hidden">
 						${(() => {
 							if (this._showCreateEdit) {
-								const edit = this.data && this.data.metadata_model && this.data.datum
-								return this._importMMDatumInputTask.render({
-									pending: () => this._pendingTaskHtmlTemplate(),
-									complete: () => html`
-										<metadata-model-datum-input
-											class="flex-[9]"
-											.metadatamodel=${this._datametadatamodel}
-											.data=${this._data}
-											@metadata-model-datum-input:updatedata=${(e: CustomEvent) => {
-												this._data = structuredClone(e.detail.value)
+								return html`
+									<div class="join join-vertical">
+										<span class="join-item join-label-primary p-1">Display Name</span>
+										<input
+											class="join-item input input-primary w-full"
+											type="text"
+											placeholder="Enter display name..."
+											.value=${this._displayName || ''}
+											@input=${(e: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+												this._displayName = e.currentTarget.value
 											}}
-											@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
-												this._datametadatamodel = structuredClone(e.detail.value)
-											}}
-										></metadata-model-datum-input>
-										<div class="join w-full">
-											<button
-												class="flex-[2] join-item btn btn-secondary flex flex-col justify-center"
-												@click=${() => {
-													if (edit) {
-														this._handleUpdateDirectoryGroup()
-													} else {
-														this._handleCreateDirectoryGroups()
-													}
-												}}
-											>
-												<!--mdi:edit source: https://icon-sets.iconify.design-->
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-													<path fill="${Theme.Color.SECONDARY_CONTENT}" d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" />
-												</svg>
-												${(() => {
-													if (this._windowWidth < 800) {
-														return nothing
-													}
-													return html`<div>${edit ? 'Edit' : 'Create'} Group Info</div>`
-												})()}
-											</button>
-											<button class="flex-1 join-item btn btn-secondary flex flex-col justify-center" @click=${this._resetFields}>
-												<div class="flex gap-x-1 self-center w-fit">
-													<!--mdi:edit source: https://icon-sets.iconify.design-->
-													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-														<path fill="${Theme.Color.SECONDARY_CONTENT}" d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" />
-													</svg>
-													<!--mdi:erase source: https://icon-sets.iconify.design-->
-													<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
-														<path fill="${Theme.Color.SECONDARY_CONTENT}" d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-3 12.59L17.59 17L14 13.41L10.41 17L9 15.59L12.59 12L9 8.41L10.41 7L14 10.59L17.59 7L19 8.41L15.41 12" />
-													</svg>
-												</div>
-												${(() => {
-													if (this._windowWidth < 800) {
-														return nothing
-													}
-													return html`<div>Reset Group Info</div>`
-												})()}
-											</button>
-											${(() => {
-												if (!this.data || !this.data.metadata_model || !this.data.datum) {
-													return nothing
-												}
-
-												return html`
-													<button class="flex-1 join-item btn btn-accent flex flex-col justify-center" @click=${() => (this._showCreateEdit = false)}>
+										/>
+									</div>
+									${(() => {
+										const edit = this.data && this.data.metadata_model && this.data.datum
+										return this._importMMDatumInputTask.render({
+											pending: () => this._pendingTaskHtmlTemplate(),
+											complete: () => html`
+												<metadata-model-datum-input
+													class="flex-[9]"
+													.metadatamodel=${this._datametadatamodel}
+													.data=${this._data}
+													@metadata-model-datum-input:updatedata=${(e: CustomEvent) => {
+														this._data = structuredClone(e.detail.value)
+													}}
+													@metadata-model-datum-input:updatemetadatamodel=${(e: CustomEvent) => {
+														this._datametadatamodel = structuredClone(e.detail.value)
+													}}
+												></metadata-model-datum-input>
+												<div class="join w-full">
+													<button
+														class="flex-[2] join-item btn btn-secondary flex flex-col justify-center"
+														@click=${() => {
+															if (edit) {
+																this._handleUpdateDirectoryGroup()
+															} else {
+																this._handleCreateDirectoryGroups()
+															}
+														}}
+													>
+														<!--mdi:edit source: https://icon-sets.iconify.design-->
+														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+															<path fill="${Theme.Color.SECONDARY_CONTENT}" d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" />
+														</svg>
+														${(() => {
+															if (this._windowWidth < 800) {
+																return nothing
+															}
+															return html`<div>${edit ? 'Edit' : 'Create'} Group Info</div>`
+														})()}
+													</button>
+													<button class="flex-1 join-item btn btn-secondary flex flex-col justify-center" @click=${this._resetFields}>
 														<div class="flex gap-x-1 self-center w-fit">
 															<!--mdi:edit source: https://icon-sets.iconify.design-->
 															<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-																<path fill="${Theme.Color.ACCENT_CONTENT}" d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" />
+																<path fill="${Theme.Color.SECONDARY_CONTENT}" d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" />
 															</svg>
-															<!--mdi:close-circle-outline source: https://icon-sets.iconify.design-->
+															<!--mdi:erase source: https://icon-sets.iconify.design-->
 															<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
-																<path
-																	fill="${Theme.Color.ACCENT_CONTENT}"
-																	d="M12 20c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8m0-18C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2m2.59 6L12 10.59L9.41 8L8 9.41L10.59 12L8 14.59L9.41 16L12 13.41L14.59 16L16 14.59L13.41 12L16 9.41z"
-																/>
+																<path fill="${Theme.Color.SECONDARY_CONTENT}" d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-3 12.59L17.59 17L14 13.41L10.41 17L9 15.59L12.59 12L9 8.41L10.41 7L14 10.59L17.59 7L19 8.41L15.41 12" />
 															</svg>
 														</div>
 														${(() => {
 															if (this._windowWidth < 800) {
 																return nothing
 															}
-															return html`<div>Close ${edit ? 'Edit' : 'Create'} Group Info</div>`
+															return html`<div>Reset Group Info</div>`
 														})()}
 													</button>
-												`
-											})()}
-										</div>
-									`,
-									error: (e) => {
-										console.error(e)
-										return this._errorTaskHtmlTemplate()
-									}
-								})
+													${(() => {
+														if (!this.data || !this.data.metadata_model || !this.data.datum) {
+															return nothing
+														}
+
+														return html`
+															<button class="flex-1 join-item btn btn-accent flex flex-col justify-center" @click=${() => (this._showCreateEdit = false)}>
+																<div class="flex gap-x-1 self-center w-fit">
+																	<!--mdi:edit source: https://icon-sets.iconify.design-->
+																	<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+																		<path fill="${Theme.Color.ACCENT_CONTENT}" d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z" />
+																	</svg>
+																	<!--mdi:close-circle-outline source: https://icon-sets.iconify.design-->
+																	<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
+																		<path
+																			fill="${Theme.Color.ACCENT_CONTENT}"
+																			d="M12 20c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8m0-18C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2m2.59 6L12 10.59L9.41 8L8 9.41L10.59 12L8 14.59L9.41 16L12 13.41L14.59 16L16 14.59L13.41 12L16 9.41z"
+																		/>
+																	</svg>
+																</div>
+																${(() => {
+																	if (this._windowWidth < 800) {
+																		return nothing
+																	}
+																	return html`<div>Close ${edit ? 'Edit' : 'Create'} Group Info</div>`
+																})()}
+															</button>
+														`
+													})()}
+												</div>
+											`,
+											error: (e) => {
+												console.error(e)
+												return this._errorTaskHtmlTemplate()
+											}
+										})
+									})()}
+								`
 							}
 
 							if (this.data && this.data.metadata_model && this.data.datum) {
@@ -423,7 +454,7 @@ class Page extends LitElement {
 															return html`<div>Edit Group Info</div>`
 														})()}
 													</button>
-													<button class="flex-1 join-item btn btn-secondary flex flex-col justify-center" @click=${this._handleDeleteMetadataModel}>
+													<button class="flex-1 join-item btn btn-secondary flex flex-col justify-center" @click=${this._handleDeleteDirectoryGroup}>
 														<!--mdi:delete source: https://icon-sets.iconify.design-->
 														<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="${Theme.Color.SECONDARY_CONTENT}" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" /></svg>
 														${(() => {

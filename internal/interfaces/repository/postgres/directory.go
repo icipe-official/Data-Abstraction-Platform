@@ -269,6 +269,7 @@ func (n *PostrgresRepository) RepoDirectoryValidateAndGetColumnsAndData(ctx cont
 		valuesQuery = append(valuesQuery, GetandUpdateNextPlaceholder(nextPlaceholder))
 	}
 
+	fullTextSearchValue := make([]string, 0)
 	if len(datum.Data) > 0 {
 		if dMap, ok := datum.Data[0].(map[string]any); ok {
 			columns = append(columns, intdoment.DirectoryRepository().Data)
@@ -291,14 +292,25 @@ func (n *PostrgresRepository) RepoDirectoryValidateAndGetColumnsAndData(ctx cont
 		}
 	}
 
+	if len(datum.DisplayName) > 0 {
+		columns = append(columns, intdoment.DirectoryRepository().DisplayName)
+		values = append(values, datum.DisplayName[0])
+		valuesQuery = append(valuesQuery, GetandUpdateNextPlaceholder(nextPlaceholder))
+		fullTextSearchValue = append(fullTextSearchValue, datum.DisplayName...)
+	}
+
 	if slices.Contains(columns, intdoment.DirectoryRepository().Data) {
 		if mm, err := fieldAnyMetadataModelGet.GetMetadataModel(ctx, intdoment.MetadataModelsDirectoryRepository().RepositoryName, "$", intdoment.MetadataModelsDirectoryRepository().RepositoryName, []any{directoryGroupID}); err == nil {
 			if value := MetadataModelExtractFullTextSearchValue(mm, datum.Data[0]); len(value) > 0 {
-				columns = append(columns, intdoment.DirectoryRepository().FullTextSearch)
-				values = append(values, strings.Join(value, " "))
-				valuesQuery = append(valuesQuery, fmt.Sprintf("to_tsvector(%s)", GetandUpdateNextPlaceholder(nextPlaceholder)))
+				fullTextSearchValue = append(fullTextSearchValue, value...)
 			}
 		}
+	}
+
+	if len(fullTextSearchValue) > 0 {
+		columns = append(columns, intdoment.DirectoryRepository().FullTextSearch)
+		values = append(values, strings.Join(fullTextSearchValue, " "))
+		valuesQuery = append(valuesQuery, fmt.Sprintf("to_tsvector(%s)", GetandUpdateNextPlaceholder(nextPlaceholder)))
 	}
 
 	return values, valuesQuery, columns
@@ -698,6 +710,11 @@ func (n *PostgresSelectQuery) DirectoryGetSelectQuery(ctx context.Context, metad
 			selectQuery.Where[intdoment.DirectoryRepository().DirectoryGroupsID] = value
 		}
 	}
+	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryRepository().DisplayName][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
+		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryRepository().DisplayName, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
+			selectQuery.Where[intdoment.DirectoryRepository().DisplayName] = value
+		}
+	}
 	if fgKeyString, ok := selectQuery.Columns.Fields[intdoment.DirectoryRepository().Data][intlibmmodel.FIELD_GROUP_PROP_FIELD_GROUP_KEY].(string); ok {
 		if value := n.getWhereCondition(quoteColumns, selectQuery.TableUid, "", intdoment.DirectoryRepository().Data, fgKeyString, PROCESS_QUERY_CONDITION_AS_SINGLE_VALUE, ""); len(value) > 0 {
 			selectQuery.Where[intdoment.DirectoryRepository().Data] = value
@@ -827,14 +844,16 @@ func (n *PostrgresRepository) RepoDirectoryInsertOneAndUpdateIamCredentials(ctx 
 	}
 
 	query = fmt.Sprintf(
-		"INSERT INTO %[1]s (%[2]s, %[3]s) VALUES ($1, $2) RETURNING %[4]s;",
+		"INSERT INTO %[1]s (%[2]s, %[3]s, %[4]s, %[5]s) VALUES ($1, $2, $3, to_tsvector($3)) RETURNING %[6]s;",
 		intdoment.DirectoryRepository().RepositoryName,    //1
 		intdoment.DirectoryRepository().DirectoryGroupsID, //2
 		intdoment.DirectoryRepository().Data,              //3
-		intdoment.DirectoryRepository().ID,                //4
+		intdoment.DirectoryRepository().DisplayName,       //4
+		intdoment.DirectoryRepository().FullTextSearch,    //5
+		intdoment.DirectoryRepository().ID,                //6
 	)
 	n.logger.Log(ctx, slog.LevelDebug, query, "function", intlib.FunctionName(n.RepoDirectoryInsertOneAndUpdateIamCredentials))
-	if err := n.db.QueryRow(ctx, query, systemGroup.ID[0], map[string]any{}).Scan(&id); err != nil {
+	if err := n.db.QueryRow(ctx, query, systemGroup.ID[0], map[string]any{}, iamCredential.OpenidUserInfo[0].OpenidPreferredUsername[0]).Scan(&id); err != nil {
 		return intlib.FunctionNameAndError(n.RepoDirectoryInsertOneAndUpdateIamCredentials, fmt.Errorf("insert %s failed, err: %v", intdoment.DirectoryRepository().RepositoryName, err))
 	}
 

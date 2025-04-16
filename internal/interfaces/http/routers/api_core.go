@@ -6,6 +6,8 @@ import (
 	inthttp "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http"
 	"github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/abstractions"
 	abstractionsdirectorygroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/abstractions/directory-groups"
+	abstractionsreviews "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/abstractions/reviews"
+	abstractionsreviewscomments "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/abstractions/reviews/comments"
 	"github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/directory"
 	directorygroups "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/directory/groups"
 	authorizationrules "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/http/routes/group/authorization-rules"
@@ -60,6 +62,10 @@ func InitApiCoreRouter(router *chi.Mux, webService *inthttp.WebService) {
 				storageRouter.Mount("/files", storagefiles.ApiCoreRouter(webService))
 			})
 			authedRouter.Route("/abstractions", func(abstractionsRouter chi.Router) {
+				abstractionsRouter.Route("/reviews", func(reviewsRouter chi.Router) {
+					reviewsRouter.Mount("/comments", abstractionsreviewscomments.ApiCoreRouter(webService))
+					reviewsRouter.Mount("/", abstractionsreviews.ApiCoreRouter(webService))
+				})
 				abstractionsRouter.Mount("/directory-groups", abstractionsdirectorygroups.ApiCoreRouter(webService))
 				abstractionsRouter.Mount("/", abstractions.ApiCoreRouter(webService))
 			})

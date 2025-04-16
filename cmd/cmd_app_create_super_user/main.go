@@ -5,6 +5,7 @@ import (
 	"log"
 
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
+	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 	intcmdappcreatesuperuser "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/cmd_app_create_super_user"
 	intrepopostgres "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/repository/postgres"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
@@ -20,7 +21,7 @@ func main() {
 		log.Fatal("ERROR: Failed to establish repository connection, error: ", err)
 	}
 
-	service := intcmdappcreatesuperuser.NewCmdCreateSuperUserService(repository, logger)
+	var service intdomint.CreateSuperUserService = intcmdappcreatesuperuser.NewCmdCreateSuperUserService(repository, logger)
 
 	var iamCredential *intdoment.IamCredentials
 	for {

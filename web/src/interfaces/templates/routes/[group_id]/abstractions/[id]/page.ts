@@ -430,6 +430,8 @@ class Page extends LitElement {
 
 	@state() private _expandRightSection: boolean = false
 
+	
+
 	protected render(): unknown {
 		return html`
 			${(() => {

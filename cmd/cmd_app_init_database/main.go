@@ -5,6 +5,7 @@ import (
 	"log"
 
 	intdoment "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/entities"
+	intdomint "github.com/icipe-official/Data-Abstraction-Platform/internal/domain/interfaces"
 	intcmdappinitdatabase "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/cmd_app_init_database"
 	intrepopostgres "github.com/icipe-official/Data-Abstraction-Platform/internal/interfaces/repository/postgres"
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
@@ -19,7 +20,7 @@ func main() {
 		log.Fatal("ERROR: Failed to establish repository connection, error: ", err)
 	}
 
-	service := intcmdappinitdatabase.NewCmdInitDatabaseService(repository, logger)
+	var service intdomint.InitDatabaseService = intcmdappinitdatabase.NewCmdInitDatabaseService(repository, logger)
 
 	successfulUpserts, err := service.ServiceGroupAuthorizationRulesCreate(ctx)
 	if err != nil {
