@@ -1,1 +1,0 @@
-import '@lib/components/iam/group-authorizations/component'

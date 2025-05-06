@@ -1,1 +1,0 @@
-import '@lib/components/metadata-models-directory/groups/component'
