@@ -4,6 +4,7 @@ namespace _Abstractions {
 		AbstractionsDirectoryGroupsID = 'abstractions_directory_groups_id',
 		DirectoryID = 'directory_id',
 		StorageFilesID = 'storage_files_id',
+		Completed = 'completed',
 		ReviewPass = 'review_pass',
 		Tags = 'tags',
 		Data = 'data',
@@ -21,6 +22,7 @@ namespace _Abstractions {
 		metadata_models_id?: string[]
 		directory_id?: string[]
 		storage_files_id?: string[]
+		completed?: boolean[]
 		review_pass?: boolean[]
 		tags?: string[]
 		data?: any[]

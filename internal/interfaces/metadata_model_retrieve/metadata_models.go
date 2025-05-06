@@ -15,7 +15,7 @@ func (n *MetadataModelRetrieve) MetadataModelsGetMetadataModel(ctx context.Conte
 		return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)
 	}

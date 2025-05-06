@@ -1,7 +1,5 @@
 package entities
 
-import "github.com/gofrs/uuid/v5"
-
 const (
 	OPENID_GRANT_TYPE_AUTHORIZATION_CODE string = "authorization_code"
 	OPENID_GRANT_TYPE_REFRESH_TOKEN      string = "refresh_token"
@@ -46,13 +44,13 @@ type OpenIDToken struct {
 }
 
 type OpenIDUserInfo struct {
-	Sub               uuid.UUID `json:"sub,omitempty"`
-	EmailVerified     bool      `json:"email_verified,omitempty"`
-	Name              string    `json:"name,omitempty"`
-	PreferredUsername string    `json:"preferred_username,omitempty"`
-	GivenName         string    `json:"given_name,omitempty"`
-	FamilyName        string    `json:"family_name,omitempty"`
-	Email             string    `json:"email,omitempty"`
+	Sub               string `json:"sub,omitempty"`
+	EmailVerified     bool   `json:"email_verified,omitempty"`
+	Name              string `json:"name,omitempty"`
+	PreferredUsername string `json:"preferred_username,omitempty"`
+	GivenName         string `json:"given_name,omitempty"`
+	FamilyName        string `json:"family_name,omitempty"`
+	Email             string `json:"email,omitempty"`
 }
 
 func (n *OpenIDUserInfo) IsFamilyNameValid() bool {
@@ -64,7 +62,7 @@ func (n *OpenIDUserInfo) IsGivenNameValid() bool {
 }
 
 func (n *OpenIDUserInfo) IsSubValid() bool {
-	return !n.Sub.IsNil()
+	return len(n.Sub) > 0
 }
 
 func (n *OpenIDUserInfo) IsPreferredUsernameValid() bool {

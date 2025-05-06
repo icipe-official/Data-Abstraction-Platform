@@ -81,6 +81,22 @@ class Component extends LitElement {
 
 	private _pageNavigation: ISpaPageNavigation
 
+	private async _handlePageNavigationToGroup(directoryGroupID: string) {
+		const url = new URL(Url.WebsitePaths.Home, window.location.origin)
+		url.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, directoryGroupID)
+		const targetElement = document.querySelector(`#${import.meta.env.VITE_LAYOUT_ROUTES}`)
+		if (targetElement !== null) {
+			try {
+				await this._pageNavigation.Navigate(targetElement, url, 'Home')
+			} catch (e) {
+				console.error('page navigation failed', e)
+				this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: 'page navigation failed' }, bubbles: true, composed: true }))
+			}
+		}
+	}
+
+	@state() private _pickDirectoryGroup: boolean = false
+
 	protected render(): unknown {
 		return html`
 			<header class="flex-[0.5] flex">
@@ -113,53 +129,78 @@ class Component extends LitElement {
 											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="m17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5M4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4z" /></svg>
 										</button>
 									</header>
-									${this._getDirectoryGroupsTask.render({
-										pending: () => html`
-											<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
-												<div class="flex">
-													<span class="loading loading-ball loading-sm text-accent"></span>
-													<span class="loading loading-ball loading-md text-secondary"></span>
-													<span class="loading loading-ball loading-lg text-primary"></span>
-												</div>
-											</div>
-										`,
-										complete: () => html`
-											<div class="flex flex-col">
-												<header class="sticky top-0 z-[2] italic text-sm">Choose a directory group to launch...</header>
-												<div class="border-[1px] border-gray-400 h-fit max-h-full max-w-full flex overflow-hidden rounded-md">
-													<metadata-model-view-table
-														.metadatamodel=${this._directoryGroupsSearchController?.searchmetadatamodel}
-														.data=${this._directoryGroupsSearchController?.searchresults.data!}
-														.getmetadatamodel=${this._fieldAnyMetadataModels}
-														@metadata-model-view-table:rowclick=${async (e: CustomEvent) => {
-															const directoryGroup = e.detail.value as Entities.DirectoryGroups.Interface
-															if (Array.isArray(directoryGroup.id) && directoryGroup.id.length == 1) {
-																const url = new URL(Url.WebsitePaths.Home, window.location.origin)
-																url.searchParams.append(Url.SearchParams.DIRECTORY_GROUP_ID, directoryGroup.id![0])
-																const targetElement = document.querySelector(`#${import.meta.env.VITE_LAYOUT_ROUTES}`)
-																if (targetElement !== null) {
-																	try {
-																		await this._pageNavigation.Navigate(targetElement, url, 'Home')
-																	} catch (e) {
-																		console.error('page navigation failed', e)
-																		this.dispatchEvent(new CustomEvent(Lib.CustomEvents.TOAST_NOTIFY, { detail: { toastType: Lib.ToastType.ERROR, toastMessage: 'page navigation failed' }, bubbles: true, composed: true }))
-																	}
-																}
-															}
-														}}
-													></metadata-model-view-table>
-												</div>
-											</div>
-										`,
-										error: (e) => {
-											console.error(e)
+									${(() => {
+										if (this._pickDirectoryGroup) {
 											return html`
-												<div class="flex-1 flex flex-col justify-center items-center">
-													<span class="w-fit text-error font-bold">Error: Could not get directory groups.</span>
-												</div>
+												${this._getDirectoryGroupsTask.render({
+													pending: () => html`
+														<div class="flex-1 flex flex-col justify-center items-center text-xl gap-y-5">
+															<div class="flex">
+																<span class="loading loading-ball loading-sm text-accent"></span>
+																<span class="loading loading-ball loading-md text-secondary"></span>
+																<span class="loading loading-ball loading-lg text-primary"></span>
+															</div>
+														</div>
+													`,
+													complete: () => html`
+														<div class="flex flex-col">
+															<header class="sticky top-0 z-[2] italic text-sm">Choose a directory group to launch...</header>
+															<div class="border-[1px] border-gray-400 h-fit max-h-full max-w-full flex overflow-hidden rounded-md">
+																<metadata-model-view-table
+																	.metadatamodel=${this._directoryGroupsSearchController?.searchmetadatamodel}
+																	.data=${this._directoryGroupsSearchController?.searchresults.data!}
+																	.getmetadatamodel=${this._fieldAnyMetadataModels}
+																	@metadata-model-view-table:rowclick=${async (e: CustomEvent) => {
+																		const directoryGroup = e.detail.value as Entities.DirectoryGroups.Interface
+																		if (Array.isArray(directoryGroup.id) && directoryGroup.id.length == 1) {
+																			await this._handlePageNavigationToGroup(directoryGroup.id![0])
+																		}
+																	}}
+																></metadata-model-view-table>
+															</div>
+														</div>
+													`,
+													error: (e) => {
+														console.error(e)
+														return html`
+															<div class="flex-1 flex flex-col justify-center items-center">
+																<span class="w-fit text-error font-bold">Error: Could not get directory groups that could be launched. Please contact your administrator.</span>
+															</div>
+														`
+													}
+												})}
 											`
 										}
-									})}
+
+										return html`
+											<main class="join flex-1">
+												${(() => {
+													if (this._appContext.appcontext.iamdirectorygroupid) {
+														return html`
+															<button
+																class="flex-1 join-item btn btn-primary"
+																@click=${() => {
+																	this._handlePageNavigationToGroup(this._appContext.appcontext!.iamdirectorygroupid!)
+																}}
+															>
+																Launch Default Group
+															</button>
+														`
+													}
+
+													return nothing
+												})()}
+												<button
+													class="flex-1 join-item btn btn-primary"
+													@click=${() => {
+														this._pickDirectoryGroup = true
+													}}
+												>
+													Pick Group To Launch
+												</button>
+											</main>
+										`
+									})()}
 								`
 							}
 							return html`

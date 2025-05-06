@@ -48,6 +48,34 @@ namespace Lib {
 	export const LocalDateFromString = (value: string) => new Date(value).toLocaleDateString()
 
 	export const LocalTimeFromString = (value: string) => new Date(value).toLocaleTimeString()
+
+	export const TABLE_COLLECTION_UID_REGEX = /^\_([0-9]+)\_([0-9a-zA-Z\_]+)\_([a-zA-Z0-9]+)$/
+
+	export interface TableCollectionUID {
+		join_depth: number
+		table_name: string
+		uid: string
+	}
+
+	export function StringToTableCollectionUid(tcuid: string) {
+		const tableRegex = TABLE_COLLECTION_UID_REGEX.exec(tcuid)
+
+		if (tableRegex && tableRegex.length === 4) {
+			if (!Number.isNaN(tableRegex[1])) {
+				return {
+					join_depth: Number(tableRegex[1]),
+					table_name: tableRegex[2],
+					uid: tableRegex[3]
+				} as TableCollectionUID
+			}
+		}
+
+		return undefined
+	}
+
+	export function TableCollectionUIDToString(tcuid: TableCollectionUID) {
+		return `_${tcuid.join_depth}_${tcuid.table_name}_${tcuid.uid}`
+	}
 }
 
 export default Lib

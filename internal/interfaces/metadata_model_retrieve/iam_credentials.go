@@ -39,7 +39,7 @@ func (n *MetadataModelRetrieve) IamCredentialsGetMetadataModel(ctx context.Conte
 		return nil, intlib.FunctionNameAndError(n.IamCredentialsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.IamCredentialsGetMetadataModel, err)
 	}

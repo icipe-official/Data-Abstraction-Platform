@@ -70,7 +70,7 @@ func (n *service) ServiceStorageDrivesTypesSearch(
 }
 
 func (n *service) ServiceStorageDrivesTypesGetMetadataModel(ctx context.Context, metadataModelRetrieve intdomint.MetadataModelRetrieve) (map[string]any, error) {
-	if value, err := metadataModelRetrieve.StorageDrivesTypesGetMetadataModel(ctx); err != nil {
+	if value, err := metadataModelRetrieve.StorageDrivesTypesGetMetadataModel(ctx, 0); err != nil {
 		n.logger.Log(ctx, slog.LevelWarn+1, intlib.FunctionNameAndError(n.ServiceStorageDrivesTypesGetMetadataModel, err).Error())
 		return nil, intlib.NewError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	} else {

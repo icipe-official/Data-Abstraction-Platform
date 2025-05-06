@@ -8,7 +8,7 @@ import (
 	intlib "github.com/icipe-official/Data-Abstraction-Platform/internal/lib"
 )
 
-func (n *MetadataModelRetrieve) StorageDrivesTypesGetMetadataModel(ctx context.Context) (map[string]any, error) {
+func (n *MetadataModelRetrieve) StorageDrivesTypesGetMetadataModel(ctx context.Context, currentJoinDepth int) (map[string]any, error) {
 	if iamAuthorizationRule, err := n.repo.RepoIamGroupAuthorizationsGetAuthorized(
 		ctx,
 		n.iamCredential,
@@ -29,7 +29,7 @@ func (n *MetadataModelRetrieve) StorageDrivesTypesGetMetadataModel(ctx context.C
 		return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)
 	}

@@ -6,6 +6,7 @@ CREATE TABLE public.abstractions
     directory_id uuid NOT NULL,
     storage_files_id uuid NOT NULL,
     data jsonb,
+    completed boolean NOT NULL DEFAULT FALSE,
     review_pass boolean NOT NULL DEFAULT FALSE,
     tags text[],
     created_on timestamp without time zone NOT NULL DEFAULT NOW(),
@@ -38,7 +39,7 @@ COMMENT ON TABLE public.abstractions
 
 -- abstractions trigger to update last_updated_on column
 CREATE TRIGGER abstractions_update_last_updated_on
-    BEFORE UPDATE OF directory_id, storage_files_id, tags, data, review_pass
+    BEFORE UPDATE OF directory_id, storage_files_id, tags, data, completed, review_pass
     ON public.abstractions
     FOR EACH ROW
     EXECUTE FUNCTION public.update_last_updated_on();

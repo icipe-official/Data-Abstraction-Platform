@@ -142,8 +142,8 @@ func (n *MetadataModelRetrieve) MetadataModelInsertChildIntoParent(
 	return parentMetadataModel, nil
 }
 
-func (n *MetadataModelRetrieve) SetTableCollectionUidForMetadataModel(metadataModel map[string]any) (map[string]any, error) {
-	newTableCollectionUid := "_" + intlib.GenRandomString(6, false)
+func (n *MetadataModelRetrieve) SetTableCollectionUidForMetadataModel(metadataModel map[string]any, currentJoiDepth int) (map[string]any, error) {
+	newTableCollectionUid := fmt.Sprintf("_%d_%s_%s", currentJoiDepth, metadataModel[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID], intlib.GenRandomString(6, false))
 	metadataModel[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID] = newTableCollectionUid
 	if value, ok := intlibmmodel.MapFieldGroups(metadataModel, func(property map[string]any) any {
 		property[intlibmmodel.FIELD_GROUP_PROP_DATABASE_TABLE_COLLECTION_UID] = newTableCollectionUid
@@ -192,7 +192,7 @@ func (n *MetadataModelRetrieve) DefaultAuthorizationIDsGetMetadataModel(
 		return nil, intlib.FunctionNameAndError(n.DefaultAuthorizationIDsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.DefaultAuthorizationIDsGetMetadataModel, err)
 	}

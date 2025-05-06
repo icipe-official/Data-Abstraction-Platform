@@ -31,7 +31,7 @@ func (n *MetadataModelRetrieve) DirectoryGroupsGetMetadataModel(ctx context.Cont
 		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.DirectoryGroupsGetMetadataModel, err)
 	}

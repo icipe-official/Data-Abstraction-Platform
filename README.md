@@ -1,4 +1,5 @@
 # Data Administration Platform
+
 A web based platform with the goal of giving people the ability to prepare, collect, and explore data.
 
 Key components are the [website](web/README.md) and the [backend](BACKEND.md).
@@ -19,6 +20,7 @@ Recommended development and production OS environment is Linux.
 
 4. [go](https://go.dev/dl/) version 1.22.1 or above.
 5. [Node](https://nodejs.org/en) version 20 or above.
+6. OpenID provider
 
 ### Optional
 
@@ -26,6 +28,8 @@ Recommended development and production OS environment is Linux.
 2. Bruno - tool for api testing. Can be found [here](https://www.usebruno.com/downloads).
 
 ## Platform Version 1
+
 ### Add submodules for V1
+
 1. git submodule init
 2. git submodule update

@@ -35,7 +35,7 @@ func (n *MetadataModelRetrieve) AbstractionsDirectoryGroupsGetMetadataModel(ctx 
 		return nil, intlib.FunctionNameAndError(n.AbstractionsDirectoryGroupsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.AbstractionsDirectoryGroupsGetMetadataModel, err)
 	}

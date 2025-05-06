@@ -11,6 +11,7 @@ type Abstractions struct {
 	AbstractionsDirectoryGroupsID []uuid.UUID `json:"abstractions_directory_groups_id,omitempty"`
 	DirectoryID                   []uuid.UUID `json:"directory_id,omitempty"`
 	StorageFilesID                []uuid.UUID `json:"storage_files_id,omitempty"`
+	Completed                     []bool      `json:"completed,omitempty"`
 	ReviewPass                    []bool      `json:"review_pass,omitempty"`
 	Tags                          []string    `json:"tags,omitempty"`
 	Data                          []any       `json:"data,omitempty"`
@@ -26,6 +27,7 @@ type abstractionsRepository struct {
 	AbstractionsDirectoryGroupsID string
 	DirectoryID                   string
 	StorageFilesID                string
+	Completed                     string
 	ReviewPass                    string
 	Tags                          string
 	Data                          string
@@ -45,6 +47,7 @@ func AbstractionsRepository() abstractionsRepository {
 		StorageFilesID:                "storage_files_id",
 		Data:                          "data",
 		Tags:                          "tags",
+		Completed:                     "completed",
 		ReviewPass:                    "review_pass",
 		CreatedOn:                     "created_on",
 		LastUpdatedOn:                 "last_updated_on",

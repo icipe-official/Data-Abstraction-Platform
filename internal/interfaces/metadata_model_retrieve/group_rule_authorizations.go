@@ -35,7 +35,7 @@ func (n *MetadataModelRetrieve) GroupRuleAuthorizationsGetMetadataModel(ctx cont
 		return nil, intlib.FunctionNameAndError(n.GroupRuleAuthorizationsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.GroupRuleAuthorizationsGetMetadataModel, err)
 	}
@@ -71,7 +71,7 @@ func (n *MetadataModelRetrieve) GroupRuleAuthorizationsGetMetadataModel(ctx cont
 
 		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.GroupRuleAuthorizationsRepository().RepositoryName, intdoment.GroupAuthorizationRulesRepository().RepositoryName)]; !ok || !skipMMJoin {
 			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.GroupRuleAuthorizationsRepository().RepositoryName, intdoment.GroupAuthorizationRulesRepository().RepositoryName)
-			if childMetadataModel, err := n.GroupAuthorizationRulesGetMetadataModel(ctx); err != nil {
+			if childMetadataModel, err := n.GroupAuthorizationRulesGetMetadataModel(ctx, currentJoinDepth+1); err != nil {
 				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.GroupRuleAuthorizationsGetMetadataModel))
 			} else {
 				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(

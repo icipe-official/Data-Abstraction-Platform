@@ -22,7 +22,7 @@ Applications ran will highlight the different environment variables required if 
 - `VITE_WEB_SERVICE_API_CORE_URL`: Full URL to the api portion of the backend. E.g. `http://localhost:5173/api`.
 
 - `PSQL_DATABASE_URI`: Postgres connection string. E.g. `postgres://postgres:password@localhost:5432/example_database?sslmode=disable`. Refer to the article [here](https://www.prisma.io/dataguide/postgresql/
-short-guides/connection-uris) on how to create a postgres connection string.
+  short-guides/connection-uris) on how to create a postgres connection string.
 - `PSQL_DATABASE_MIGRATION_SCRIPTS_DIRECTORY`: Defaults to [`database/psql_database_migrations_scripts`](database/psql_database_migrations_scripts). Directory where postgresql migration scripts are stored.
 
 - `MAIL_HOST`
@@ -32,6 +32,7 @@ short-guides/connection-uris) on how to create a postgres connection string.
 
 - `IAM_ENCRYPTION_KEY`: Secret key used to encrypt the access and refresh tokens. Key MUST be 16, 24, or 32 characters in length ONLY. You can use [openssl](#miscellaneous).
 - `IAM_ENCRYPT_TOKENS`: Defaults to `true`. Set to `false` if openid provider already encrypts the token.
+- `IAM_COOKIE_NAME`: Defaults to `dap`.
 - `IAM_COOKIE_HTTP_ONLY`: Defaults to `true`.
 - `IAM_COOKIE_SAME_SITE`: Defaults to `3`. 1 for `SameSiteDefaultMode`, 2 for `SameSiteLaxMode`, 3 for `SameSiteStrictMode` (preferred), 4 for `SameSiteNoneMode`.
 - `IAM_COOKIE_SECURE`: Defaults to `true`. Set to `false` for development.
@@ -44,6 +45,14 @@ short-guides/connection-uris) on how to create a postgres connection string.
 - `LOG_APP_VERSION`: Version of the deployed applications.
 
 - `WEBSITE_DIRECTORY`: Defaults to `dist/` folder under [`web`](web/). Folder `dist/` is generated after building the website or running it in dev mode. More information [here](web/README.md).
+
+- `WEBSITE_BASE_URL`: used in openid configuration. Example:`http://0.0.0.0:5173`.
+- `OPENID_CONFIGURATION_ENDPOINT`: Platform will fetch the configuration and check if it can be used as an openid provider. Example: `http://10.88.0.200:8080/realms/dap/.well-known/openid-configuration`. Example OpenID config setup using keycloak [here](/api_sample_responses/openid_configuration.json)
+- `OPENID_USER_REGISTRATION_ENDPOINT`: Optional. Link to registration page. Will add button `register` in home page if available. Example: `http://10.88.0.200:8080/realms/dap/protocol/openid-connect/registrations?scope=openid&response_type=code&client_id=dap&redirect_uri=http://0.0.0.0:5173/redirect/login`.
+- `OPENID_ACCOUNT_MANAGEMENT_ENDPOINT`: Optional. Link to user management from the openid provider's perspective. Example: `http://10.88.0.200:8080/realms/dap/account/`.
+- `OPENID_CLIENT_ID`
+- `OPENID_CLIENT_SECRET`
+
 ## Development
 
 Setup the [website](web/README.md) in [development mode](web/README.md#development) to access the website via a browser.
@@ -57,6 +66,7 @@ go mod tidy
 ```
 
 ## Running the backend
+
 1. Run the database migrations.
 2. Initialize the database.
 3. Create a super user (first time).
@@ -148,6 +158,7 @@ bin/cmd_app_create_super_user
 ```
 
 ## Build keycloak image
+
 Setup keycloak as an OpenID provider if no external provider is available.
 
 NB. Ensure postgres instance exists and is set up.
@@ -155,10 +166,11 @@ NB. Ensure postgres instance exists and is set up.
 Create your own `Dockerfile.keycloak` based on the [`Dockerfile.keycloak.template`](build/Dockerfile.keycloak.template) and edit the `ENV` values appropriately.
 
 Build the container image
+
 ```sh
 # Replace with appropriate values
-$CONTAINER_IMAGE_TAG=latest # Defaults to latest
-$CONTAINER_CLI=podman # Defaults to docker
+CONTAINER_IMAGE_TAG=latest # Defaults to latest
+CONTAINER_CLI=podman # Defaults to docker
 
 bash scripts/build_keycloak_image.sh -t $CONTAINER_IMAGE_TAG -c $CONTAINER_CLI
 ```

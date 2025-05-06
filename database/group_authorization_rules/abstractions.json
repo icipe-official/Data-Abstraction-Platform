@@ -243,6 +243,36 @@
         "group_authorization_rules_id": [
             {
                 "id": [
+                    "update_directory"
+                ],
+                "rule_group": [
+                    "abstractions"
+                ]
+            }
+        ],
+        "description": [
+            "update abstractions' directory_id (owner id) in current directory-group."
+        ]
+    },
+    {
+        "group_authorization_rules_id": [
+            {
+                "id": [
+                    "assign_update_directory"
+                ],
+                "rule_group": [
+                    "abstractions"
+                ]
+            }
+        ],
+        "description": [
+            "allow other users to assign rule 'update_directory' to other users."
+        ]
+    },
+    {
+        "group_authorization_rules_id": [
+            {
+                "id": [
                     "delete_self"
                 ],
                 "rule_group": [

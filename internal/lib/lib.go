@@ -221,3 +221,31 @@ func JsonStringifyMust(value any) any {
 
 	return value
 }
+
+func TableCollectionUidRegex() *regexp.Regexp {
+	return regexp.MustCompile(`^\_([0-9]+)\_([0-9a-zA-Z\_]+)\_([a-zA-Z0-9]+)$`)
+}
+
+type TableCollectionUID struct {
+	JoinDepth int
+	TableName string
+	Uid       string
+}
+
+func GetTableCollectionUid(tcuid string) *TableCollectionUID {
+	tableRegex := TableCollectionUidRegex().FindStringSubmatch(tcuid)
+
+	if len(tableRegex) == 4 {
+		if joinDepth, err := strconv.Atoi(tableRegex[1]); err == nil {
+			n := new(TableCollectionUID)
+
+			n.JoinDepth = joinDepth
+			n.TableName = tableRegex[2]
+			n.Uid = tableRegex[3]
+
+			return n
+		}
+	}
+
+	return nil
+}

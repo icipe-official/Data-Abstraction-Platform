@@ -31,7 +31,7 @@ func (n *MetadataModelRetrieve) StorageDrivesGetMetadataModel(ctx context.Contex
 		return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.MetadataModelsGetMetadataModel, err)
 	}
@@ -43,7 +43,7 @@ func (n *MetadataModelRetrieve) StorageDrivesGetMetadataModel(ctx context.Contex
 
 		if skipMMJoin, ok := skipJoin[intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().StorageDrivesTypesID, intdoment.StorageDrivesTypesRepository().RepositoryName)]; !ok || !skipMMJoin {
 			newChildMetadataModelfgSuffix := intlib.MetadataModelGenJoinKey(intdoment.StorageDrivesRepository().StorageDrivesTypesID, intdoment.StorageDrivesTypesRepository().RepositoryName)
-			if childMetadataModel, err := n.StorageDrivesTypesGetMetadataModel(ctx); err != nil {
+			if childMetadataModel, err := n.StorageDrivesTypesGetMetadataModel(ctx, currentJoinDepth+1); err != nil {
 				n.logger.Log(ctx, slog.LevelWarn, fmt.Sprintf("setup %s failed, err: %v", newChildMetadataModelfgSuffix, err), "function", intlib.FunctionName(n.MetadataModelsGetMetadataModel))
 			} else {
 				parentMetadataModel, err = n.MetadataModelInsertChildIntoParent(

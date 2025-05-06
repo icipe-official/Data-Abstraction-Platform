@@ -15,7 +15,7 @@ func (n *MetadataModelRetrieve) StorageFilesGetMetadataModel(ctx context.Context
 		return nil, intlib.FunctionNameAndError(n.StorageFilesGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.StorageFilesGetMetadataModel, err)
 	}

@@ -10,12 +10,12 @@ type IamCredentials struct {
 	ID             []uuid.UUID `json:"id,omitempty"`
 	DirectoryID    []uuid.UUID `json:"directory_id,omitempty"`
 	OpenidUserInfo []struct {
-		OpenidSub               []uuid.UUID `json:"openid_sub,omitempty"`
-		OpenidPreferredUsername []string    `json:"openid_preferred_username,omitempty"`
-		OpenidEmail             []string    `json:"openid_email,omitempty"`
-		OpenidEmailVerified     []bool      `json:"openid_email_verified,omitempty"`
-		OpenidGivenName         []string    `json:"openid_given_name,omitempty"`
-		OpenidFamilyName        []string    `json:"openid_family_name,omitempty"`
+		OpenidSub               []string `json:"openid_sub,omitempty"`
+		OpenidPreferredUsername []string `json:"openid_preferred_username,omitempty"`
+		OpenidEmail             []string `json:"openid_email,omitempty"`
+		OpenidEmailVerified     []bool   `json:"openid_email_verified,omitempty"`
+		OpenidGivenName         []string `json:"openid_given_name,omitempty"`
+		OpenidFamilyName        []string `json:"openid_family_name,omitempty"`
 	} `json:"openid_user_info,omitempty"`
 	CreatedOn     []time.Time `json:"created_on,omitempty"`
 	LastUpdatedOn []time.Time `json:"last_updated_on,omitempty"`

@@ -31,7 +31,7 @@ func (n *MetadataModelRetrieve) AbstractionsReviewsCommentsGetMetadataModel(ctx 
 		return nil, intlib.FunctionNameAndError(n.AbstractionsReviewsCommentsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.AbstractionsReviewsCommentsGetMetadataModel, err)
 	}

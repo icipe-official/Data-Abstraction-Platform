@@ -39,7 +39,7 @@ func (n *MetadataModelRetrieve) IamGroupAuthorizationsGetMetadataModel(ctx conte
 		return nil, intlib.FunctionNameAndError(n.IamGroupAuthorizationsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.IamGroupAuthorizationsGetMetadataModel, err)
 	}

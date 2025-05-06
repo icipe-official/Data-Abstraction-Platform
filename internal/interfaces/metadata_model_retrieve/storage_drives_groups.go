@@ -35,7 +35,7 @@ func (n *MetadataModelRetrieve) StorageDrivesGroupsGetMetadataModel(ctx context.
 		return nil, intlib.FunctionNameAndError(n.StorageDrivesGroupsGetMetadataModel, err)
 	}
 
-	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel)
+	parentMetadataModel, err = n.SetTableCollectionUidForMetadataModel(parentMetadataModel, currentJoinDepth)
 	if err != nil {
 		return nil, intlib.FunctionNameAndError(n.StorageDrivesGroupsGetMetadataModel, err)
 	}
