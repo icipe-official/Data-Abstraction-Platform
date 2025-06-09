@@ -1,0 +1,42 @@
+{
+    "exp": 1748347290,
+    "iat": 1748346990,
+    "jti": "f519d7c1-50bc-4ee5-9fa3-47836b941cce",
+    "iss": "http://10.88.0.200:8080/realms/dap",
+    "aud": "account",
+    "sub": "d55f288e-9450-4515-8f25-a3662ed2e3b5",
+    "typ": "Bearer",
+    "azp": "dap",
+    "sid": "66f5fcb1-e5f3-4157-819d-c09de4a1e376",
+    "acr": "1",
+    "allowed-origins": [
+        "*"
+    ],
+    "realm_access": {
+        "roles": [
+            "offline_access",
+            "uma_authorization",
+            "default-roles-dap"
+        ]
+    },
+    "resource_access": {
+        "account": {
+            "roles": [
+                "manage-account",
+                "manage-account-links",
+                "view-profile"
+            ]
+        }
+    },
+    "scope": "openid email profile",
+    "email_verified": true,
+    "name": "Dap User",
+    "preferred_username": "dapuser",
+    "given_name": "Dap",
+    "family_name": "User",
+    "email": "dapuser@email.com",
+    "client_id": "dap",
+    "username": "dapuser",
+    "token_type": "Bearer",
+    "active": true
+}

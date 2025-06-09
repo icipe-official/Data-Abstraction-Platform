@@ -1,0 +1,55 @@
+<mxfile host="65bd71144e">
+    <diagram id="4H_mt_X3cBq1uDmcQm96" name="System Architecture">
+        <mxGraphModel dx="999" dy="827" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="20" value="" style="group" parent="1" vertex="1" connectable="0">
+                    <mxGeometry x="120" y="160" width="440" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="Presentation Layer" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;" parent="20" vertex="1">
+                    <mxGeometry width="440.00000000000006" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="Website" style="rounded=1;whiteSpace=wrap;html=1;" parent="20" vertex="1">
+                    <mxGeometry x="172.85714285714286" y="20" width="188.57142857142858" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="" style="group" parent="1" vertex="1" connectable="0">
+                    <mxGeometry x="120" y="280" width="440" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Business Layer" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;" parent="22" vertex="1">
+                    <mxGeometry width="440.00000000000006" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="Web Service" style="rounded=1;whiteSpace=wrap;html=1;" parent="22" vertex="1">
+                    <mxGeometry x="280" y="20" width="105.4" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="IAM Service" style="rounded=1;whiteSpace=wrap;html=1;" parent="22" vertex="1">
+                    <mxGeometry x="110" y="20" width="105.4" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="" style="group" parent="1" vertex="1" connectable="0">
+                    <mxGeometry x="120" y="400" width="440" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="Database Layer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;" parent="23" vertex="1">
+                    <mxGeometry width="440.00000000000006" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="Main Database" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="23" vertex="1">
+                    <mxGeometry x="290" y="6.66" width="83.33" height="106.67" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="Simple Storage Service (s3)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="23" vertex="1">
+                    <mxGeometry x="140" y="6.66" width="90" height="106.67" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" style="edgeStyle=none;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" parent="1" source="2" target="3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" style="edgeStyle=none;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" parent="1" source="3" target="19" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" style="edgeStyle=none;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" parent="1" source="19" target="3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" style="edgeStyle=none;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" parent="1" source="3" target="2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

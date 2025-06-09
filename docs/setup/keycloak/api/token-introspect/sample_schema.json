@@ -1,0 +1,14 @@
+{
+    "url": "http://10.88.0.200:8080/realms/dap/protocol/openid-connect/token/introspect",
+    "raw_url": "http://10.88.0.200:8080/realms/dap/protocol/openid-connect/token/introspect",
+    "method": "post",
+    "headers": {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json"
+    },
+    "data": {
+        "client_id": "dap",
+        "client_secret": "f3nkBjZJohnMO16dggicF5BDnbvyUv2D",
+        "token": "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJmMjc1ZmIyMC0zY2YwLTQyMzUtYWQxYS1lOTg5ZTEwZTU3NjcifQ.eyJleHAiOjE3NDgzNTQxNDcsImlhdCI6MTc0ODM1MjM0NywianRpIjoiYWNjZGIwM2QtYTJiZi00ZTQ4LWJjMjEtYWM4ZjdhNTFkNGQ4IiwiaXNzIjoiaHR0cDovLzEwLjg4LjAuMjAwOjgwODAvcmVhbG1zL2RhcCIsImF1ZCI6Imh0dHA6Ly8xMC44OC4wLjIwMDo4MDgwL3JlYWxtcy9kYXAiLCJzdWIiOiJkNTVmMjg4ZS05NDUwLTQ1MTUtOGYyNS1hMzY2MmVkMmUzYjUiLCJ0eXAiOiJSZWZyZXNoIiwiYXpwIjoiZGFwIiwic2lkIjoiYmIyY2RlNGEtODhiZi00MTJmLTljMmItNWUwMjVmZjNiMGNjIiwic2NvcGUiOiJvcGVuaWQgYWNyIGVtYWlsIGJhc2ljIHByb2ZpbGUgd2ViLW9yaWdpbnMgcm9sZXMifQ.O9yU_42pnQPZ7Gx_LMkdvAtu131Qkkn_RAju00C3smaUi1g6YN3cFA2_XSs4EJYWeqQuoupbW1Y-1igPZWnwvw"
+    }
+}
